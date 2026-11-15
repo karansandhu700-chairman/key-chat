@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Key Chat</title>
+<meta name="description" content="Free multi-AI chat. Routes every message to the best free model you have, with automatic failover.">
+<meta name="theme-color" content="#0a0907">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Key Chat">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" media="not all">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<style>
+:root{
+  --bg:#ffffff; --bg2:#f9f9f9; --panel:#ffffff; --bubble:#f4f4f4; --text:#0d0d0d; --muted:#6b6b6b;
+  --line:#e5e5e5; --hover:#ececec; --accent:#0d0d0d; --accentText:#fff; --danger:#d93025; --ok:#1a7f37; --warn:#b26a00;
+  --code:#f6f6f6; --shadow:0 4px 24px rgba(0,0,0,.08);
+  --safeT:env(safe-area-inset-top,0px); --safeB:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#212121; --bg2:#171717; --panel:#2a2a2a; --bubble:#303030; --text:#ececec; --muted:#a3a3a3;
+    --line:#3a3a3a; --hover:#2f2f2f; --accent:#ffffff; --accentText:#000; --code:#171717; --shadow:0 4px 24px rgba(0,0,0,.4);
+    --ok:#3fb950; --warn:#d29922; --danger:#ff6b60;}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  font:16px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+input,textarea,select{font:inherit;color:inherit}
+svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.app{position:fixed;inset:0;display:flex}
+.side{width:280px;background:var(--bg2);display:flex;flex-direction:column;padding:calc(var(--safeT) + 10px) 10px calc(var(--safeB) + 10px);transition:transform .25s ease;z-index:30}
+.side .top{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.search{flex:1;display:flex;align-items:center;gap:8px;background:var(--hover);border-radius:12px;padding:8px 10px}
+.search input{border:0;background:none;outline:none;width:100%;font-size:15px}
+.search svg{width:18px;height:18px;color:var(--muted)}
+.iconbtn{width:40px;height:40px;border-radius:10px;display:grid;place-items:center}
+.iconbtn:hover{background:var(--hover)}
+.navitem{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;font-size:15px;width:100%;text-align:left}
+.navitem:hover{background:var(--hover)}
+.chats{flex:1;overflow:auto;margin:6px 0;-webkit-overflow-scrolling:touch}
+.chats h6{margin:14px 10px 4px;font-size:12px;color:var(--muted);font-weight:600}
+.chatrow{display:flex;align-items:center;border-radius:10px}
+.chatrow:hover,.chatrow.active{background:var(--hover)}
+.chatrow button.t{flex:1;text-align:left;padding:9px 10px;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chatrow button.d{opacity:.55;padding:6px 8px}
+.chatrow button.d svg{width:17px;height:17px}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .25s;z-index:25}
+@media (max-width:820px){ .side{position:fixed;top:0;bottom:0;left:0;transform:translateX(-100%);width:84%;max-width:320px}
+  .app.open .side{transform:none} .app.open .scrim{opacity:1;pointer-events:auto} }
+@media (min-width:821px){ .app.closed .side{display:none} }
+.main{flex:1;display:flex;flex-direction:column;min-width:0;position:relative}
+header{display:flex;align-items:center;justify-content:space-between;padding:calc(var(--safeT) + 6px) 8px 6px;gap:6px}
+.modelchip{margin:0 auto;display:flex;align-items:center;gap:4px;padding:8px 12px;border-radius:12px;font-weight:600;font-size:17px}
+.modelchip:hover{background:var(--hover)}
+.modelchip small{font-weight:500;color:var(--muted);font-size:15px}
+.modelchip svg{width:16px;height:16px;color:var(--muted)}
+.banner{margin:0 12px 6px;padding:10px 12px;border-radius:14px;background:var(--hover);font-size:13.5px;display:flex;gap:10px;align-items:center}
+.banner b{font-weight:600}.banner button{margin-left:auto;color:var(--muted);padding:4px}
+.thread{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 0 20px}
+.col{max-width:760px;margin:0 auto;padding:0 16px}
+.empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 20px}
+.empty h1{font-size:28px;font-weight:600;margin:0 0 22px;letter-spacing:-.3px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:560px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:14px;color:var(--muted)}
+.chip:hover{background:var(--hover);color:var(--text)}
+.status-note{margin-top:18px;font-size:13px;color:var(--muted);max-width:440px}
+.status-note a{color:var(--text);font-weight:600}
+.msg{margin:22px 0}
+.msg.user{display:flex;flex-direction:column;align-items:flex-end}
+.msg.user .b{background:var(--bubble);border-radius:22px;padding:10px 16px;max-width:85%;white-space:pre-wrap;word-wrap:break-word}
+.msg.user .acts{justify-content:flex-end;margin:2px -6px 0 0;opacity:.85}
+.atts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;margin-bottom:6px}
+.atts img{width:96px;height:96px;object-fit:cover;border-radius:14px;border:1px solid var(--line)}
+.filepill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:12px;padding:6px 10px;font-size:13px;background:var(--panel)}
+.filepill svg{width:16px;height:16px}
+.msg.ai .b{word-wrap:break-word;overflow-wrap:anywhere}
+.genimg{max-width:100%;width:420px;border-radius:16px;border:1px solid var(--line);display:block}
+.b p{margin:0 0 12px}.b p:last-child{margin-bottom:0}
+.b h1,.b h2,.b h3{line-height:1.3;margin:18px 0 8px}.b h1{font-size:22px}.b h2{font-size:19px}.b h3{font-size:17px}
+.b ul,.b ol{padding-left:22px;margin:0 0 12px}.b li{margin:3px 0}
+.b a{color:inherit;text-decoration:underline}
+.b code{font:14px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--code);padding:2px 5px;border-radius:6px}
+.b pre{background:var(--code);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:0 0 12px}
+.b pre .ph{display:flex;gap:12px;align-items:center;padding:6px 12px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line)}
+.b pre .ph span{margin-right:auto}
+.b pre code{display:block;padding:12px;overflow-x:auto;background:none;white-space:pre}
+.b pre code.hljs{background:none;padding:12px}
+.b table{border-collapse:collapse;display:block;overflow-x:auto;margin:0 0 12px;font-size:14px}
+.b th,.b td{border:1px solid var(--line);padding:6px 10px}
+.b blockquote{margin:0 0 12px;padding-left:12px;border-left:3px solid var(--line);color:var(--muted)}
+.b .katex-display{overflow-x:auto;overflow-y:hidden}
+.cursor::after{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--text);margin-left:4px;vertical-align:middle;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:8px;font-size:12.5px;color:var(--muted)}
+.meta .tag{display:inline-flex;align-items:center;gap:4px}
+.meta .dot{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.meta .dot.fo{background:var(--warn)}
+.acts{display:flex;gap:2px;margin-left:-6px}
+.acts button{padding:6px;border-radius:8px;color:var(--muted)}
+.acts button:hover,.acts button.on{background:var(--hover);color:var(--text)}
+.acts svg{width:17px;height:17px}
+.err{color:var(--danger);font-size:14px;border:1px solid var(--danger);border-radius:12px;padding:10px 12px;margin-top:4px}
+.trail{font-size:12px;color:var(--muted);margin-top:4px}
+.trail div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.composer{padding:6px 12px calc(var(--safeB) + 10px)}
+.box{max-width:760px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);padding:8px}
+.editing{font-size:12.5px;color:var(--muted);padding:2px 10px 6px;display:flex;gap:8px}
+.editing button{text-decoration:underline;color:var(--muted)}
+.pending{display:flex;gap:8px;flex-wrap:wrap;padding:4px 6px 8px}
+.pending .pa{position:relative}
+.pending img{width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid var(--line)}
+.pending .x{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accentText);display:grid;place-items:center;font-size:13px;line-height:1}
+.box textarea{width:100%;border:0;outline:none;background:none;resize:none;padding:6px 10px;max-height:200px;font-size:16px;line-height:1.45;display:block}
+.row{display:flex;align-items:center;gap:4px}
+.pill{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 11px;border-radius:999px;border:1px solid var(--line);font-size:14px;color:var(--muted)}
+.pill svg{width:18px;height:18px}
+.pill.on{background:var(--hover);color:var(--text);border-color:transparent}
+.round{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--muted)}
+.round:hover{background:var(--hover);color:var(--text)}
+.round.listening{background:var(--danger);color:#fff;animation:pulse 1.2s infinite}
+.send{width:36px;height:36px;border-radius:50%;background:var(--accent);color:var(--accentText);display:grid;place-items:center;margin-left:auto}
+.send:disabled{opacity:.3}
+.send svg{width:18px;height:18px;stroke-width:2.4}
+.fine{text-align:center;font-size:12px;color:var(--muted);margin-top:8px}
+.sheet{position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.45)}
+.sheet.show{display:flex}
+.card{background:var(--panel);width:100%;max-width:640px;max-height:92vh;border-radius:22px 22px 0 0;display:flex;flex-direction:column;padding-bottom:var(--safeB);animation:up .22s ease}
+@media (min-width:821px){.sheet{align-items:center}.card{border-radius:22px;max-height:85vh}}
+@keyframes up{from{transform:translateY(40px)}}
+.card .hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+.card .hd b{font-size:17px}
+.card .bd{overflow:auto;padding:12px 16px 20px;-webkit-overflow-scrolling:touch}
+.card.wide{max-width:900px;height:92vh}
+.card.wide .bd{flex:1;padding:0;display:flex}
+.card.wide iframe{flex:1;border:0;background:#fff;width:100%}
+.sec{margin:16px 0 6px;font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+details.grp{border-top:1px solid var(--line)}
+details.grp>summary{list-style:none;cursor:pointer;padding:12px 2px;font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px}
+details.grp>summary::-webkit-details-marker{display:none}
+details.grp>summary small{color:var(--muted);font-weight:500;margin-left:auto;font-size:13px}
+details.grp>summary::after{content:"›";color:var(--muted);transition:transform .15s;font-size:20px;line-height:1}
+details.grp[open]>summary::after{transform:rotate(90deg)}
+details.prov{border:1px solid var(--line);border-radius:14px;margin-bottom:8px}
+details.prov>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:11px 12px}
+details.prov>summary::-webkit-details-marker{display:none}
+details.prov>summary b{font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pbody{padding:0 12px 12px}
+.badge{font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.badge.ok{color:var(--ok);border-color:var(--ok)} .badge.bad{color:var(--danger);border-color:var(--danger)}
+.pbody p{margin:4px 0 6px;font-size:13px;color:var(--muted)}
+.pbody a{color:inherit}
+.kin{display:flex;gap:6px;margin-top:8px}
+.kin input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 10px;font-size:14px;outline:none}
+.btn{border-radius:10px;padding:9px 14px;font-size:14px;font-weight:600;background:var(--accent);color:var(--accentText);white-space:nowrap}
+.btn.ghost{background:none;color:var(--text);border:1px solid var(--line);font-weight:500}
+.btn.danger{background:none;color:var(--danger);border:1px solid var(--danger);font-weight:500}
+.chain{list-style:none;margin:0;padding:0}
+.chain li{display:flex;align-items:center;gap:8px;padding:8px 6px;border-bottom:1px solid var(--line);font-size:14px}
+.chain li.off{opacity:.45}
+.chain .nm{flex:1;min-width:0}
+.chain .nm div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chain .nm small{color:var(--muted)}
+.chain button{padding:4px;border-radius:8px;color:var(--muted)}
+.chain button svg{width:18px;height:18px}
+.tog{width:44px;height:26px;border-radius:999px;background:var(--line);position:relative;flex:none}
+.tog::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.tog.on{background:var(--ok)} .tog.on::after{left:21px}
+.seg{display:flex;background:var(--hover);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;padding:8px;border-radius:10px;font-size:14px;color:var(--muted)}
+.seg button.on{background:var(--panel);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+select.field{-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:26px}
+.field{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:10px;font-size:14px;outline:none}
+.hint{font-size:12.5px;color:var(--muted);margin:6px 0}
+.addm{display:flex;gap:6px;margin-top:8px}
+.addm select,.addm input{flex:1;min-width:0}
+.toast{position:fixed;left:50%;bottom:calc(var(--safeB) + 110px);transform:translateX(-50%);background:var(--accent);color:var(--accentText);
+  padding:10px 16px;border-radius:12px;font-size:14px;z-index:80;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%;text-align:center}
+.toast.show{opacity:1}
+.hidden{display:none!important}
+/* ===== Refined glass ===== */
+:root{color-scheme:dark;--bg:#0a0907;--bg2:rgba(255,248,230,.035);--panel:rgba(255,248,230,.05);--bubble:rgba(255,248,230,.07);
+ --text:#ece6d8;--muted:#979080;--line:rgba(214,172,84,.16);--hover:rgba(255,248,230,.07);--accent:#d6ac54;--accentText:#14100a;
+ --code:rgba(0,0,0,.38);--shadow:0 1px 2px rgba(0,0,0,.5),0 14px 36px rgba(0,0,0,.4);--glass:blur(18px) saturate(1.1);
+ --danger:#ff7a6b;--ok:#6fc28a;--warn:#e0b04a}
+html,body{background:var(--bg)}
+.side,header,.box,.card,.banner,.toast{-webkit-backdrop-filter:var(--glass);backdrop-filter:var(--glass)}
+header{background:transparent}
+.side{background:var(--bg2);border-right:1px solid var(--line)}
+.box{background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:24px}
+.card{background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow)}
+.sheet{background:rgba(5,4,3,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.send,.btn{background:var(--accent);color:var(--accentText);border:0;box-shadow:none}
+.send:disabled{opacity:.35}
+.btn.ghost{background:var(--hover);color:var(--text);border:1px solid var(--line)}
+.pill{background:transparent;border-color:var(--line);border-radius:12px}.pill.on{background:var(--hover);color:var(--text)}
+.chatrow.active,.chatrow:hover,.navitem:hover,.iconbtn:hover{background:var(--hover);border-radius:10px}
+.msg.user .b{background:var(--bubble);color:var(--text);border:1px solid var(--line)}
+.msg.ai .b pre,.msg.ai .b code{background:var(--code)}
+.field,.search{background:var(--hover);border:1px solid var(--line)}
+.empty{position:relative}
+.empty .key{width:min(78vw,300px);height:auto;margin:0 0 10px;border-radius:28px}
+.empty h1{font-weight:500;letter-spacing:0}
+.chips button,.chip{border-radius:12px}
+/* ===== Agent ===== */
+#agent .card{max-width:980px;height:94vh;border-radius:26px 26px 0 0}
+#agent .hd{gap:8px;flex-wrap:wrap}
+#agent .seg{display:flex;background:var(--hover);border-radius:12px;padding:3px}
+#agent .seg button{padding:6px 12px;border-radius:9px;font-size:13px;font-weight:600;color:var(--muted)}
+#agent .seg button.on{background:var(--accent);color:var(--accentText)}
+.atools{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;border-bottom:1px solid var(--line)}
+.atools button{white-space:nowrap}
+#aBody{flex:1;min-height:0;display:flex;flex-direction:column}
+#aLog{flex:1;overflow:auto;padding:10px 14px;-webkit-overflow-scrolling:touch}
+.am{margin:8px 0;padding:10px 13px;border-radius:16px;background:var(--bubble);border:1px solid var(--line);font-size:15px;word-break:break-word}
+.am.u{margin-left:12%;background:var(--bubble)}
+.am.t{font:12.5px/1.45 ui-monospace,Menlo,monospace;color:var(--muted);white-space:pre-wrap;max-height:160px;overflow:auto}
+.acomp{display:flex;gap:8px;padding:10px 12px calc(var(--safeB) + 10px);align-items:flex-end}
+.acomp textarea{flex:1;border:1px solid var(--line);background:var(--hover);border-radius:18px;padding:10px 12px;resize:none;max-height:140px;outline:none}
+#aFiles{flex:1;min-height:0;display:none;flex-direction:column}
+#aFiles.show{display:flex}
+#aFileList{display:flex;gap:6px;overflow-x:auto;padding:8px 12px;border-bottom:1px solid var(--line)}
+#aFileList button{white-space:nowrap;padding:6px 11px;border-radius:10px;background:var(--hover);font-size:13px}
+#aFileList button.on{background:var(--accent);color:var(--accentText)}
+#aEd{flex:1;border:0;outline:none;background:var(--code);padding:12px;font:13px/1.5 ui-monospace,Menlo,monospace;resize:none;white-space:pre;overflow:auto;tab-size:2;color:var(--text)}
+
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <aside class="side" id="side">
+    <div class="top">
+      <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" placeholder="Search chats" autocomplete="off"></label>
+      <button class="iconbtn" id="closeSide" aria-label="Close sidebar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+    </div>
+    <button class="navitem" id="newChat2"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>New chat</button>
+    <div class="chats" id="chats"></div>
+    <button class="navitem" id="agentNav"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>Agent: code &amp; deploy</button>
+    <button class="navitem" id="openSettings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>Settings &amp; AI providers</button>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  <main class="main">
+    <header>
+      <button class="iconbtn" id="menu" aria-label="Open sidebar"><svg viewBox="0 0 24 24"><path d="M4 8h16M4 16h10"/></svg></button>
+      <button class="modelchip" id="routeBtn">Key Chat <small id="modeLabel">Auto</small><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="iconbtn" id="agentBtn" aria-label="Agent: code and deploy"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></button>
+      <button class="iconbtn" id="newChat" aria-label="New chat"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+    </header>
+    <div class="banner hidden" id="installBanner"><span>Install: tap <b>Share</b> then <b>Add to Home Screen</b> to use Key Chat like an app.</span><button id="dismissInstall" aria-label="Dismiss">✕</button></div>
+    <div class="thread" id="thread"></div>
+    <div class="composer">
+      <div class="box">
+        <div class="editing hidden" id="editing">Editing a message: sending replaces it and everything after it. <button id="cancelEdit">Cancel</button></div>
+        <div class="pending hidden" id="pending"></div>
+        <textarea id="input" rows="1" placeholder="Message" enterkeyhint="send"></textarea>
+        <div class="row">
+          <button class="round" id="attachBtn" aria-label="Attach photo or file"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+          <button class="pill" id="searchBtn" aria-pressed="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Search</button>
+          <button class="pill" id="imageBtn" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>Image</button>
+          <button class="round" id="micBtn" aria-label="Voice input"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+          <button class="send" id="sendBtn" aria-label="Send" disabled><svg viewBox="0 0 24 24" id="sendIco"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+        </div>
+      </div>
+      <div class="fine">Free models can make mistakes. Check important answers.</div>
+    </div>
+    <input type="file" id="file" class="hidden" multiple accept="image/*,.pdf,.txt,.md,.csv,.json,.html,.xml,.log,.docx,.js,.ts,.py">
+  </main>
+</div>
+
+<div class="sheet" id="settings"><div class="card">
+  <div class="hd"><b>Settings &amp; AI providers</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="bd">
+    <div class="hint">Keys stay in this app on this device and are sent only to their own provider (or through your own relay, if you set one up).</div>
+    <label class="search" style="margin:8px 0"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="provQ" placeholder="Find a provider (e.g. Ollama, OpenCode)" autocomplete="off"></label>
+    <div id="provList"></div>
+    <div class="sec">Personal relay (optional)</div>
+    <div class="hint">Some providers (Ollama Cloud, OpenCode Zen, NVIDIA, Kilo, Z.ai, GitHub Models, SambaNova…) block apps that run in a browser. A free Cloudflare Worker you own can pass their requests through. The file <b>relay-worker.js</b> and setup steps are in the app folder.</div>
+    <div class="kin"><input id="relayUrl" placeholder="https://your-relay.your-name.workers.dev" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+    <div class="kin"><input id="relayToken" type="password" placeholder="Relay secret (RELAY_TOKEN)" autocomplete="off"><button class="btn" id="relaySave">Save &amp; test</button></div>
+    <div class="hint" id="relayStatus"></div>
+    <div class="sec">Instructions for every chat</div>
+    <textarea class="field" id="sysPrompt" rows="3" placeholder="e.g. Answer briefly. I'm based in India."></textarea>
+    <div class="sec">Read aloud voice</div>
+    <select class="field" id="voiceSel"></select>
+    <div class="sec">Your data</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn ghost" id="copyExport">Copy backup of chats</button>
+      <button class="btn ghost" id="importBtn">Restore from backup</button>
+      <button class="btn danger" id="wipe">Delete everything</button>
+    </div>
+    <textarea class="field hidden" id="importBox" rows="4" placeholder="Paste your backup here, then tap Restore again" style="margin-top:8px"></textarea>
+    <div class="hint" id="storageInfo"></div>
+  </div>
+</div></div>
+
+<div class="sheet" id="routing"><div class="card">
+  <div class="hd"><b>Model routing</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="bd">
+    <div class="seg" id="modeSeg"><button data-mode="auto">Auto</button><button data-mode="priority">Priority order</button><button data-mode="fixed">One model</button></div>
+    <div class="hint" id="modeHint"></div>
+    <div class="sec">Model chain</div>
+    <ul class="chain" id="chain"></ul>
+    <div class="addm">
+      <select class="field" id="addProv"></select>
+      <input class="field" id="addModel" list="modelOptions" placeholder="model id">
+      <datalist id="modelOptions"></datalist>
+      <button class="btn" id="addModelBtn">Add</button>
+    </div>
+    <div class="hint">Connect a provider in Settings ("Save &amp; test") to load its full model list. vision = can read photos (guessed from the model name).</div>
+  </div>
+</div></div>
+
+<div class="sheet" id="agent"><div class="card">
+  <div class="hd"><b>Agent</b>
+    <div class="seg" id="aMode"><button data-m="plan">Plan</button><button data-m="build">Build</button><button data-m="spec">Spec</button></div>
+    <button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="atools"><button class="btn ghost" id="aTabChat">Chat</button><button class="btn ghost" id="aTabFiles">Files</button><button class="btn ghost" id="aPrev">Preview</button><button class="btn" id="aDeploy">Deploy</button><button class="btn ghost" id="aExport">Copy all</button><button class="btn ghost" id="aReset">New</button></div>
+  <div id="aBody">
+    <div id="aChatPane" style="display:flex;flex-direction:column;flex:1;min-height:0"><div id="aLog"></div>
+      <div class="acomp"><textarea id="aIn" rows="1" placeholder="Describe the change"></textarea><button class="btn" id="aGo">Send</button></div></div>
+    <div id="aFiles"><div id="aFileList"></div><textarea id="aEd" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="Pick a file"></textarea></div>
+  </div>
+</div></div>
+<div class="sheet" id="deploy"><div class="card">
+  <div class="hd"><b>Deploy to GitHub Pages</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="bd">
+    <div class="hint">Make an empty repo on github.com (tick "Add a README"). Then make a token: GitHub → Settings → Developer settings → Fine-grained tokens → pick only that repo → Contents: read &amp; write, Pages: read &amp; write. Paste it below. It stays on this device.</div>
+    <div class="kin"><input class="field" id="dRepo" placeholder="owner/repo e.g. karan/my-site" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+    <div class="kin"><input class="field" id="dTok" type="password" placeholder="GitHub token" autocomplete="off"></div>
+    <div class="kin"><input class="field" id="dBranch" placeholder="branch (main)" autocapitalize="off"></div>
+    <button class="btn" id="dGo" style="margin-top:10px">Publish now</button>
+    <div class="hint" id="dOut" style="margin-top:10px;white-space:pre-wrap"></div>
+  </div>
+</div></div>
+
+<div class="sheet" id="preview"><div class="card wide">
+  <div class="hd"><b>Preview</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="bd"><iframe id="previewFrame" sandbox="allow-scripts allow-forms allow-modals" title="Code preview"></iframe></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script>
+"use strict";
+/* ============ Provider catalogue ============
+   Base URLs from the open-source FreeLLMAPI router (MIT) and official docs.
+   "direct" providers were checked for browser access (CORS) on 2026-11-15.
+   tier: nokey | free | paid | relay | local                                   */
+const P = (id,name,base,tier,signup,note,o={}) => [id,{id,name,base,tier,signup,note,defaults:[],...o}];
+const PROVIDERS = Object.fromEntries([
+  // No key needed
+  P("ovh","OVH AI Endpoints","https://oai.endpoints.kepler.ai.cloud.ovh.net/v1","nokey","https://endpoints.ai.cloud.ovh.net",
+    "No key. Llama 3.3 70B, GPT-OSS 120B, Mistral Small, a photo-reading Qwen model, voice-to-text and image generation.",
+    {keyless:true, defaults:["Meta-Llama-3_3-70B-Instruct","gpt-oss-120b","Mistral-Small-3.2-24B-Instruct-2506","Qwen2.5-VL-72B-Instruct"]}),
+  P("llm7","LLM7","https://api.llm7.io/v1","nokey","https://llm7.io","No key for basic models (rate-limited). A free key unlocks more.",
+    {keyless:true, defaults:["mistral-Nemo-Instruct-2407","codestral-latest"]}),
+  P("kilo","Kilo Gateway","https://api.kilo.ai/api/gateway/v1","nokey","https://app.kilo.ai","No key for :free models (200 requests/hour). Needs your relay.",
+    {keyless:true, relay:true, defaults:["kilo-auto/free"], freeFilter:/:free$|\/free$/}),
+  // Free keys, work directly
+  P("groq","Groq","https://api.groq.com/openai/v1","free","https://console.groq.com/keys","Very fast. Powers the Search button (groq/compound) and backup voice-to-text.",
+    {defaults:["llama-3.3-70b-versatile","openai/gpt-oss-120b","meta-llama/llama-4-scout-17b-16e-instruct"]}),
+  P("google","Google Gemini","https://generativelanguage.googleapis.com/v1beta/openai","free","https://aistudio.google.com/apikey","Free key from Google AI Studio. Reads photos.",
+    {defaults:["gemini-2.5-flash","gemini-2.5-flash-lite"]}),
+  P("openrouter","OpenRouter","https://openrouter.ai/api/v1","free","https://openrouter.ai/keys","One key, many models. Only models ending in :free cost nothing.",{freeFilter:/:free$|\/free$/}),
+  P("mistral","Mistral","https://api.mistral.ai/v1","free","https://console.mistral.ai/api-keys/","Free 'Experiment' plan.",{defaults:["mistral-small-latest"]}),
+  P("cerebras","Cerebras","https://api.cerebras.ai/v1","free","https://cloud.cerebras.ai","Very fast open models. If it fails in the app, route it through your relay.",
+    {defaults:["gpt-oss-120b","llama3.1-8b"]}),
+  P("huggingface","Hugging Face Router","https://router.huggingface.co/v1","free","https://huggingface.co/settings/tokens","Free monthly credits across many open models."),
+  P("cohere","Cohere","https://api.cohere.ai/compatibility/v1","free","https://dashboard.cohere.com/api-keys","Free trial key (rate-limited)."),
+  P("chutes","Chutes","https://llm.chutes.ai/v1","free","https://chutes.ai","Open models; check the site for current free limits."),
+  P("sealion","SEA-LION","https://api.sea-lion.ai/v1","free","https://sea-lion.ai","Free key. South-East Asian languages."),
+  P("typhoon","Typhoon","https://api.opentyphoon.ai/v1","free","https://playground.opentyphoon.ai","Free research API."),
+  P("modelscope","ModelScope","https://api-inference.modelscope.cn/v1","free","https://modelscope.cn/my/myaccesstoken","Free key (needs an Aliyun account binding)."),
+  P("siliconflow","SiliconFlow","https://api.siliconflow.com/v1","free","https://siliconflow.com","Free models plus image generation."),
+  P("pollinations","Pollinations","https://gen.pollinations.ai/v1","free","https://enter.pollinations.ai","Free publishable key; small hourly allowance."),
+  P("airforce","Api.Airforce","https://api.airforce/v1","free","https://api.airforce","Daily free requests (about 1 per minute)."),
+  P("electronhub","ElectronHub","https://api.electronhub.ai/v1","free","https://app.electronhub.ai","Shared weekly free credits."),
+  P("routeway","Routeway","https://api.routeway.ai/v1","free","https://routeway.ai","Free key."),
+  P("requesty","Requesty","https://router.requesty.ai/v1","free","https://www.requesty.ai","Free key; router to many models."),
+  P("agnes","Agnes AI","https://apihub.agnes-ai.com/v1","free","https://platform.agnes-ai.com","Free key."),
+  P("bazaarlink","BazaarLink","https://bazaarlink.ai/api/v1","free","https://bazaarlink.ai","Free key."),
+  P("aion","Aion Labs","https://api.aionlabs.ai/v1","free","https://www.aionlabs.ai","Free key."),
+  P("navy","NavyAI","https://api.navy/v1","free","https://api.navy","Free key."),
+  P("orcarouter","OrcaRouter","https://api.orcarouter.ai/v1","free","https://www.orcarouter.ai","Free key."),
+  P("unorouter","UnoRouter","https://api.unorouter.com/v1","free","https://unorouter.com","Free key."),
+  P("anyapi","AnyAPI","https://api.anyapi.ai/v1","free","https://anyapi.ai","Free key."),
+  P("powertokens","PowerTokens","https://api.powertokens.ai/v1","free","https://www.powertokens.ai","Free key (glm-4.7-flash).",{defaults:["glm-4.7-flash"]}),
+  P("reka","Reka","https://api.reka.ai/v1","free","https://platform.reka.ai","Prepaid credits."),
+  // Need the relay (provider blocks browser apps)
+  P("ollama","Ollama Cloud","https://ollama.com/v1","relay","https://ollama.com/settings/keys","Ollama's hosted models with your Ollama key. Needs your relay.",{relay:true}),
+  P("opencode","OpenCode Zen","https://opencode.ai/zen/v1","relay","https://opencode.ai/auth","Paid models only: OpenCode's free models are locked to the OpenCode app. Needs your relay.",{relay:true}),
+  P("nvidia","NVIDIA NIM","https://integrate.api.nvidia.com/v1","relay","https://build.nvidia.com/settings/api-keys","Free developer key, many models. Needs your relay.",{relay:true}),
+  P("zai","Z.ai (Zhipu GLM)","https://api.z.ai/api/paas/v4","relay","https://z.ai/manage-apikey/apikey-list","Free GLM Flash models. Needs your relay.",{relay:true}),
+  P("github","GitHub Models","https://models.github.ai/inference","relay","https://github.com/settings/tokens","Use a GitHub token; limits depend on your Copilot plan. Needs your relay.",{relay:true}),
+  P("sambanova","SambaNova","https://api.sambanova.ai/v1","relay","https://cloud.sambanova.ai","Fast open models. Needs your relay.",{relay:true}),
+  P("ainative","AINative Studio","https://api.ainative.studio/api/v1","relay","https://ainative.studio","Free key. Needs your relay.",{relay:true}),
+  P("nara","NaraRouter","https://router.bynara.id/v1","relay","https://router.bynara.id","Free key. Needs your relay.",{relay:true}),
+  P("xkiro","xKiro","https://api.xkiro.com/v1","relay","https://xkiro.com","Free key. Needs your relay.",{relay:true}),
+  P("iteracompute","IteraCompute","https://api.iteracompute.com/v1","relay","https://iteracompute.com/free/","Free monthly tokens. Needs your relay.",{relay:true}),
+  // Paid or trial credits (work directly)
+  P("openai","OpenAI","https://api.openai.com/v1","paid","https://platform.openai.com/api-keys","Paid."),
+  P("xai","xAI Grok","https://api.x.ai/v1","paid","https://console.x.ai","Paid."),
+  P("deepseek","DeepSeek","https://api.deepseek.com/v1","paid","https://platform.deepseek.com","Paid (low cost)."),
+  P("moonshot","Moonshot Kimi","https://api.moonshot.ai/v1","paid","https://platform.moonshot.ai","Paid."),
+  P("perplexity","Perplexity","https://api.perplexity.ai","paid","https://www.perplexity.ai/settings/api","Paid. Answers with web search."),
+  P("together","Together AI","https://api.together.xyz/v1","paid","https://api.together.xyz","Paid / trial credits."),
+  P("deepinfra","DeepInfra","https://api.deepinfra.com/v1/openai","paid","https://deepinfra.com","Paid."),
+  P("fireworks","Fireworks","https://api.fireworks.ai/inference/v1","paid","https://fireworks.ai","Paid / trial credits."),
+  P("nebius","Nebius AI Studio","https://api.studio.nebius.com/v1","paid","https://studio.nebius.com","Paid / trial credits."),
+  P("hyperbolic","Hyperbolic","https://api.hyperbolic.xyz/v1","paid","https://hyperbolic.xyz","Paid / trial credits."),
+  P("novita","Novita","https://api.novita.ai/v3/openai","paid","https://novita.ai","Paid / trial credits."),
+  // Your own computer / server
+  P("ollamalocal","Ollama on your computer","http://localhost:11434/v1","local","https://ollama.com/download",
+    "Start Ollama with OLLAMA_ORIGINS=* so the app may call it. On the same computer use http://localhost:11434/v1. From an iPhone, the address must be https (e.g. Tailscale Serve or a Cloudflare Tunnel).",{custom:true}),
+  P("lmstudio","LM Studio","http://localhost:1234/v1","local","https://lmstudio.ai","Turn on the local server and CORS in LM Studio. Same https rule as Ollama for iPhone.",{custom:true}),
+  P("custom","Custom endpoint","","local","","Any OpenAI-style /v1 server (llama.cpp, vLLM, LiteLLM…). Must allow browser access (CORS).",{custom:true}),
+]);
+const GROUPS = [["nokey","No key needed"],["free","Free keys"],["relay","Needs your relay (Ollama, OpenCode…)"],["paid","Paid or trial credits"],["local","Your own computer or server"]];
+const SEARCH_MODEL = {p:"groq", m:"groq/compound"};
+const IMAGE_ROUTES = [{p:"ovh", m:"stable-diffusion-xl-base-v10"}];
+const STT_ROUTES = [{p:"ovh", m:"whisper-large-v3-turbo"},{p:"groq", m:"whisper-large-v3-turbo"}];
+const VISION_RE = /(gemini|gemma-?[34]|vision|-vl|vl-|llama-4|scout|maverick|pixtral|mistral-(small|medium)|omni|gpt-4o|gpt-4\.1|gpt-5|qwen.*vl|nemotron.*vl|grok-4|claude)/i;
+const isVision = m => VISION_RE.test(m);
+const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+
+/* ============ Storage (IndexedDB, falls back to localStorage) ============ */
+const LSKEY="keychat.v1";
+const blank = () => ({v:2, chats:[], cur:null, keys:{}, chain:null, mode:"auto", fixed:null, system:"", stats:{}, relay:{url:"",token:""}, voice:"", noInstall:false});
+let S = blank();
+const idb = {
+  db:null,
+  open(){ return new Promise((res,rej)=>{ const r=indexedDB.open("keychat",1); r.onupgradeneeded=()=>r.result.createObjectStore("kv"); r.onsuccess=()=>res(this.db=r.result); r.onerror=()=>rej(r.error); }); },
+  get(k){ return new Promise((res,rej)=>{ const q=this.db.transaction("kv").objectStore("kv").get(k); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); }); },
+  set(k,v){ return new Promise((res,rej)=>{ const t=this.db.transaction("kv","readwrite"); t.objectStore("kv").put(v,k); t.oncomplete=res; t.onerror=()=>rej(t.error); }); },
+};
+let saveT=null, useIDB=false;
+function save(){ clearTimeout(saveT); saveT=setTimeout(flush,250); }
+async function flush(){
+  try{ if(useIDB){ await idb.set("state", JSON.parse(JSON.stringify(S))); return; } }catch(e){ useIDB=false; }
+  try{ localStorage.setItem(LSKEY, JSON.stringify(S)); }
+  catch(e){ toast("Couldn't save: storage is full. Delete some old chats."); }
+}
+async function load(){
+  let saved=null;
+  try{ await idb.open(); useIDB=true; saved=await idb.get("state"); }catch{ useIDB=false; }
+  if(!saved){ try{ saved=JSON.parse(localStorage.getItem(LSKEY)||"null"); }catch{} } // migrate v1
+  S = Object.assign(blank(), saved||{});
+  S.relay = Object.assign({url:"",token:""}, S.relay||{});
+  if(!S.chain) S.chain = defaultChain();
+  if((saved?.v||1) < 2){ // add the new no-key provider (OVH) ahead of older no-key entries
+    const add=PROVIDERS.ovh.defaults.filter(m=>!S.chain.some(e=>e.p==="ovh"&&e.m===m)).map(m=>({p:"ovh",m,on:true}));
+    const at=S.chain.findIndex(e=>e.p==="llm7"); S.chain.splice(at<0?S.chain.length:at,0,...add); S.v=2;
+  }
+  try{ if(navigator.storage?.persist) navigator.storage.persist(); }catch{}
+  if(useIDB) try{ localStorage.removeItem(LSKEY); }catch{}
+  save();
+}
+function defaultChain(){
+  const out=[];
+  for(const [p,d] of Object.entries(PROVIDERS)){
+    if(d.tier==="nokey") continue;
+    const k=S.keys[p]; if(!configured(p)) continue;
+    (k?.picked?.length ? k.picked : d.defaults).forEach(m=>out.push({p,m,on:true}));
+  }
+  for(const p of ["ovh","llm7","kilo"]) PROVIDERS[p].defaults.forEach(m=>out.push({p,m,on:true}));
+  return out;
+}
+
+/* ============ Helpers ============ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+let toastT; function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove("show"),2800); }
+const fmtMs = ms => ms<1000 ? ms+" ms" : (ms/1000).toFixed(1)+" s";
+function configured(p){
+  const d=PROVIDERS[p]; if(!d) return false;
+  if(d.relay && !S.relay.url) return false;
+  const k=S.keys[p];
+  if(d.keyless) return !(k && k.ok===false);
+  if(d.custom) return !!(k && k.base && k.ok!==false);
+  return !!(k && k.key && k.ok!==false);
+}
+function endpoint(p, path){
+  const d=PROVIDERS[p]; const base=(d.custom ? (S.keys[p]?.base||d.base) : d.base).replace(/\/+$/,"");
+  if(d.relay && S.relay.url) return S.relay.url.replace(/\/+$/,"")+"/"+base.replace(/^https?:\/\//,"")+path;
+  return base+path;
+}
+function authHeaders(p, json=true){
+  const h={}; if(json) h["Content-Type"]="application/json";
+  const k=S.keys[p]?.key; if(k) h.Authorization="Bearer "+k;
+  if(PROVIDERS[p].relay && S.relay.token) h["X-Relay-Token"]=S.relay.token;
+  return h;
+}
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement("script"); s.src=src; s.onload=res; s.onerror=()=>rej(new Error("Couldn't load a helper (are you offline?)")); document.head.appendChild(s); }); }
+function loadCss(href){ const l=document.createElement("link"); l.rel="stylesheet"; l.href=href; document.head.appendChild(l); }
+
+/* ============ Markdown, code, maths ============ */
+if(window.DOMPurify) DOMPurify.addHook("afterSanitizeAttributes", n=>{ if(n.tagName==="A"){ n.setAttribute("target","_blank"); n.setAttribute("rel","noopener noreferrer"); } });
+function md(text){
+  if (window.marked && window.DOMPurify) {
+    const html = DOMPurify.sanitize(marked.parse(text, {breaks:true, gfm:true}));
+    return html.replace(/<pre><code( class="language-([\w+-]+)")?>/g, (_,__,lang)=>{
+      const l=(lang||"code").toLowerCase(); const prev=/^(html|svg|xml)$/.test(l) ? `<button class="pv">Preview</button>` : "";
+      return `<pre><div class="ph"><span>${esc(l)}</span>${prev}<button class="cp">Copy</button></div><code${lang?` class="language-${esc(lang)}"`:""}>`; });
+  }
+  return "<p>"+esc(text).replace(/\n/g,"<br>")+"</p>";
+}
+let katexReady=null;
+async function enhance(el){
+  if(window.hljs) el.querySelectorAll("pre code").forEach(c=>{ try{ hljs.highlightElement(c); }catch{} });
+  if(/\$\$|\\\(|\\\[|(^|[^\\$])\$[^\s$][^$\n]*\$/.test(el.textContent)){
+    try{
+      katexReady ||= (loadCss("https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css"),
+        loadScript("https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js").then(()=>loadScript("https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js")));
+      await katexReady;
+      renderMathInElement(el,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"\\(",right:"\\)",display:false},{left:"$",right:"$",display:false}],throwOnError:false,ignoredTags:["pre","code"]});
+    }catch{}
+  }
+}
+
+/* ============ Router ============ */
+const COOLDOWN_MS=60_000, FIRST_BYTE_TIMEOUT=35_000;
+function st(p,m){ const k=p+"|"+m; return S.stats[k] || (S.stats[k]={ok:0,fail:0,lat:0,cool:0,last:""}); }
+function score(e,i){ const s=st(e.p,e.m), n=s.ok+s.fail, fr=n?s.fail/n:0; return i + (s.lat? s.lat/4000 : 0.5) + fr*4; }
+function candidates({vision, search}){
+  if(search) return configured("groq") ? [{...SEARCH_MODEL,on:true}] : [];
+  let list=S.chain.filter(e=>e.on && configured(e.p));
+  if(S.mode==="fixed" && S.fixed) list=list.filter(e=>e.p===S.fixed.p && e.m===S.fixed.m);
+  if(vision) list=list.filter(e=>isVision(e.m));
+  const now=Date.now();
+  let ready=list.filter(e=>st(e.p,e.m).cool<now); const cooling=list.filter(e=>st(e.p,e.m).cool>=now);
+  if(S.mode==="auto") ready=ready.map((e,i)=>({e,s:score(e,i)})).sort((a,b)=>a.s-b.s).map(x=>x.e);
+  return [...ready,...cooling];
+}
+const retryable = s => s===408||s===409||s===425||s===429||s>=500;
+async function* sse(resp){
+  const reader=resp.body.getReader(), dec=new TextDecoder(); let buf="";
+  while(true){ const {value,done}=await reader.read(); if(done) break; buf+=dec.decode(value,{stream:true});
+    let i; while((i=buf.indexOf("\n"))>=0){ const line=buf.slice(0,i).trim(); buf=buf.slice(i+1);
+      if(!line.startsWith("data:")) continue; const data=line.slice(5).trim(); if(data==="[DONE]") return; try{ yield JSON.parse(data); }catch{} } }
+}
+async function errText(r){ try{ const j=await r.json(); return j.error?.message||j.message||j.detail||JSON.stringify(j).slice(0,140); }catch{ return r.statusText||""; } }
+const netWhy = e => /Failed to fetch|NetworkError|Load failed|fetch/i.test(e.message||"") ? "couldn't connect (the provider may block browser apps; try your relay)" : (e.message||"network error");
+async function routeChat(messages, opts, onToken, signal){
+  const list=candidates(opts), trail=[], t0=performance.now();
+  if(!list.length) throw Object.assign(new Error(opts.search ? "Search needs a free Groq key. Add one in Settings." :
+    opts.vision ? "None of your active models can read photos. Switch on OVH's Qwen2.5-VL model, or add a free Google Gemini key." :
+    "No models are switched on. Open the model menu at the top."),{trail});
+  for(const e of list){
+    if(signal.aborted) break;
+    const s=st(e.p,e.m), tStart=performance.now(), ctl=new AbortController(), onAbort=()=>ctl.abort();
+    signal.addEventListener("abort",onAbort); const to=setTimeout(()=>ctl.abort("timeout"),FIRST_BYTE_TIMEOUT);
+    let got="", model=e.m;
+    try{
+      const headers=authHeaders(e.p); if(e.p==="openrouter") headers["X-Title"]="Key Chat";
+      const resp=await fetch(endpoint(e.p,"/chat/completions"),{method:"POST",headers,body:JSON.stringify({model:e.m,messages,stream:true}),signal:ctl.signal});
+      if(!resp.ok){
+        const err=new Error(`${resp.status} ${await errText(resp)}`.trim());
+        if(resp.status===429){ const ra=+resp.headers.get("retry-after"); s.cool=Date.now()+(ra>0?ra*1000:COOLDOWN_MS); }
+        else if(retryable(resp.status)) s.cool=Date.now()+COOLDOWN_MS;
+        else if(resp.status===401||resp.status===403) s.cool=Date.now()+10*60_000;
+        else s.cool=Date.now()+5*60_000;
+        throw err;
+      }
+      let first=true, inThink=false;
+      for await (const ch of sse(resp)){
+        if(first){ clearTimeout(to); first=false; }
+        if(ch.model) model=ch.model;
+        if(ch.error) throw new Error(ch.error.message||"stream error");
+        let d=ch.choices?.[0]?.delta?.content;
+        if(d){ // hide <think>…</think> reasoning some open models print
+          if(d.includes("<think>")){ inThink=true; d=d.split("<think>")[0]; }
+          if(inThink){ if(d.includes("</think>")){ inThink=false; d=d.split("</think>").pop(); } else d=""; }
+          if(d){ got+=d; if(got.trim()) onToken(got.replace(/^\s+/,"")); }
+        }
+      }
+      clearTimeout(to); signal.removeEventListener("abort",onAbort);
+      got=got.trim(); if(!got){ s.cool=Date.now()+COOLDOWN_MS; throw new Error("empty answer"); }
+      const ms=Math.round(performance.now()-tStart); s.ok++; s.lat=s.lat?Math.round(s.lat*.7+ms*.3):ms; s.last="ok";
+      trail.push({p:e.p,m:e.m,ok:true,ms});
+      return {text:got, meta:{p:e.p,provider:PROVIDERS[e.p].name,model,ms:Math.round(performance.now()-t0),failovers:trail.length-1,trail}};
+    }catch(err){
+      clearTimeout(to); signal.removeEventListener("abort",onAbort);
+      if(signal.aborted){ if(got) return {text:got,meta:{p:e.p,provider:PROVIDERS[e.p].name,model,ms:Math.round(performance.now()-t0),failovers:trail.length,trail,stopped:true}}; break; }
+      const why = ctl.signal.reason==="timeout" ? "timed out" : (err instanceof TypeError ? netWhy(err) : err.message);
+      s.fail++; s.last=why; if(!s.cool||s.cool<Date.now()) s.cool=Date.now()+COOLDOWN_MS;
+      trail.push({p:e.p,m:e.m,ok:false,why});
+      if(got) return {text:got+"\n\n_(answer was cut off by the provider)_",meta:{p:e.p,provider:PROVIDERS[e.p].name,model,ms:Math.round(performance.now()-t0),failovers:trail.length-1,trail,partial:true}};
+      onToken("");
+    }
+  }
+  if(signal.aborted) throw Object.assign(new Error("Stopped."),{trail,stopped:true});
+  throw Object.assign(new Error("Every model in your chain failed or is rate-limited right now. Wait a minute, or add another free provider in Settings."),{trail});
+}
+async function generateImage(prompt, signal){
+  const trail=[], t0=performance.now();
+  for(const r of IMAGE_ROUTES.filter(r=>configured(r.p))){
+    try{
+      const resp=await fetch(endpoint(r.p,"/images/generations"),{method:"POST",headers:authHeaders(r.p),signal,
+        body:JSON.stringify({model:r.m,prompt,n:1,size:"1024x1024",response_format:"b64_json"})});
+      if(!resp.ok) throw new Error(`${resp.status} ${await errText(resp)}`);
+      const j=await resp.json(); const b=j.data?.[0]?.b64_json, u=j.data?.[0]?.url;
+      if(!b && !u) throw new Error("no image returned");
+      const data = b ? await shrinkDataUrl("data:image/png;base64,"+b, 1024, .88) : u;
+      trail.push({p:r.p,m:r.m,ok:true,ms:Math.round(performance.now()-t0)});
+      return {data, meta:{p:r.p,provider:PROVIDERS[r.p].name,model:r.m,ms:Math.round(performance.now()-t0),failovers:trail.length-1,trail}};
+    }catch(err){ if(signal.aborted) throw Object.assign(new Error("Stopped."),{stopped:true,trail}); trail.push({p:r.p,m:r.m,ok:false,why:err instanceof TypeError?netWhy(err):err.message}); }
+  }
+  throw Object.assign(new Error("Image creation isn't available right now. Try again in a minute."),{trail});
+}
+
+/* ============ Chats ============ */
+const curChat = () => S.chats.find(c=>c.id===S.cur);
+function newChat(){ S.cur=null; cancelEdit(); renderAll(); $("#input").focus(); closeSide(); }
+function ensureChat(first){ let c=curChat(); if(c) return c; c={id:uid(),title:(first||"New chat").slice(0,48),msgs:[],updated:Date.now()}; S.chats.unshift(c); S.cur=c.id; return c; }
+function toApi(msgs){
+  const out=[]; if(S.system.trim()) out.push({role:"system",content:S.system.trim()});
+  for(const m of msgs){
+    if(m.role==="assistant"){ if(m.content) out.push({role:"assistant",content:m.content}); else if(m.image) out.push({role:"assistant",content:"[I created an image for: "+(m.prompt||"")+"]"}); continue; }
+    let text=m.content||""; const docs=(m.att||[]).filter(a=>a.kind==="doc");
+    if(docs.length) text=docs.map(d=>`[Attached file: ${d.name}]\n${d.text}`).join("\n\n")+"\n\n"+text;
+    const imgs=(m.att||[]).filter(a=>a.kind==="img"&&a.data);
+    out.push(imgs.length ? {role:"user",content:[{type:"text",text:text||"Describe this image."},...imgs.map(i=>({type:"image_url",image_url:{url:i.data}}))]} : {role:"user",content:text});
+  }
+  return out;
+}
+
+/* ============ Rendering ============ */
+const thread=$("#thread");
+const I = { // icons
+  copy:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
+  regen:'<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.3L3 16M3 21v-5h5"/></svg>',
+  speak:'<svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+  share:'<svg viewBox="0 0 24 24"><path d="M12 3v13M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>',
+  edit:'<svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+  file:'<svg viewBox="0 0 24 24"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/></svg>',
+};
+function renderList(){
+  const q=$("#q").value.toLowerCase().trim();
+  const items=S.chats.filter(c=>!q||c.title.toLowerCase().includes(q)||c.msgs.some(m=>(m.content||"").toLowerCase().includes(q)));
+  const day=864e5, now=Date.now(), g={Today:[],"Previous 7 days":[],Older:[]};
+  items.forEach(c=>{ const a=now-c.updated; (a<day?g.Today:a<7*day?g["Previous 7 days"]:g.Older).push(c); });
+  let h=""; for(const [n,arr] of Object.entries(g)) if(arr.length) h+=`<h6>${n}</h6>`+arr.map(c=>`<div class="chatrow ${c.id===S.cur?"active":""}"><button class="t" data-open="${c.id}">${esc(c.title)}</button><button class="d" data-del="${c.id}" aria-label="Delete chat"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div>`).join("");
+  $("#chats").innerHTML = h || `<div class="hint" style="padding:10px">${q?"No chats match.":"Your chats will appear here."}</div>`;
+}
+function metaHtml(m){
+  if(!m.meta) return ""; const x=m.meta;
+  const fo = x.failovers ? `<span class="tag"><span class="dot fo"></span>${x.failovers} failover${x.failovers>1?"s":""}</span>` : `<span class="tag"><span class="dot"></span>no failover</span>`;
+  const tr = x.failovers ? `<details class="trail"><summary>Route details</summary>${x.trail.map(t=>`<div>${t.ok?"✓":"✗"} ${esc(PROVIDERS[t.p]?.name||t.p)} · ${esc(t.m)}${t.ok?" · "+fmtMs(t.ms):" · "+esc(t.why)}</div>`).join("")}</details>`:"";
+  return `<div class="meta"><span class="tag"><b>${esc(x.provider)}</b></span><span class="tag">${esc(x.model)}</span><span class="tag">${fmtMs(x.ms)}</span>${fo}${x.partial?'<span class="tag">cut off</span>':""}${x.stopped?'<span class="tag">stopped</span>':""}</div>${tr}`;
+}
+function msgHtml(m,i,last){
+  if(m.role==="user"){
+    const att=(m.att||[]).map(a=>a.kind==="img"?(a.data?`<img src="${a.data}" alt="">`:`<span class="filepill">photo removed</span>`):`<span class="filepill">${I.file}${esc(a.name)}</span>`).join("");
+    return `<div class="msg user">${att?`<div class="atts">${att}</div>`:""}${m.content?`<div class="b">${esc(m.content)}</div>`:""}<div class="acts"><button data-copy="${i}" aria-label="Copy">${I.copy}</button><button data-edit="${i}" aria-label="Edit">${I.edit}</button></div></div>`;
+  }
+  let body;
+  if(m.error) body=`<div class="err">${esc(m.error)}</div>${m.trail&&m.trail.length?`<details class="trail" open><summary>What was tried</summary>${m.trail.map(t=>`<div>✗ ${esc(PROVIDERS[t.p]?.name||t.p)} · ${esc(t.m)} · ${esc(t.why||"")}</div>`).join("")}</details>`:""}`;
+  else if(m.image) body=`<img class="genimg" src="${m.image}" alt="${esc(m.prompt||"Generated image")}">${metaHtml(m)}`;
+  else body=`<div class="b">${md(m.content)}</div>${metaHtml(m)}`;
+  const acts=`<div class="acts"><button data-copy="${i}" aria-label="Copy">${I.copy}</button>${m.content?`<button data-speak="${i}" aria-label="Read aloud">${I.speak}</button>`:""}<button data-share="${i}" aria-label="Share">${I.share}</button>${last?`<button data-regen aria-label="Try again">${I.regen}</button>`:""}</div>`;
+  return `<div class="msg ai" data-i="${i}">${body}${acts}</div>`;
+}
+function renderThread(){
+  const c=curChat();
+  if(!c||!c.msgs.length){
+    const keyed=Object.keys(PROVIDERS).filter(p=>PROVIDERS[p].tier!=="nokey"&&configured(p)).map(p=>PROVIDERS[p].name);
+    thread.innerHTML=`<div class="empty"><img class="key" src="key.webp" alt="Key Chat" width="260" height="260"><h1>What can I help with?</h1><div class="chips">
+      ${["Explain a topic simply","Draft a professional email","Summarise a PDF","Create an image","Write code for a task","What's in this photo?"].map(t=>`<button class="chip" data-sug="${esc(t)}">${t}</button>`).join("")}
+      </div><div class="status-note">${keyed.length?`Using: ${esc(keyed.join(", "))} + free no-key models.`:`Running on free no-key models (OVH, LLM7). Add more providers in <a href="#" data-settings>Settings</a>: Groq, Gemini, Ollama, OpenCode and 45+ others.`}</div></div>`;
+    return;
+  }
+  thread.innerHTML=`<div class="col">${c.msgs.map((m,i)=>msgHtml(m,i,i===c.msgs.length-1&&m.role==="assistant")).join("")}</div>`;
+  thread.querySelectorAll(".msg.ai .b").forEach(enhance);
+  thread.scrollTop=thread.scrollHeight;
+}
+function renderMode(){ $("#modeLabel").textContent = S.mode==="fixed"&&S.fixed ? S.fixed.m.split("/").pop() : S.mode==="priority"?"Priority":"Auto"; }
+function renderAll(){ renderList(); renderThread(); renderMode(); }
+
+/* ============ Sending ============ */
+let busy=null, pendingAtt=[], searchOn=false, imageOn=false, editIdx=null, wake=null;
+async function keepAwake(on){ try{ if(on && navigator.wakeLock && !wake) wake=await navigator.wakeLock.request("screen"); if(!on && wake){ await wake.release(); wake=null; } }catch{ wake=null; } }
+function setBusy(b){ busy=b; $("#sendIco").innerHTML=b?'<rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor"/>':'<path d="M12 19V5M5 12l7-7 7 7"/>'; $("#sendBtn").setAttribute("aria-label",b?"Stop":"Send"); updateSend(); keepAwake(!!b); }
+function updateSend(){ $("#sendBtn").disabled = !busy && !$("#input").value.trim() && !pendingAtt.length; }
+function cancelEdit(){ editIdx=null; $("#editing").classList.add("hidden"); }
+async function send(override){
+  if(busy){ busy.abort(); return; }
+  const text=(override ?? $("#input").value).trim();
+  if(!text && !pendingAtt.length) return;
+  const c=ensureChat(text||pendingAtt[0]?.name);
+  if(editIdx!=null && c.msgs[editIdx]){ const old=c.msgs[editIdx]; c.msgs.splice(editIdx); if(!pendingAtt.length && old.att) pendingAtt=old.att; }
+  cancelEdit();
+  c.msgs.push({role:"user",content:text,att:pendingAtt}); pendingAtt=[]; renderPending();
+  $("#input").value=""; autosize();
+  await answer(c, imageOn && text);
+}
+async function answer(c, imagePrompt){
+  const ai={role:"assistant",content:""}; c.msgs.push(ai); c.updated=Date.now(); renderAll();
+  const node=thread.querySelector(".msg.ai:last-child"); node.innerHTML=`<div class="b cursor">${imagePrompt?'<span style="color:var(--muted)">Creating image…</span>':""}</div>`;
+  const bEl=node.querySelector(".b"); const ctl=new AbortController(); setBusy(ctl); let raf=0;
+  try{
+    if(imagePrompt){ const r=await generateImage(imagePrompt, ctl.signal); ai.image=r.data; ai.prompt=imagePrompt; ai.meta=r.meta; }
+    else{
+      const vision=c.msgs.some(m=>(m.att||[]).some(a=>a.kind==="img"&&a.data));
+      const r=await routeChat(toApi(c.msgs.slice(0,-1)),{vision,search:searchOn},txt=>{
+        cancelAnimationFrame(raf); raf=requestAnimationFrame(()=>{ bEl.innerHTML=md(txt); bEl.classList.add("cursor");
+          if(thread.scrollHeight-thread.scrollTop-thread.clientHeight<160) thread.scrollTop=thread.scrollHeight; }); }, ctl.signal);
+      cancelAnimationFrame(raf); ai.content=r.text; ai.meta=r.meta;
+    }
+  }catch(err){ cancelAnimationFrame(raf); if(err.stopped) c.msgs.pop(); else { ai.error=err.message; ai.trail=err.trail; } }
+  setBusy(null); c.updated=Date.now(); save(); renderAll();
+}
+
+/* ============ Attachments ============ */
+async function shrinkDataUrl(src,max=1280,q=.82){
+  const img=await new Promise((res,rej)=>{const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=src;});
+  const sc=Math.min(1,max/Math.max(img.width,img.height)), cv=document.createElement("canvas");
+  cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc); cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height); return cv.toDataURL("image/jpeg",q);
+}
+async function shrink(file){ const u=URL.createObjectURL(file); try{ return await shrinkDataUrl(u); } finally { URL.revokeObjectURL(u); } }
+async function pdfText(file){
+  if(!window.pdfjsLib){ await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"); pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; }
+  const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise; let out="";
+  for(let p=1;p<=pdf.numPages&&out.length<120000;p++){ const tc=await (await pdf.getPage(p)).getTextContent(); out+=`\n--- page ${p} ---\n`+tc.items.map(i=>i.str).join(" "); }
+  return out;
+}
+async function docxText(file){ if(!window.mammoth) await loadScript("https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"); return (await mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()})).value; }
+const LIMIT=60000;
+async function addFiles(files){
+  for(const f of files){
+    try{
+      if(f.type.startsWith("image/")) pendingAtt.push({kind:"img",name:f.name,data:await shrink(f)});
+      else{ toast("Reading "+f.name+"…");
+        let t=/\.pdf$/i.test(f.name)?await pdfText(f):/\.docx$/i.test(f.name)?await docxText(f):await f.text();
+        const cut=t.length>LIMIT; t=t.slice(0,LIMIT)+(cut?`\n[…file truncated: only the first ${LIMIT.toLocaleString()} characters were sent]`:"");
+        if(!t.trim()) throw new Error("no readable text (for a scanned PDF, attach a photo instead)");
+        pendingAtt.push({kind:"doc",name:f.name,text:t}); }
+    }catch(e){ toast(`Couldn't read ${f.name}: ${e.message}`); }
+  }
+  renderPending(); updateSend();
+}
+function renderPending(){ const el=$("#pending"); el.classList.toggle("hidden",!pendingAtt.length);
+  el.innerHTML=pendingAtt.map((a,i)=>`<div class="pa">${a.kind==="img"?`<img src="${a.data}" alt="">`:`<span class="filepill">${I.file}${esc(a.name)}</span>`}<button class="x" data-rm="${i}" aria-label="Remove">×</button></div>`).join(""); }
+
+/* ============ Voice in: record + Whisper (works in the installed app) ============ */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const canRecord=!!(navigator.mediaDevices?.getUserMedia && window.MediaRecorder);
+let rec=null, recStream=null, recChunks=[], recTimer=null, sr=null;
+if(!canRecord && !SR) $("#micBtn").classList.add("hidden");
+async function transcribe(blob, ext){
+  const tried=[];
+  for(const r of STT_ROUTES.filter(r=>configured(r.p))){
+    try{ const fd=new FormData(); fd.append("file",blob,"voice."+ext); fd.append("model",r.m);
+      const resp=await fetch(endpoint(r.p,"/audio/transcriptions"),{method:"POST",headers:authHeaders(r.p,false),body:fd});
+      if(!resp.ok) throw new Error(resp.status+" "+await errText(resp));
+      const j=await resp.json(); return (j.text||"").trim();
+    }catch(e){ tried.push(PROVIDERS[r.p].name+": "+(e.message||e)); }
+  }
+  throw new Error("couldn't turn speech into text ("+tried.join("; ")+")");
+}
+function stopStream(){ recStream?.getTracks().forEach(t=>t.stop()); recStream=null; } // release the mic every time (iOS home-screen apps can lose it otherwise)
+$("#micBtn").onclick=async()=>{
+  const btn=$("#micBtn");
+  if(rec){ rec.stop(); return; }
+  if(sr){ sr.stop(); return; }
+  if(canRecord){
+    try{ recStream=await navigator.mediaDevices.getUserMedia({audio:true}); }
+    catch(e){ toast(e.name==="NotAllowedError"?"Microphone blocked. Allow it in Settings › Safari › Microphone.":"Microphone unavailable: "+e.message); return; }
+    const mime=["audio/mp4","audio/webm;codecs=opus","audio/webm"].find(t=>MediaRecorder.isTypeSupported?.(t))||"";
+    rec=new MediaRecorder(recStream, mime?{mimeType:mime}:{}); recChunks=[];
+    rec.ondataavailable=e=>e.data.size&&recChunks.push(e.data);
+    rec.onstop=async()=>{ clearTimeout(recTimer); stopStream(); btn.classList.remove("listening"); const type=rec.mimeType||mime||"audio/mp4"; rec=null;
+      const blob=new Blob(recChunks,{type}); if(blob.size<800){ toast("Didn't catch that. Tap the mic, speak, then tap again."); return; }
+      toast("Turning speech into text…");
+      try{ const t=await transcribe(blob, type.includes("webm")?"webm":"m4a"); if(!t){ toast("No speech heard"); return; }
+        $("#input").value=($("#input").value?$("#input").value+" ":"")+t; autosize(); updateSend(); $("#input").focus(); }
+      catch(e){ toast("Voice: "+e.message); } };
+    rec.start(); btn.classList.add("listening"); toast("Listening… tap the mic again to finish");
+    recTimer=setTimeout(()=>rec&&rec.stop(),120000); return;
+  }
+  sr=new SR(); sr.interimResults=true; sr.lang=navigator.language||"en-US"; const start=$("#input").value; btn.classList.add("listening");
+  sr.onresult=e=>{ $("#input").value=(start?start+" ":"")+[...e.results].map(r=>r[0].transcript).join(""); autosize(); updateSend(); };
+  sr.onerror=e=>toast("Voice: "+e.error); sr.onend=()=>{ sr=null; btn.classList.remove("listening"); };
+  try{ sr.start(); }catch{ sr=null; btn.classList.remove("listening"); }
+};
+
+/* ============ Voice out: read aloud ============ */
+let speakingIdx=null;
+function plain(md){ return md.replace(/```[\s\S]*?```/g," (code block) ").replace(/[`*_#>|~]/g,"").replace(/\[([^\]]+)\]\([^)]+\)/g,"$1"); }
+function fillVoices(){ if(!window.speechSynthesis) return; const vs=speechSynthesis.getVoices(); if(!vs.length) return;
+  $("#voiceSel").innerHTML=`<option value="">Default voice</option>`+vs.map(v=>`<option value="${esc(v.name)}" ${v.name===S.voice?"selected":""}>${esc(v.name)} (${esc(v.lang)})</option>`).join(""); }
+if(window.speechSynthesis){ speechSynthesis.onvoiceschanged=fillVoices; } else $("#voiceSel").innerHTML=`<option>Read aloud isn't available on this device</option>`;
+function speak(i){
+  if(!window.speechSynthesis){ toast("Read aloud isn't available here"); return; }
+  if(speakingIdx===i){ speechSynthesis.cancel(); speakingIdx=null; renderThread(); return; }
+  speechSynthesis.cancel(); const m=curChat()?.msgs[i]; if(!m?.content) return;
+  const u=new SpeechSynthesisUtterance(plain(m.content)); const v=speechSynthesis.getVoices().find(v=>v.name===S.voice); if(v) u.voice=v;
+  u.onend=u.onerror=()=>{ if(speakingIdx===i){ speakingIdx=null; document.querySelector(`[data-speak="${i}"]`)?.classList.remove("on"); } };
+  speakingIdx=i; speechSynthesis.speak(u); document.querySelector(`[data-speak="${i}"]`)?.classList.add("on");
+}
+
+/* ============ Share ============ */
+async function shareMsg(i){
+  const m=curChat()?.msgs[i]; if(!m) return;
+  try{
+    if(m.image){ const blob=await (await fetch(m.image)).blob(); const file=new File([blob],"key-chat-image.jpg",{type:blob.type||"image/jpeg"});
+      if(navigator.canShare?.({files:[file]})){ await navigator.share({files:[file],title:"Image from Key Chat"}); return; } }
+    const text=m.content||m.prompt||m.error||"";
+    if(navigator.share){ await navigator.share({text}); return; }
+    await navigator.clipboard.writeText(text); toast("Copied (sharing isn't available here)");
+  }catch(e){ if(e.name!=="AbortError") toast("Couldn't share: "+e.message); }
+}
+
+/* ============ Settings ============ */
+function badge(p){ const d=PROVIDERS[p], k=S.keys[p]||{};
+  if(d.relay && !S.relay.url) return `<span class="badge">Needs relay</span>`;
+  if(k.ok) return `<span class="badge ok">Connected${k.models?.length?" · "+k.models.length:""}</span>`;
+  if(k.err) return `<span class="badge bad">Problem</span>`;
+  if(d.keyless) return `<span class="badge ok">Ready · no key</span>`;
+  return configured(p)?`<span class="badge">Saved</span>`:`<span class="badge">Not set</span>`; }
+function provHtml(p){
+  const d=PROVIDERS[p], k=S.keys[p]||{};
+  const mixed = d.custom && location.protocol==="https:" && /^http:\/\/(?!localhost|127\.)/.test(k.base||"") ? `<p style="color:var(--warn)">This app is on https, so it can't call an http address on your network. Use an https address (Tailscale Serve or Cloudflare Tunnel).</p>`:"";
+  return `<details class="prov" data-p="${p}"><summary><b>${esc(d.name)}</b>${badge(p)}</summary><div class="pbody">
+    <p>${esc(d.note)}${d.signup?` <a href="${d.signup}" target="_blank" rel="noopener">${d.tier==="local"?"Download ↗":d.keyless?"Website ↗":"Get a key ↗"}</a>`:""}</p>
+    ${k.err?`<p style="color:var(--danger)">${esc(k.err)}</p>`:""}${mixed}
+    ${d.custom?`<div class="kin"><input data-base placeholder="${esc(d.base||"https://your-server/v1")}" value="${esc(k.base||d.base||"")}" autocomplete="off" autocapitalize="off" spellcheck="false"></div>`:""}
+    <div class="kin"><input data-key type="password" placeholder="${d.keyless?"Optional key":d.custom?"Key (optional)":"Paste API key"}" value="${esc(k.key||"")}" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="btn" data-test>${d.keyless&&!k.key?"Test":"Save &amp; test"}</button>${(S.keys[p])?`<button class="btn ghost" data-remove>Remove</button>`:""}</div></div></details>`;
+}
+let openGroups=new Set(["nokey","free"]);
+function renderSettings(){
+  const q=$("#provQ").value.toLowerCase().trim();
+  $("#provList").innerHTML=GROUPS.map(([g,label])=>{
+    const ids=Object.keys(PROVIDERS).filter(p=>PROVIDERS[p].tier===g && (!q||PROVIDERS[p].name.toLowerCase().includes(q)||p.includes(q)||PROVIDERS[p].note.toLowerCase().includes(q)));
+    if(!ids.length) return "";
+    const on=ids.filter(configured).length;
+    return `<details class="grp" data-g="${g}" ${q||openGroups.has(g)?"open":""}><summary>${label}<small>${on}/${ids.length} ready</small></summary>${ids.map(provHtml).join("")}</details>`;
+  }).join("") || `<div class="hint">No provider matches. Use "Custom endpoint" for any OpenAI-style server.</div>`;
+  $("#sysPrompt").value=S.system; $("#relayUrl").value=S.relay.url; $("#relayToken").value=S.relay.token; fillVoices();
+  $("#relayStatus").textContent = S.relay.url ? (S.relay.ok?"Relay connected.":S.relay.err||"Relay saved.") : "";
+  if(navigator.storage?.estimate) navigator.storage.estimate().then(e=>{ $("#storageInfo").textContent=`Stored on this device: ${(e.usage/1048576).toFixed(1)} MB${useIDB?"":" (basic storage mode)"}.`; });
+}
+async function testProvider(p, card){
+  const d=PROVIDERS[p]; const key=card.querySelector("[data-key]").value.trim(); const base=card.querySelector("[data-base]")?.value.trim();
+  S.keys[p]=Object.assign(S.keys[p]||{},{key,base,ok:undefined,err:null});
+  if(d.relay && !S.relay.url){ S.keys[p].err="Set up your relay first (bottom of this page)."; S.keys[p].ok=false; save(); renderSettings(); reopen(p); return; }
+  if(!key && !d.keyless && !d.custom){ toast("Paste a key first"); return; }
+  const btn=card.querySelector("[data-test]"); btn.textContent="Testing…"; btn.disabled=true;
+  try{
+    const r=await fetch(endpoint(p,"/models"),{headers:authHeaders(p,false)});
+    let ids=[];
+    if(r.ok){ const j=await r.json(); ids=(Array.isArray(j)?j:(j.data||j.models||[])).map(x=>(x.id||x.name||x.model||"").replace(/^models\//,"")).filter(Boolean); }
+    else if(r.status===404||r.status===405){ ids=[]; } // no model list on this API: key kept, add model ids by hand
+    else throw new Error(`${r.status}: ${await errText(r)}`);
+    if(d.freeFilter && !S.keys[p]?.key) ids=ids.filter(i=>d.freeFilter.test(i));
+    else if(d.freeFilter && p==="openrouter") ids=ids.filter(i=>d.freeFilter.test(i));
+    const known=new Set(ids); let picked=d.defaults.filter(m=>known.has(m)||!ids.length);
+    if(!picked.length) picked=ids.filter(i=>!/embed|whisper|tts|guard|image|audio|rerank|moderation|diffusion|bge|flux/i.test(i)).slice(0,3);
+    // Some model lists are public, so prove the key (and chat access) with a 1-token request.
+    if(picked.length && (key || d.keyless)){
+      const v=await fetch(endpoint(p,"/chat/completions"),{method:"POST",headers:authHeaders(p),body:JSON.stringify({model:picked[0],messages:[{role:"user",content:"hi"}],max_tokens:1})});
+      if(v.status===401||v.status===403) throw new Error(`${v.status}: ${await errText(v)}`);
+    }
+    S.keys[p]={key,base,ok:true,models:ids,picked,err:null};
+    const at0=S.chain.findIndex(e=>PROVIDERS[e.p]?.tier==="nokey"); let at=at0<0?S.chain.length:at0;
+    for(const m of picked) if(!S.chain.some(e=>e.p===p&&e.m===m)) S.chain.splice(at++,0,{p,m,on:true});
+    toast(`${d.name} connected${ids.length?` · ${ids.length} models`:" · add model names in the model menu"}`);
+  }catch(e){ S.keys[p].ok=false; S.keys[p].err = e instanceof TypeError ? (d.relay?"Couldn't reach it through your relay. Check the relay address and secret.":d.custom?"Couldn't reach it. Check the address, that the server is running, and that it allows browser access (CORS).":"Couldn't connect. This provider may block browser apps; try adding it through a relay.") : "Key rejected or unavailable ("+e.message+")"; }
+  save(); renderSettings(); reopen(p);
+}
+function reopen(p){ const el=document.querySelector(`.prov[data-p="${p}"]`); if(el){ el.open=true; el.closest(".grp").open=true; } }
+async function testRelay(){
+  S.relay={url:$("#relayUrl").value.trim().replace(/\/+$/,""), token:$("#relayToken").value.trim()};
+  if(!S.relay.url){ save(); renderSettings(); return; }
+  $("#relayStatus").textContent="Testing…";
+  try{ const r=await fetch(S.relay.url+"/api.kilo.ai/api/gateway/models",{headers:{"X-Relay-Token":S.relay.token}});
+    if(r.status===401) throw new Error("wrong relay secret"); if(!r.ok) throw new Error(r.status+" "+await errText(r));
+    S.relay.ok=true; S.relay.err=null; toast("Relay connected: Kilo, Ollama Cloud, OpenCode and others are now available");
+  }catch(e){ S.relay.ok=false; S.relay.err="Relay problem: "+(e instanceof TypeError?"couldn't reach it (check the address)":e.message); }
+  save(); renderSettings();
+}
+
+/* ============ Routing sheet ============ */
+function renderRouting(){
+  document.querySelectorAll("#modeSeg button").forEach(b=>b.classList.toggle("on",b.dataset.mode===S.mode));
+  $("#modeHint").textContent = S.mode==="auto"?"Auto ranks your models by speed and reliability for each message and fails over when one is busy or rate-limited.":S.mode==="priority"?"Uses the list from top to bottom and fails over in that order.":"Always uses the model you tap below. No failover.";
+  $("#chain").innerHTML=S.chain.map((e,i)=>{ const s=st(e.p,e.m), avail=configured(e.p), cool=s.cool>Date.now(), fixed=S.mode==="fixed"&&S.fixed?.p===e.p&&S.fixed?.m===e.m;
+    return `<li class="${e.on&&avail?"":"off"}"><button class="tog ${e.on?"on":""}" data-tog="${i}" aria-label="Switch on or off"></button>
+    <div class="nm" ${S.mode==="fixed"?`data-fix="${i}" style="cursor:pointer"`:""}><div>${fixed?"● ":""}${esc(e.m)}${isVision(e.m)?" vision":""}</div><small>${esc(PROVIDERS[e.p]?.name||e.p)}${!avail?(PROVIDERS[e.p]?.relay&&!S.relay.url?" · needs relay":" · not connected"):""}${s.lat?" · ~"+fmtMs(s.lat):""}${s.ok+s.fail?` · ${s.ok}/${s.ok+s.fail} ok`:""}${cool?" · resting":""}</small></div>
+    <button data-up="${i}" aria-label="Move up"><svg viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg></button>
+    <button data-dn="${i}" aria-label="Move down"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+    <button data-rmc="${i}" aria-label="Remove"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></li>`; }).join("")||`<li>No models. Add one below.</li>`;
+  $("#addProv").innerHTML=Object.keys(PROVIDERS).filter(configured).map(p=>`<option value="${p}">${esc(PROVIDERS[p].name)}</option>`).join("");
+  fillModelOptions();
+}
+function fillModelOptions(){ const p=$("#addProv").value; const ms=S.keys[p]?.models?.length?S.keys[p].models:(PROVIDERS[p]?.defaults||[]);
+  $("#modelOptions").innerHTML=ms.slice(0,500).map(m=>`<option value="${esc(m)}">`).join(""); }
+
+/* ============ Events ============ */
+const input=$("#input");
+function autosize(){ input.style.height="auto"; input.style.height=Math.min(input.scrollHeight,200)+"px"; }
+input.addEventListener("input",()=>{ autosize(); updateSend(); });
+input.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing&&!/iPhone|iPad|Android/i.test(navigator.userAgent)){ e.preventDefault(); send(); } });
+$("#sendBtn").onclick=()=>send();
+$("#attachBtn").onclick=()=>$("#file").click();
+$("#file").onchange=e=>{ addFiles([...e.target.files]); e.target.value=""; };
+function setToggle(which,on){
+  if(which==="search"){ searchOn=on; if(on) setToggle("image",false); $("#searchBtn").classList.toggle("on",on); $("#searchBtn").setAttribute("aria-pressed",on); if(on&&!configured("groq")) toast("Web search needs a free Groq key (Settings)"); }
+  else { imageOn=on; if(on) setToggle("search",false); $("#imageBtn").classList.toggle("on",on); $("#imageBtn").setAttribute("aria-pressed",on); input.placeholder=on?"Describe the image to create":"Message"; }
+}
+$("#searchBtn").onclick=()=>setToggle("search",!searchOn);
+$("#imageBtn").onclick=()=>setToggle("image",!imageOn);
+$("#cancelEdit").onclick=()=>{ cancelEdit(); input.value=""; autosize(); updateSend(); };
+const app=$("#app");
+function closeSide(){ app.classList.remove("open"); }
+$("#menu").onclick=()=>{ if(innerWidth>820) app.classList.toggle("closed"); else app.classList.add("open"); };
+$("#closeSide").onclick=()=>{ if(innerWidth>820) app.classList.add("closed"); else app.classList.remove("open"); };
+$("#scrim").onclick=closeSide;
+$("#newChat").onclick=newChat; $("#newChat2").onclick=newChat;
+$("#q").oninput=renderList;
+$("#provQ").oninput=renderSettings;
+function openSheet(id){ $(id).classList.add("show"); }
+document.querySelectorAll(".sheet").forEach(s=>s.addEventListener("click",e=>{ if(e.target===s||e.target.closest("[data-close]")){ s.classList.remove("show"); if(s.id==="preview") $("#previewFrame").srcdoc=""; else renderAll(); } }));
+$("#openSettings").onclick=()=>{ renderSettings(); openSheet("#settings"); closeSide(); };
+$("#routeBtn").onclick=()=>{ renderRouting(); openSheet("#routing"); };
+$("#sysPrompt").onchange=e=>{ S.system=e.target.value; save(); };
+$("#voiceSel").onchange=e=>{ S.voice=e.target.value; save(); };
+$("#relaySave").onclick=testRelay;
+$("#provList").addEventListener("toggle",e=>{ const g=e.target.closest?.(".grp"); if(g&&e.target===g){ g.open?openGroups.add(g.dataset.g):openGroups.delete(g.dataset.g); } },true);
+$("#addProv").onchange=fillModelOptions;
+$("#addModelBtn").onclick=()=>{ const p=$("#addProv").value, m=$("#addModel").value.trim(); if(!p||!m) return; if(!S.chain.some(e=>e.p===p&&e.m===m)) S.chain.unshift({p,m,on:true}); $("#addModel").value=""; save(); renderRouting(); };
+$("#modeSeg").onclick=e=>{ const b=e.target.closest("button"); if(!b) return; S.mode=b.dataset.mode;
+  if(S.mode==="fixed"&&!S.fixed){ const f=S.chain.find(x=>x.on&&configured(x.p)); if(f) S.fixed={p:f.p,m:f.m}; } save(); renderRouting(); renderMode(); };
+$("#chain").onclick=e=>{ const t=e.target.closest("[data-tog],[data-up],[data-dn],[data-rmc],[data-fix]"); if(!t) return; const d=t.dataset;
+  if(d.tog) S.chain[d.tog].on=!S.chain[d.tog].on;
+  if(d.up&&+d.up>0) [S.chain[d.up-1],S.chain[d.up]]=[S.chain[d.up],S.chain[d.up-1]];
+  if(d.dn&&+d.dn<S.chain.length-1) [S.chain[+d.dn+1],S.chain[d.dn]]=[S.chain[d.dn],S.chain[+d.dn+1]];
+  if(d.rmc) S.chain.splice(d.rmc,1);
+  if(d.fix){ const x=S.chain[d.fix]; S.fixed={p:x.p,m:x.m}; renderMode(); }
+  save(); renderRouting(); };
+$("#provList").onclick=e=>{ const card=e.target.closest(".prov"); if(!card) return; const p=card.dataset.p;
+  if(e.target.closest("[data-test]")){ e.preventDefault(); testProvider(p,card); }
+  if(e.target.closest("[data-remove]")){ e.preventDefault(); delete S.keys[p]; if(PROVIDERS[p].tier!=="nokey") S.chain=S.chain.filter(x=>x.p!==p); save(); renderSettings(); } };
+$("#copyExport").onclick=async()=>{ const data=JSON.stringify({chats:S.chats,chain:S.chain,system:S.system,mode:S.mode});
+  try{ await navigator.clipboard.writeText(data); toast("Backup copied (keys not included). Paste it into Notes to keep it."); }catch{ toast("Couldn't copy on this device"); } };
+$("#importBtn").onclick=()=>{ const box=$("#importBox"); if(box.classList.contains("hidden")){ box.classList.remove("hidden"); box.focus(); return; }
+  try{ const j=JSON.parse(box.value); if(!Array.isArray(j.chats)) throw 0; const have=new Set(S.chats.map(c=>c.id));
+    S.chats=[...S.chats,...j.chats.filter(c=>!have.has(c.id))]; if(j.chain) S.chain=j.chain; if(j.system!=null) S.system=j.system; save(); box.value=""; box.classList.add("hidden"); renderAll(); renderSettings(); toast("Chats restored"); }
+  catch{ toast("That doesn't look like a Key Chat backup"); } };
+let wipeArmed=0; $("#wipe").onclick=()=>{ if(Date.now()-wipeArmed>4000){ wipeArmed=Date.now(); $("#wipe").textContent="Tap again to delete everything"; setTimeout(()=>$("#wipe").textContent="Delete everything",4000); return; }
+  S=blank(); S.chain=defaultChain(); save(); renderSettings(); renderAll(); toast("Everything deleted"); $("#wipe").textContent="Delete everything"; };
+document.addEventListener("click",async e=>{
+  const t=e.target;
+  const o=t.closest("[data-open]"); if(o){ S.cur=o.dataset.open; cancelEdit(); save(); renderAll(); closeSide(); return; }
+  const dl=t.closest("[data-del]"); if(dl){ S.chats=S.chats.filter(c=>c.id!==dl.dataset.del); if(S.cur===dl.dataset.del) S.cur=null; save(); renderAll(); return; }
+  const sg=t.closest("[data-sug]"); if(sg){ const s=sg.dataset.sug;
+    if(s==="Create an image"){ setToggle("image",true); input.value=""; }
+    else if(/photo|PDF/.test(s)){ input.value=""; $("#file").click(); } else input.value=s+": ";
+    input.focus(); autosize(); updateSend(); return; }
+  if(t.closest("[data-settings]")){ e.preventDefault(); $("#openSettings").click(); return; }
+  const rm=t.closest("[data-rm]"); if(rm){ pendingAtt.splice(+rm.dataset.rm,1); renderPending(); updateSend(); return; }
+  const cp=t.closest("[data-copy]"); if(cp){ const m=curChat()?.msgs[+cp.dataset.copy]; try{ await navigator.clipboard.writeText(m.content||m.prompt||m.error||""); toast("Copied"); }catch{ toast("Couldn't copy"); } return; }
+  const sp=t.closest("[data-speak]"); if(sp){ speak(+sp.dataset.speak); return; }
+  const sh=t.closest("[data-share]"); if(sh){ shareMsg(+sh.dataset.share); return; }
+  const ed=t.closest("[data-edit]"); if(ed){ if(busy) return; const i=+ed.dataset.edit, m=curChat()?.msgs[i]; if(!m) return;
+    editIdx=i; input.value=m.content||""; $("#editing").classList.remove("hidden"); autosize(); updateSend(); input.focus(); return; }
+  const cb=t.closest(".cp"); if(cb){ try{ await navigator.clipboard.writeText(cb.closest("pre").querySelector("code").innerText); cb.textContent="Copied"; setTimeout(()=>cb.textContent="Copy",1500);}catch{ toast("Couldn't copy"); } return; }
+  const pv=t.closest(".pv"); if(pv){ $("#previewFrame").srcdoc=pv.closest("pre").querySelector("code").innerText; openSheet("#preview"); return; }
+  if(t.closest("[data-regen]")){ if(busy) return; const c=curChat(); if(!c) return; const last=c.msgs.at(-1); if(last?.role==="assistant") c.msgs.pop();
+    const lastUser=[...c.msgs].reverse().find(m=>m.role==="user"); answer(c, last?.image ? (last.prompt||lastUser?.content) : false); }
+});
+document.addEventListener("dragover",e=>e.preventDefault());
+document.addEventListener("drop",e=>{ e.preventDefault(); if(e.dataTransfer.files.length) addFiles([...e.dataTransfer.files]); });
+input.addEventListener("paste",e=>{ const f=[...(e.clipboardData?.files||[])]; if(f.length){ e.preventDefault(); addFiles(f); } });
+document.addEventListener("visibilitychange",()=>{ if(document.hidden){ flush(); if(rec) rec.stop(); } });
+$("#dismissInstall").onclick=()=>{ S.noInstall=true; save(); $("#installBanner").classList.add("hidden"); };
+
+(async()=>{
+  await load();
+  if(/iPhone|iPad|iPod/.test(navigator.userAgent) && !standalone && !S.noInstall) $("#installBanner").classList.remove("hidden");
+  if("serviceWorker" in navigator && location.protocol==="https:") navigator.serviceWorker.register("sw.js").catch(()=>{});
+  renderAll();
+  window.__keychat={get S(){return S;}, PROVIDERS, candidates, isVision, flush, transcribe, generateImage, ready:true};
+})();
+
+</script>
+<script>
+/* ===== Agent mode: project files, tools, preview, GitHub deploy ===== */
+const A=()=>{ if(!S.agent) S.agent={files:{},msgs:[],mode:"plan",gh:{token:"",repo:"",branch:"main"},sel:""}; return S.agent; };
+const AMODES={
+ plan:"PLAN mode: read-only. Explore with ls/read/search, then explain what you would build. Do NOT use write/edit/delete.",
+ build:"BUILD mode: you may create and change files with write/edit/delete, test logic with run, and show the result with preview.",
+ spec:"SPEC mode: first write requirements.md (user stories + acceptance criteria), design.md, and tasks.md. Stop and ask the user to approve. Only after approval, implement task by task."
+};
+function agentSystem(){
+  const a=A(), F=a.files, rules=F["AGENTS.md"]?`\nProject rules (AGENTS.md):\n${F["AGENTS.md"].slice(0,3000)}`:"";
+  return `You are Key Agent, a careful coding agent inside a phone app. No shell exists. Project files live in a virtual folder.
+${AMODES[a.mode]}
+Use XML tags; one or more per reply; then wait for results:
+<ls/>   <read path="x"/>   <search q="text"/>
+<write path="x">full file content</write>
+<edit path="x"><find>exact unique text</find><replace>new text</replace></edit>
+<delete path="x"/>   <run>javascript to test logic; use console.log</run>   <preview/>   <todo>short list</todo>
+Rules: read a file before editing it. Make sites static (index.html + css/js files, no build step; CDN libs allowed). Keep replies short. When done, say what you built and that the user can tap Preview or Deploy. Never invent file contents you have not read. Do not put secrets in files.
+Files now: ${Object.keys(F).join(", ")||"(empty)"}${rules}`;
+}
+function clean(c){ c=c.replace(/^\n/,""); const m=c.match(/^```[\w-]*\n([\s\S]*?)\n```\s*$/); return m?m[1]:c.replace(/\n$/,""); }
+function runJS(code){ return new Promise(res=>{
+  const f=document.createElement("iframe"), id=Math.random().toString(36).slice(2); f.sandbox="allow-scripts"; f.style.display="none";
+  const done=r=>{ removeEventListener("message",h); f.remove(); res(r); };
+  const h=e=>{ if(e.source===f.contentWindow&&e.data&&e.data.id===id) done(e.data); }; addEventListener("message",h);
+  f.srcdoc=`<script>const L=[],fm=a=>a.map(x=>typeof x==='object'?JSON.stringify(x):String(x)).join(' ');console.log=(...a)=>L.push(fm(a));console.error=(...a)=>L.push('ERROR '+fm(a));(async()=>{try{const r=await eval(${JSON.stringify(code)});parent.postMessage({id:${JSON.stringify(id)},out:L.join('\\n'),ret:r===undefined?'':String(r)},'*')}catch(e){parent.postMessage({id:${JSON.stringify(id)},out:L.join('\\n'),err:String(e)},'*')}})()<\/script>`;
+  document.body.appendChild(f); setTimeout(()=>done({out:"",err:"timed out after 5s"}),5000); }); }
+function buildPage(){
+  const F=A().files; let h=F["index.html"]; if(h==null) return null;
+  h=h.replace(/<link[^>]*>/g,m=>{ const p=(m.match(/href=["']([^"']+)["']/)||[])[1]; return p&&F[p]!=null&&/stylesheet/.test(m)?`<style>${F[p]}</style>`:m; });
+  h=h.replace(/<script([^>]*)><\/script>/g,(m,at)=>{ const p=(at.match(/src=["']([^"']+)["']/)||[])[1]; return p&&F[p]!=null?`<script${at.replace(/src=["'][^"']+["']/,"")}>${F[p].replace(/<\/script/g,"<\\/script")}<\/script>`:m; });
+  return h; }
+function openPreview(){ const h=buildPage(); if(h==null){ toast("No index.html yet"); return false; } $("#previewFrame").srcdoc=h; openSheet("#preview"); return true; }
+async function execTools(text){
+  const a=A(), F=a.files, out=[], re=/<(write|edit|read|delete|ls|search|run|todo|preview)\b([^>]*?)(?:\/>|>([\s\S]*?)<\/\1>)/g; let m, n=0;
+  const ro=a.mode==="plan";
+  while((m=re.exec(text))&&n<12){ n++; const [,t,at,body]=m, p=((at.match(/path="([^"]*)"/)||[])[1]||"").replace(/^\/+/,"");
+    if(["write","edit","delete"].includes(t)){
+      if(ro){ out.push(`${t} ${p}: refused, Plan mode is read-only (ask the user to switch to Build)`); continue; }
+      if(!p||/\.\./.test(p)){ out.push(`${t}: bad path`); continue; } }
+    if(t==="ls") out.push("files: "+(Object.keys(F).map(k=>`${k} (${F[k].length}b)`).join(", ")||"(none)"));
+    else if(t==="read") out.push(F[p]!=null?`--- ${p} ---\n${F[p].slice(0,12000)}${F[p].length>12000?"\n[truncated]":""}`:`read ${p}: not found`);
+    else if(t==="search"){ const q=((at.match(/q="([^"]*)"/)||[])[1]||"").toLowerCase(), hits=[];
+      for(const k in F) F[k].split("\n").forEach((l,i)=>{ if(q&&l.toLowerCase().includes(q)&&hits.length<30) hits.push(`${k}:${i+1}: ${l.trim().slice(0,120)}`); }); out.push(hits.join("\n")||"no matches"); }
+    else if(t==="write"){ F[p]=clean(body||""); a.sel=p; out.push(`wrote ${p} (${F[p].length} chars)`); }
+    else if(t==="edit"){ const fd=((body||"").match(/<find>([\s\S]*?)<\/find>/)||[])[1], rp=((body||"").match(/<replace>([\s\S]*?)<\/replace>/)||[])[1];
+      if(F[p]==null) out.push(`edit ${p}: not found`); else if(fd==null||rp==null) out.push(`edit ${p}: need <find> and <replace>`);
+      else{ const c=F[p].split(fd).length-1; if(c!==1) out.push(`edit ${p}: find text matched ${c} times, must be exactly 1; read the file and use more exact text`);
+        else{ F[p]=F[p].replace(fd,()=>rp); out.push(`edited ${p}`); } } }
+    else if(t==="delete"){ if(F[p]!=null){ delete F[p]; out.push(`deleted ${p}`); } else out.push(`delete ${p}: not found`); }
+    else if(t==="run"){ const r=await runJS(body||""); out.push("run result:\n"+(r.out||"")+(r.err?"\nERROR "+r.err:"")+(r.ret?"\n=> "+r.ret:"")); }
+    else if(t==="todo") out.push("todo noted");
+    else if(t==="preview"){ out.push(buildPage()==null?"preview: no index.html yet":"preview ready (user can tap Preview)"); }
+  }
+  save(); return {out:out.join("\n\n"), n};
+}
+let aBusy=null;
+function renderAgent(){
+  const a=A(); $("#aMode").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.m===a.mode));
+  const log=$("#aLog"); log.innerHTML=a.msgs.length?"":`<div class="am">Tell me what to build. Try: <i>"Make a one-page website for a wedding photographer with a gallery and contact form."</i><br><br><b>Plan</b> = read-only thinking, <b>Build</b> = writes files, <b>Spec</b> = writes requirements first. Then tap <b>Preview</b> and <b>Deploy</b>.</div>`;
+  for(const m of a.msgs){ const d=document.createElement("div");
+    if(m.role==="user"&&m.tool){ d.className="am t"; d.textContent=m.content.slice(0,1500); }
+    else if(m.role==="user"){ d.className="am u"; d.textContent=m.content; }
+    else { d.className="am"; d.innerHTML=md(m.content.replace(/<write path="([^"]*)">[\s\S]*?<\/write>/g,"Wrote `$1`").replace(/<edit path="([^"]*)">[\s\S]*?<\/edit>/g,"Edited `$1`").replace(/<(ls|read|search|run|delete|todo|preview)\b[^>]*?(\/>|>[\s\S]*?<\/\1>)/g,"")); }
+    log.appendChild(d); }
+  log.scrollTop=log.scrollHeight; renderFiles(); $("#aGo").textContent=aBusy?"Stop":"Send";
+}
+function renderFiles(){
+  const a=A(), ks=Object.keys(a.files).sort(), L=$("#aFileList"); L.innerHTML="";
+  if(a.sel&&a.files[a.sel]==null) a.sel=ks[0]||"";
+  ks.forEach(k=>{ const b=document.createElement("button"); b.textContent=k; b.className=k===a.sel?"on":""; b.onclick=()=>{ a.sel=k; renderFiles(); }; L.appendChild(b); });
+  const nb=document.createElement("button"); nb.textContent="+ new file"; nb.onclick=()=>{ const n=(prompt("File name (e.g. index.html)")||"").trim(); if(n&&!/\.\./.test(n)){ a.files[n]=a.files[n]??""; a.sel=n; save(); renderFiles(); } }; L.appendChild(nb);
+  const ed=$("#aEd"); ed.value=a.sel?a.files[a.sel]:""; ed.disabled=!a.sel;
+}
+async function agentSend(){
+  if(aBusy){ aBusy.abort(); return; }
+  const inp=$("#aIn"), text=inp.value.trim(); if(!text) return; inp.value=""; const a=A(); a.msgs.push({role:"user",content:text}); renderAgent();
+  const ctl=new AbortController(); aBusy=ctl; $("#aGo").textContent="Stop";
+  try{
+    for(let step=0;step<8&&!ctl.signal.aborted;step++){
+      const ai={role:"assistant",content:""}; a.msgs.push(ai); renderAgent();
+      const api=[{role:"system",content:agentSystem()+"\n"+(S.system||"")}, ...a.msgs.slice(0,-1).slice(-20).map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.content.slice(0,9000)}))];
+      let raf=0; const r=await routeChat(api,{vision:false,search:false},t=>{ cancelAnimationFrame(raf); raf=requestAnimationFrame(()=>{ ai.content=t; renderAgent(); }); },ctl.signal);
+      cancelAnimationFrame(raf); ai.content=r.text; renderAgent();
+      const res=await execTools(r.text); if(!res.n){ break; }
+      a.msgs.push({role:"user",tool:true,content:"Tool results:\n"+res.out}); renderAgent();
+    }
+  }catch(e){ if(!e.stopped&&!ctl.signal.aborted) a.msgs.push({role:"assistant",content:"Error: "+e.message}); }
+  aBusy=null; save(); renderAgent();
+}
+/* ---- GitHub deploy (REST API, runs in your browser) ---- */
+async function gh(path,opt,tok){ const r=await fetch("https://api.github.com"+path,{...opt,headers:{Accept:"application/vnd.github+json",Authorization:"Bearer "+tok,"Content-Type":"application/json","X-GitHub-Api-Version":"2022-11-28"}}); let j=null; try{ j=await r.json(); }catch{} if(!r.ok&&!opt.soft) throw new Error(`${r.status} ${(j&&j.message)||""}`); return {s:r.status,j}; }
+async function deployGH(){
+  const o=$("#dOut"), repo=$("#dRepo").value.trim(), tok=$("#dTok").value.trim(), br=$("#dBranch").value.trim()||"main", F=A().files, names=Object.keys(F);
+  if(!/^[\w.-]+\/[\w.-]+$/.test(repo)||!tok){ o.textContent="Enter owner/repo and your token."; return; }
+  if(!names.length){ o.textContent="Project has no files yet."; return; }
+  if(!confirm(`Publish ${names.length} files to ${repo} (${br}) and turn on GitHub Pages?`)) return;
+  Object.assign(A().gh,{repo,token:tok,branch:br}); save();
+  try{
+    o.textContent="Checking repo…"; await gh(`/repos/${repo}`,{},tok);
+    const ref=await gh(`/repos/${repo}/git/ref/heads/${br}`,{soft:true},tok);
+    if(ref.s!==200) throw new Error(`Branch "${br}" not found. Make the repo with "Add a README" ticked.`);
+    const head=ref.j.object.sha, base=(await gh(`/repos/${repo}/git/commits/${head}`,{},tok)).j.tree.sha;
+    o.textContent="Uploading files…"; const tree=[];
+    for(const n of names){ const b=await gh(`/repos/${repo}/git/blobs`,{method:"POST",body:JSON.stringify({content:F[n],encoding:"utf-8"})},tok); tree.push({path:n,mode:"100644",type:"blob",sha:b.j.sha}); }
+    const t=await gh(`/repos/${repo}/git/trees`,{method:"POST",body:JSON.stringify({base_tree:base,tree})},tok);
+    const c=await gh(`/repos/${repo}/git/commits`,{method:"POST",body:JSON.stringify({message:"Update from Key Chat agent",tree:t.j.sha,parents:[head]})},tok);
+    await gh(`/repos/${repo}/git/refs/heads/${br}`,{method:"PATCH",body:JSON.stringify({sha:c.j.sha})},tok);
+    o.textContent="Turning on Pages…"; const pg=await gh(`/repos/${repo}/pages`,{method:"POST",soft:true,body:JSON.stringify({source:{branch:br,path:"/"}})},tok);
+    const [ow,rn]=repo.split("/"), url=rn.toLowerCase()===`${ow.toLowerCase()}.github.io`?`https://${ow}.github.io/`:`https://${ow}.github.io/${rn}/`;
+    o.textContent=`Published ✔\n${url}\n`+((pg.s===201||pg.s===409)?"Pages is on. First build takes 1–2 minutes.":"Files are uploaded, but I could not switch Pages on ("+pg.s+"). In the repo go to Settings → Pages → Deploy from branch → "+br+" / root.");
+  }catch(e){ o.textContent="Failed: "+e.message+(/401|403/.test(e.message)?"\nCheck the token has Contents + Pages (read & write) for this repo.":""); }
+}
+/* ---- wiring ---- */
+function aTab(t){ $("#aChatPane").style.display=t==="chat"?"flex":"none"; $("#aFiles").classList.toggle("show",t==="files"); if(t==="files") renderFiles(); }
+$("#aMode").onclick=e=>{ const b=e.target.closest("button"); if(b){ A().mode=b.dataset.m; save(); renderAgent(); } };
+$("#aGo").onclick=agentSend; $("#aIn").addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey&&!/iPhone|iPad|Android/.test(navigator.userAgent)){ e.preventDefault(); agentSend(); } });
+$("#aTabChat").onclick=()=>aTab("chat"); $("#aTabFiles").onclick=()=>aTab("files"); $("#aPrev").onclick=openPreview;
+$("#aEd").addEventListener("input",e=>{ const a=A(); if(a.sel){ a.files[a.sel]=e.target.value; save(); } });
+$("#aExport").onclick=async()=>{ const F=A().files, t=Object.keys(F).map(k=>`===== ${k} =====\n${F[k]}`).join("\n\n"); try{ await navigator.clipboard.writeText(t); toast("Copied all files"); }catch{ toast("Copy blocked by browser"); } };
+$("#aReset").onclick=()=>{ if(confirm("Start a new project? This clears the current agent files and chat.")){ S.agent=null; A(); save(); renderAgent(); } };
+$("#aDeploy").onclick=()=>{ const g=A().gh; $("#dRepo").value=g.repo||""; $("#dTok").value=g.token||""; $("#dBranch").value=g.branch||"main"; $("#dOut").textContent=""; openSheet("#deploy"); };
+$("#dGo").onclick=deployGH;
+function openAgent(){ document.getElementById("app").classList.remove("open"); renderAgent(); aTab("chat"); openSheet("#agent"); }
+$("#agentBtn").onclick=openAgent; $("#agentNav").onclick=openAgent;
+window.__agent={A,execTools,buildPage,runJS,agentSystem};
+</script>
+</body>
+</html>
