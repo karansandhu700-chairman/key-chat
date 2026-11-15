@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Key Chat scroll test</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#0b0907;color:#f1e6c8;font:16px -apple-system,system-ui,sans-serif}
+html.nolock,html.nolock body{overflow:visible}
+.app{position:fixed;inset:0;padding:max(16px,env(safe-area-inset-top)) 16px 16px;overflow:auto}
+h1{font-size:20px;margin:0 0 6px;color:#d4af37}
+p{color:#b9ab86;line-height:1.45;margin:6px 0 14px}
+button.v{display:block;width:100%;text-align:left;margin:0 0 10px;padding:14px;border-radius:14px;border:1px solid #3a2f14;background:#17120a;color:#f1e6c8;font-size:15px}
+button.v b{color:#d4af37}
+.sheet{position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(5,4,3,.62)}
+.sheet.open{display:flex}
+.card{background:#17120a;width:100%;max-width:640px;max-height:92vh;max-height:92dvh;border-radius:22px 22px 0 0;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
+.hd{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #3a2f14}
+.hd button{background:#2a2110;color:#f1e6c8;border:0;border-radius:10px;padding:8px 14px;font-size:15px}
+.bd{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;padding:12px 16px 20px}
+.row{padding:14px;margin-bottom:8px;border:1px solid #3a2f14;border-radius:12px}
+/* variant switches */
+.v-A .bd{-webkit-overflow-scrolling:touch}
+.v-A .card{backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);animation:up .22s ease}
+.v-B .card{backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);animation:up .22s ease}
+.v-C .bd{-webkit-overflow-scrolling:touch}
+.v-D .card{animation:up .22s ease}
+.v-D .bd{-webkit-overflow-scrolling:touch}
+.v-E .card{max-height:none;display:block;border-radius:0}
+.v-E.sheet{overflow-y:auto;align-items:flex-start}
+.v-E .bd{overflow:visible}
+@keyframes up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>Scroll test</h1>
+  <p>Tap a test, then try to swipe the list up and down. Tell me which numbers scroll and which do not. Do this twice: once in a Safari tab, once from the Home Screen icon.</p>
+  <button class="v" data-v="A"><b>Test 1.</b> Same as Key Chat now</button>
+  <button class="v" data-v="B"><b>Test 2.</b> Without the old touch-scroll setting</button>
+  <button class="v" data-v="C"><b>Test 3.</b> Without slide animation and blur</button>
+  <button class="v" data-v="D"><b>Test 4.</b> Without the blur only</button>
+  <button class="v" data-v="E"><b>Test 5.</b> Whole pop-up scrolls, not an inner box</button>
+  <button class="v" data-v="F" data-nolock="1"><b>Test 6.</b> Clean version, page not locked</button>
+  <button class="v" data-v="G"><b>Test 7.</b> Clean version, page locked</button>
+</div>
+<div class="sheet" id="sheet"><div class="card">
+  <div class="hd"><b id="ttl">Test</b><span id="pos"></span><button id="close">Close</button></div>
+  <div class="bd" id="bd"></div>
+</div></div>
+<script>
+var sheet=document.getElementById('sheet'),bd=document.getElementById('bd'),pos=document.getElementById('pos'),ttl=document.getElementById('ttl');
+for(var i=1;i<=40;i++){var r=document.createElement('div');r.className='row';r.textContent='Row '+i+' of 40';bd.appendChild(r)}
+function scroller(){return sheet.classList.contains('v-E')?sheet:bd}
+document.querySelectorAll('button.v').forEach(function(b){b.onclick=function(){
+  var v=b.dataset.v;
+  sheet.className='sheet open v-'+v;
+  document.documentElement.classList.toggle('nolock',!!b.dataset.nolock);
+  ttl.textContent='Test '+(v.charCodeAt(0)-64);
+  bd.scrollTop=0;sheet.scrollTop=0;pos.textContent='';
+}});
+document.getElementById('close').onclick=function(){sheet.className='sheet';document.documentElement.classList.remove('nolock')};
+function upd(){pos.textContent='scroll: '+Math.round(scroller().scrollTop)}
+bd.addEventListener('scroll',upd);sheet.addEventListener('scroll',upd);
+</script>
+</body>
+</html>
