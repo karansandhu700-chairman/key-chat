@@ -240,7 +240,7 @@ header{background:transparent}
 .sheet[data-size="full"]{align-items:stretch}
 .sheet[data-size="full"] .card{height:100vh;height:100dvh;max-height:100dvh;max-width:none;border-radius:0;padding-top:env(safe-area-inset-top)}
 /* ===== Approval card ===== */
-#approve{z-index:60}#approve .card{max-width:520px}
+#approve{z-index:120}#recov{z-index:110}#approve .card{max-width:520px}
 .apv{margin:14px 0 6px;border:1px solid var(--line);border-radius:18px;background:#1b1810;overflow:hidden}
 .apv .top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px 0}
 .apv .tag{border:1px solid rgba(214,172,84,.45);color:var(--accent);border-radius:8px;padding:3px 9px;font-size:13px}
@@ -376,7 +376,7 @@ html[data-bg="frost"] .wcard img{mix-blend-mode:multiply;filter:invert(1) hue-ro
     <div class="hint" style="margin-bottom:12px">Your photo stays on this device. It is never uploaded.</div>
     <div class="sec">App lock</div>
     <div class="hint" id="lockState"></div>
-    <div class="lockrow"><button class="btn" id="lkSet">Set a PIN</button><button class="btn ghost" id="lkFaceSet">Turn on Face ID</button><button class="btn ghost" id="lkOff">Turn off</button></div>
+    <div class="lockrow"><button class="btn" id="lkSet">Set a PIN</button><button class="btn ghost" id="lkFaceSet">Turn on Face ID</button><button class="btn ghost" id="lkCodeBtn">New recovery code</button><button class="btn ghost" id="lkOff">Turn off</button></div>
     <div class="hint" style="margin-bottom:12px">The PIN and Face ID are checked on this phone only. Nothing is sent anywhere.</div>
     <div class="hint">Keys stay in this app on this device and are sent only to their own provider (or through your own relay, if you set one up).</div>
     <label class="search" style="margin:8px 0"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="provQ" placeholder="Find a provider (e.g. Ollama, OpenCode)" autocomplete="off"></label>
@@ -405,6 +405,11 @@ html[data-bg="frost"] .wcard img{mix-blend-mode:multiply;filter:invert(1) hue-ro
 <div class="ov" id="lock"><h2 id="lkTitle">Enter your PIN</h2><p id="lkMsg"></p><div class="dots" id="lkDots"></div>
   <div class="pad" id="lkPad"><button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button class="sm" data-k="x" id="lkCancel">Cancel</button><button data-k="0">0</button><button class="sm" data-k="del" aria-label="Delete">Delete</button></div>
   <button class="lnk" id="lkFace">Use Face ID</button><button class="lnk" id="lkForgot">Forgot PIN</button></div>
+<div class="ov" id="recov"><h2 id="rcTitle"></h2><p id="rcMsg"></p>
+  <div id="rcCode" style="font:600 22px/1.6 ui-monospace,Menlo,monospace;letter-spacing:2px;border:1px solid var(--line);border-radius:16px;padding:14px 18px;margin-bottom:16px;user-select:all;-webkit-user-select:all"></div>
+  <input class="field" id="rcIn" placeholder="XXXX-XXXX-XXXX-XXXX" autocapitalize="characters" autocorrect="off" spellcheck="false" autocomplete="off" style="max-width:300px;text-align:center;font-size:17px;margin-bottom:14px">
+  <button class="btn" id="rcOk" style="min-width:200px;border-radius:999px;padding:13px"></button>
+  <button class="lnk" id="rcErase">I lost the code too. Erase the app.</button><button class="lnk" id="rcBack">Back</button></div>
 <div class="sheet" id="approve"><div class="card">
   <div class="hd"><b>Needs your approval</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="bd"><div class="apv"><div class="top"><span class="tag" id="apTag"></span><span class="who" id="apWho"></span></div>
@@ -418,7 +423,8 @@ html[data-bg="frost"] .wcard img{mix-blend-mode:multiply;filter:invert(1) hue-ro
     <div class="hint" id="modeHint"></div>
     <div class="sec">Model chain</div>
     <ul class="chain" id="chain"></ul>
-    <button class="btn ghost tidy" id="tidyBtn">Move failing models down</button>
+    <div class="lockrow"><button class="btn ghost" id="tidyBtn">Move failing models down</button><button class="btn ghost" id="uncBtn">Add uncensored models</button></div>
+    <div class="hint" id="uncOut" style="white-space:pre-wrap"></div>
     <div class="addm">
       <select class="field" id="addProv"></select>
       <input class="field" id="addModel" list="modelOptions" placeholder="model id">
@@ -1312,7 +1318,22 @@ $("#tidyBtn").onclick=()=>{ const bad=e=>{ const s=st(e.p,e.m), n=s.ok+s.fail; r
       if(await hash(buf,ub(L.salt))===L.hash){ fails=0; hide(); } else { fails++; if(fails>=5){ until=Date.now()+30000; fails=0; } bad("Wrong PIN. Try again."); } }
     else if(mode==="set"){ first=buf; buf=""; mode="confirm"; say("Enter it again","Just to make sure."); draw(); }
     else { if(buf!==first){ mode="set"; first=""; say("Set a PIN","Those didn't match. Start again."); return bad("Those didn't match. Start again."); }
-      const salt=crypto.getRandomValues(new Uint8Array(16)); put({salt:b64(salt),hash:await hash(buf,salt),len:buf.length,cred:get()?.cred||null}); hide(); toast("PIN is on"); } }
+      const salt=crypto.getRandomValues(new Uint8Array(16)); put({salt:b64(salt),hash:await hash(buf,salt),len:buf.length,cred:get()?.cred||null}); hide(); await newCode(); } }
+  const rc=$("#recov"), norm=t=>t.toUpperCase().replace(/[^A-Z0-9]/g,"");
+  function rcMode(m){ rc.dataset.m=m; $("#rcCode").style.display=m==="show"?"":"none"; $("#rcIn").style.display=m==="enter"?"":"none"; $("#rcErase").style.display=$("#rcBack").style.display=m==="enter"?"":"none";
+    $("#rcTitle").textContent=m==="show"?"Write down your recovery code":"Enter your recovery code"; $("#rcOk").textContent=m==="show"?"I've written it down":"Continue";
+    $("#rcMsg").textContent=m==="show"?"If you forget your PIN, this code lets you set a new one without losing anything. It is shown only once. Keep it somewhere safe, not on this phone.":"The code you wrote down when you set your PIN."; rc.classList.add("show"); }
+  async function newCode(){ const L=get(); if(!L) return; const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789", r=crypto.getRandomValues(new Uint8Array(16)); let c=""; for(const x of r) c+=A[x%32];
+    const salt=crypto.getRandomValues(new Uint8Array(16)); L.rs=b64(salt); L.rh=await hash(c,salt); put(L); $("#rcCode").textContent=c.match(/.{4}/g).join("-"); rcMode("show"); }
+  let rcFails=0, rcUntil=0;
+  $("#rcOk").onclick=async()=>{ if(rc.dataset.m==="show"){ $("#rcCode").textContent=""; rc.classList.remove("show"); toast("PIN is on"); renderLock(); return; }
+    const L=get(); if(Date.now()<rcUntil){ $("#rcMsg").textContent=`Too many tries. Wait ${Math.ceil((rcUntil-Date.now())/1000)}s.`; return; }
+    if(L?.rh&&await hash(norm($("#rcIn").value),ub(L.rs))===L.rh){ rcFails=0; $("#rcIn").value=""; rc.classList.remove("show"); show("set"); $("#lkCancel").style.visibility="hidden"; }
+    else { if(++rcFails>=5){ rcFails=0; rcUntil=Date.now()+60000; } $("#rcMsg").textContent="That code isn't right. Check it and try again."; } };
+  $("#rcBack").onclick=()=>rc.classList.remove("show");
+  $("#lkCodeBtn").onclick=async()=>{ if(await approve({tag:"Replaces the old code",who:"App lock",title:"Make a new recovery code",rows:[["After this","Your old code stops working",""]]})) newCode(); };
+  async function erase(){ if(await approve({tag:"Can't be undone",who:"App lock",title:"Erase the app to get back in",rows:[["Deletes","All chats, keys and settings","on this device"]]})){ put(null); S=blank(); S.chain=defaultChain(); await flush(); location.reload(); } }
+  $("#rcErase").onclick=erase;
   $("#lkPad").onclick=e=>{ const b=e.target.closest("button"); if(!b) return; const k=b.dataset.k;
     if(k==="del"){ buf=buf.slice(0,-1); draw(); return; } if(k==="x"){ if(mode!=="unlock") hide(); return; }
     const n=mode==="unlock"?(get()?.len||4):4; if(buf.length>=n) return; buf+=k; draw(); if(buf.length===n) setTimeout(done,120); };
@@ -1320,9 +1341,9 @@ $("#tidyBtn").onclick=()=>{ const bad=e=>{ const s=st(e.p,e.m), n=s.ok+s.fail; r
     try{ await navigator.credentials.get({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),allowCredentials:[{id:ub(L.cred),type:"public-key",transports:["internal"]}],userVerification:"required",timeout:60000}}); fails=0; hide(); }
     catch(e){ $("#lkMsg").textContent="Face ID didn't work. Enter your PIN."; } }
   $("#lkFace").onclick=face;
-  $("#lkForgot").onclick=async()=>{ if(await approve({tag:"Can't be undone",who:"App lock",title:"Forgot your PIN? The only way back in is to erase the app.",rows:[["Deletes","All chats, keys and settings","on this device"]]})){ put(null); S=blank(); S.chain=defaultChain(); await flush(); location.reload(); } };
+  $("#lkForgot").onclick=()=>{ if(get()?.rh){ $("#rcIn").value=""; rcMode("enter"); } else erase(); };
   function renderLock(){ const L=get(); $("#lockState").textContent=L?(L.cred?"PIN and Face ID are on.":"PIN is on."):"Off. Anyone who opens the app can read your chats.";
-    $("#lkSet").textContent=L?"Change PIN":"Set a PIN"; $("#lkOff").style.display=L?"":"none"; $("#lkFaceSet").style.display=L&&window.PublicKeyCredential?"":"none"; $("#lkFaceSet").textContent=L?.cred?"Turn off Face ID":"Turn on Face ID"; }
+    $("#lkSet").textContent=L?"Change PIN":"Set a PIN"; $("#lkOff").style.display=$("#lkCodeBtn").style.display=L?"":"none"; $("#lkFaceSet").style.display=L&&window.PublicKeyCredential?"":"none"; $("#lkFaceSet").textContent=L?.cred?"Turn off Face ID":"Turn on Face ID"; }
   $("#lkSet").onclick=()=>show("set");
   $("#lkOff").onclick=async()=>{ if(await approve({tag:"Less private",who:"App lock",title:"Turn off the PIN and Face ID",rows:[["After this","The app opens without a PIN",""]]})){ put(null); renderLock(); toast("App lock is off"); } };
   $("#lkFaceSet").onclick=async()=>{ const L=get(); if(!L) return; if(L.cred){ L.cred=null; put(L); renderLock(); return; }
@@ -1336,6 +1357,22 @@ $("#tidyBtn").onclick=()=>{ const bad=e=>{ const s=st(e.p,e.m), n=s.ok+s.fail; r
   if(!seen&&!get()){ const w=$("#welcome"); w.classList.add("show"); const close=()=>{ try{ localStorage.setItem("kc-welcomed","1"); }catch(e){} w.classList.remove("show"); };
     $("#wGo").onclick=close; $("#wPin").onclick=()=>{ close(); show("set"); }; }
 })();
+
+/* ---- Uncensored shortcut: tests each model with your key, switches on only the ones that answer ---- */
+(function(){ const P="huggingface", UNC=["AEON-7/Qwen3.8-27B-AEON-ULTIMATE-UNCENSORED-BF16","huihui-ai/Huihui-Qwen3-8B-abliterated-v2","DreamFast/qwen3-8b-heretic","dphn/dolphin-2.9.3-mistral-nemo-12b"];
+  async function ping(m){ const c=new AbortController(), t=setTimeout(()=>c.abort(),45000);
+    try{ const r=await fetch(endpoint(P,"/chat/completions"),{method:"POST",headers:authHeaders(P),signal:c.signal,body:JSON.stringify({model:m,messages:[{role:"user",content:"Reply with the word: ready"}],max_tokens:300})});
+      if(!r.ok) return {ok:false,why:r.status+" "+(await errText(r)).slice(0,90)}; const j=await r.json(), a=j.choices?.[0]?.message?.content; return a&&a.trim()?{ok:true}:{ok:false,why:"empty answer"}; }
+    catch(e){ return {ok:false,why:e.name==="AbortError"?"too slow":netWhy(e)}; } finally{ clearTimeout(t); } }
+  $("#uncBtn").onclick=async()=>{ const out=$("#uncOut"), btn=$("#uncBtn");
+    if(!configured(P)){ out.textContent="Connect Hugging Face Router in Settings first (paste your token, then Save & test)."; return; }
+    if(!await approve({tag:"Uses a little credit",who:"Hugging Face Router",title:"Test 4 uncensored models and switch on the ones that work",rows:UNC.map((m,i)=>["Model "+(i+1),m,""])})) return;
+    btn.disabled=true; const lines=[]; let n=0;
+    for(const base of UNC){ out.textContent=[...lines,"Testing "+base+"…"].join("\n"); let id=base, r=await ping(id);
+      if(!r.ok&&!/^(401|402|403|429)/.test(r.why||"")){ const r2=await ping(base+":featherless-ai"); if(r2.ok){ r=r2; id=base+":featherless-ai"; } }
+      S.chain=S.chain.filter(e=>!(e.p===P&&(e.m===base||e.m===base+":featherless-ai")));
+      if(r.ok){ S.chain.splice(n,0,{p:P,m:id,on:true}); n++; lines.push("✓ Works, switched on: "+base); } else { lines.push("✗ Not added: "+base+" ("+r.why+")"); if(/^(401|402|403)/.test(r.why||"")){ lines.push("Your Hugging Face key was refused or is out of credit. Stopped."); break; } } }
+    save(); btn.disabled=false; renderRouting(); $("#uncOut").textContent=lines.join("\n")+`\n${n} of ${UNC.length} are on, at the top of your chain.`+(n?" Pick \"One model\" and tap one to always use it.":""); }; })();
 
 </script>
 </body>
