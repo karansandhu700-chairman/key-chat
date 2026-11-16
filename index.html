@@ -278,19 +278,33 @@ html[data-bg="photo"] .app::after{background:rgba(5,4,3,.58)}
 .bgs button span{display:block;padding:4px 2px}
 .bgs button.on{border-color:var(--accent);color:var(--accent)}
 /* ===== Frost glass theme (light) ===== */
-html[data-bg="frost"]{color-scheme:light;--bg:#dfe4ee;--bg2:rgba(255,255,255,.45);--panel:rgba(255,255,255,.55);--bubble:rgba(255,255,255,.7);--text:#1b2030;--muted:#5d6579;--line:rgba(40,55,100,.14);--hover:rgba(40,55,100,.07);--accent:#171a26;--accentText:#ffffff;--code:rgba(255,255,255,.6);--shadow:0 1px 2px rgba(40,55,100,.08),0 14px 36px rgba(40,55,100,.14);--glass:blur(22px) saturate(1.3)}
-html[data-bg="frost"],html[data-bg="frost"] body{background:#dfe4ee}
+html[data-light]{color-scheme:light;--bg:#dfe4ee;--bg2:rgba(255,255,255,.45);--panel:rgba(255,255,255,.55);--bubble:rgba(255,255,255,.7);--text:#1b2030;--muted:#5d6579;--line:rgba(40,55,100,.14);--hover:rgba(40,55,100,.07);--accent:#171a26;--accentText:#ffffff;--code:rgba(255,255,255,.6);--shadow:0 1px 2px rgba(40,55,100,.08),0 14px 36px rgba(40,55,100,.14);--glass:blur(22px) saturate(1.3)}
+html[data-light],html[data-light] body{background:var(--bg)}
 html[data-bg="frost"] .app::before{inset:-20%;background:radial-gradient(42% 36% at 22% 22%,rgba(196,170,255,.55),transparent 70%),radial-gradient(40% 34% at 82% 30%,rgba(255,196,170,.5),transparent 70%),radial-gradient(46% 40% at 30% 85%,rgba(140,220,235,.5),transparent 70%),radial-gradient(50% 45% at 80% 80%,rgba(150,170,230,.55),transparent 70%),#dfe4ee;animation:bgdrift 20s ease-in-out infinite alternate}
-html[data-bg="frost"] .card{background:#edf0f6}
-html[data-bg="frost"] .sheet,html[data-bg="frost"] .scrim{background:rgba(60,70,110,.28)}
-html[data-bg="frost"] .apv{background:#f6f7fb}
-html[data-bg="frost"] .bgs button{background:#fff}
-html[data-bg="frost"] .apv .box{background:#fff;border-color:var(--line)}
-html[data-bg="frost"] .apv .tag{color:var(--text);border-color:rgba(40,55,100,.3)}
-html[data-bg="frost"] .chips.bouncy .chip{background:rgba(255,255,255,.75)}
-html[data-bg="frost"] .chips.bouncy .chip:nth-child(odd){background:var(--accent)}
-html[data-bg="frost"] .empty .key{mix-blend-mode:multiply;filter:invert(1) hue-rotate(180deg)}
-html[data-bg="frost"] .field,html[data-bg="frost"] .kin input{background:#fff}
+html[data-light] .card{background:var(--sheet,#edf0f6)}
+html[data-light] .sheet,html[data-light] .scrim{background:rgba(60,70,110,.28)}
+html[data-light] .apv{background:#f6f7fb}
+html[data-light] .bgs button{background:#fff}
+html[data-light] .apv .box{background:#fff;border-color:var(--line)}
+html[data-light] .apv .tag{color:var(--text);border-color:rgba(40,55,100,.3)}
+html[data-light] .chips.bouncy .chip{background:rgba(255,255,255,.75)}
+html[data-light] .chips.bouncy .chip:nth-child(odd){background:var(--accent)}
+html[data-light] .empty .key{mix-blend-mode:multiply;filter:invert(1) hue-rotate(180deg)}
+html[data-light] .field,html[data-light] .kin input{background:#fff}
+/* ===== More light backgrounds ===== */
+html[data-bg="pearl"]{--bg:#f3f2ef;--sheet:#f8f7f4}
+html[data-bg="pearl"] .app::before{inset:-20%;background:radial-gradient(42% 36% at 22% 22%,rgba(255,255,255,.9),transparent 70%),radial-gradient(40% 34% at 82% 30%,rgba(226,222,214,.6),transparent 70%),radial-gradient(46% 40% at 30% 85%,rgba(255,255,255,.8),transparent 70%),radial-gradient(50% 45% at 80% 80%,rgba(214,218,226,.5),transparent 70%);animation:bgdrift 18s ease-in-out infinite alternate}
+html[data-bg="sky"]{--bg:#dcebf7;--sheet:#eef5fb}
+html[data-bg="sky"] .app::before{inset:-20%;background:radial-gradient(42% 36% at 22% 22%,rgba(150,200,255,.6),transparent 70%),radial-gradient(40% 34% at 82% 30%,rgba(190,225,255,.6),transparent 70%),radial-gradient(46% 40% at 30% 85%,rgba(140,215,240,.5),transparent 70%),radial-gradient(50% 45% at 80% 80%,rgba(170,190,250,.45),transparent 70%);animation:bgdrift 18s ease-in-out infinite alternate}
+html[data-bg="mint"]{--bg:#dff0e6;--sheet:#eff7f2}
+html[data-bg="mint"] .app::before{inset:-20%;background:radial-gradient(42% 36% at 22% 22%,rgba(150,230,190,.55),transparent 70%),radial-gradient(40% 34% at 82% 30%,rgba(200,240,170,.45),transparent 70%),radial-gradient(46% 40% at 30% 85%,rgba(130,220,210,.5),transparent 70%),radial-gradient(50% 45% at 80% 80%,rgba(180,235,200,.5),transparent 70%);animation:bgdrift 18s ease-in-out infinite alternate}
+html[data-bg="peach"]{--bg:#f8e7dc;--sheet:#fbf2ec}
+html[data-bg="peach"] .app::before{inset:-20%;background:radial-gradient(42% 36% at 22% 22%,rgba(255,190,150,.6),transparent 70%),radial-gradient(40% 34% at 82% 30%,rgba(255,215,160,.5),transparent 70%),radial-gradient(46% 40% at 30% 85%,rgba(255,170,170,.45),transparent 70%),radial-gradient(50% 45% at 80% 80%,rgba(255,205,180,.5),transparent 70%);animation:bgdrift 18s ease-in-out infinite alternate}
+html[data-bg="rose"]{--bg:#f6e2e9;--sheet:#faeff3}
+html[data-bg="rose"] .app::before{inset:-20%;background:radial-gradient(42% 36% at 22% 22%,rgba(255,170,200,.55),transparent 70%),radial-gradient(40% 34% at 82% 30%,rgba(240,180,240,.45),transparent 70%),radial-gradient(46% 40% at 30% 85%,rgba(255,190,190,.5),transparent 70%),radial-gradient(50% 45% at 80% 80%,rgba(235,175,215,.45),transparent 70%);animation:bgdrift 18s ease-in-out infinite alternate}
+html[data-bg="sand"]{--bg:#efe6d6;--sheet:#f7f2e8}
+html[data-bg="sand"] .app::before{inset:-20%;background:radial-gradient(42% 36% at 22% 22%,rgba(235,205,150,.55),transparent 70%),radial-gradient(40% 34% at 82% 30%,rgba(225,190,150,.45),transparent 70%),radial-gradient(46% 40% at 30% 85%,rgba(240,225,180,.55),transparent 70%),radial-gradient(50% 45% at 80% 80%,rgba(215,195,160,.45),transparent 70%);animation:bgdrift 18s ease-in-out infinite alternate}
+
 /* ===== v10: slide-up sheets, model list, lock, welcome ===== */
 @keyframes up{from{opacity:0;transform:translateY(34px)}}
 .card{animation:up .28s cubic-bezier(.2,.8,.2,1)}
@@ -320,7 +334,7 @@ html[data-bg="frost"] .field,html[data-bg="frost"] .kin input{background:#fff}
 .ov .lnk{margin-top:18px;color:var(--muted);font-size:13px;text-decoration:underline}
 .wcard{width:min(100%,340px);background:var(--panel);border:1px solid var(--line);border-radius:28px;padding:26px 22px 22px;box-shadow:var(--shadow);-webkit-backdrop-filter:var(--glass);backdrop-filter:var(--glass)}
 .wcard img{width:150px;height:150px;mix-blend-mode:screen;-webkit-mask-image:radial-gradient(ellipse closest-side,#000 72%,transparent 100%);mask-image:radial-gradient(ellipse closest-side,#000 72%,transparent 100%)}
-html[data-bg="frost"] .wcard img{mix-blend-mode:multiply;filter:invert(1) hue-rotate(180deg)}
+html[data-light] .wcard img{mix-blend-mode:multiply;filter:invert(1) hue-rotate(180deg)}
 .wcard .btn{display:block;width:100%;margin-top:10px;border-radius:999px;padding:13px}
 .wcard .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
 .lockrow{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px}
@@ -1033,7 +1047,8 @@ function renderRouting(){
     <button data-up="${i}" aria-label="Move up"><svg viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg></button>
     <button data-dn="${i}" aria-label="Move down"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
     <button data-rmc="${i}" aria-label="Remove"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></li>`; }).join("")||`<li>No models. Add one below.</li>`;
-  $("#addProv").innerHTML=Object.keys(PROVIDERS).filter(configured).map(p=>`<option value="${p}">${esc(PROVIDERS[p].name)}</option>`).join("");
+  const keepP=$("#addProv").value||lsGet("kc-add-prov"), provs=Object.keys(PROVIDERS).filter(configured);
+  $("#addProv").innerHTML=provs.map(p=>`<option value="${p}">${esc(PROVIDERS[p].name)}</option>`).join(""); if(provs.includes(keepP)) $("#addProv").value=keepP;
   fillModelOptions();
 }
 function fillModelOptions(){ const p=$("#addProv").value; const ms=S.keys[p]?.models?.length?S.keys[p].models:(PROVIDERS[p]?.defaults||[]);
@@ -1048,7 +1063,7 @@ $("#sendBtn").onclick=()=>send();
 $("#attachBtn").onclick=()=>$("#file").click();
 $("#file").onchange=e=>{ addFiles([...e.target.files]); e.target.value=""; };
 function setToggle(which,on){
-  if(which==="search"){ searchOn=on; if(on) setToggle("image",false); $("#searchBtn").classList.toggle("on",on); $("#searchBtn").setAttribute("aria-pressed",on); if(on&&!configured("groq")) toast("Web search needs a free Groq key (Settings)"); }
+  if(which==="search"){ searchOn=on; if(on) setToggle("image",false); $("#searchBtn").classList.toggle("on",on); $("#searchBtn").setAttribute("aria-pressed",on); if(on&&!configured("groq")) toast("Search runs on Groq's free web-search model. Add a free Groq key in Settings."); }
   else { imageOn=on; if(on) setToggle("search",false); $("#imageBtn").classList.toggle("on",on); $("#imageBtn").setAttribute("aria-pressed",on); input.placeholder=on?"Describe the image to create":"Message"; }
 }
 $("#searchBtn").onclick=()=>setToggle("search",!searchOn);
@@ -1283,11 +1298,11 @@ function approve(o){ return new Promise(res=>{
   addEventListener("touchend",reset,{passive:true}); document.addEventListener("pointerleave",reset); })();
 
 /* ---- Background options (saved on this device only) ---- */
-(function(){ const BG=[["black","Black","#0a0907"],["glow","Gold glow","radial-gradient(circle at 50% 40%,rgba(214,172,84,.55),#0a0907 75%)"],["aurora","Aurora","radial-gradient(circle at 25% 30%,rgba(90,120,255,.7),transparent 60%),radial-gradient(circle at 75% 60%,rgba(190,90,255,.6),#0a0907 70%)"],["midnight","Midnight","linear-gradient(#0b1430,#04060c)"],["ember","Ember","linear-gradient(#2a0f0a,#0a0605)"],["forest","Forest","linear-gradient(#0c2018,#040806)"],["frost","Frost glass","radial-gradient(circle at 25% 25%,#c9b5ff,transparent 60%),radial-gradient(circle at 80% 75%,#a9c4ee,#e6e9f2 75%)"],["photo","My photo","#16130d"]];
+(function(){ const BG=[["black","Black","#0a0907"],["glow","Gold glow","radial-gradient(circle at 50% 40%,rgba(214,172,84,.55),#0a0907 75%)"],["aurora","Aurora","radial-gradient(circle at 25% 30%,rgba(90,120,255,.7),transparent 60%),radial-gradient(circle at 75% 60%,rgba(190,90,255,.6),#0a0907 70%)"],["midnight","Midnight","linear-gradient(#0b1430,#04060c)"],["ember","Ember","linear-gradient(#2a0f0a,#0a0605)"],["forest","Forest","linear-gradient(#0c2018,#040806)"],["frost","Frost glass","radial-gradient(circle at 25% 25%,#c9b5ff,transparent 60%),radial-gradient(circle at 80% 75%,#a9c4ee,#e6e9f2 75%)"],["pearl","Pearl","linear-gradient(135deg,#ffffff,#e6e3dc)"],["sky","Sky","linear-gradient(135deg,#bfe0ff,#e8f3fc)"],["mint","Mint","linear-gradient(135deg,#b4ecd0,#eaf7ef)"],["peach","Peach","linear-gradient(135deg,#ffc9a8,#fcefe6)"],["rose","Rose","linear-gradient(135deg,#ffb9d2,#fbeef3)"],["sand","Sand","linear-gradient(135deg,#ead3a4,#f7f1e4)"],["photo","My photo","#16130d"]], LIGHT=["frost","pearl","sky","mint","peach","rose","sand"];
   const get=k=>{ try{ return localStorage.getItem(k); }catch(e){ return null; } }, set=(k,v)=>{ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } };
   const R=document.documentElement, box=$("#bgList"), file=$("#bgFile");
   function apply(){ let cur=get("kc-bg")||"black"; const ph=get("kc-bg-photo"); if(cur==="photo"&&!ph) cur="black";
-    if(ph) R.style.setProperty("--bgphoto",`url("${ph}")`); R.dataset.bg=cur;
+    if(ph) R.style.setProperty("--bgphoto",`url("${ph}")`); R.dataset.bg=cur; R.toggleAttribute("data-light",LIGHT.includes(cur)); const tc=document.querySelector('meta[name="theme-color"]'); if(tc) tc.content=LIGHT.includes(cur)?getComputedStyle(R).getPropertyValue("--bg").trim()||"#dfe4ee":"#0a0907";
     box.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.bg===cur)); }
   box.innerHTML=BG.map(b=>`<button type="button" data-bg="${b[0]}"><i style="background:${b[2]}"></i><span>${b[1]}</span></button>`).join("");
   box.onclick=e=>{ const b=e.target.closest("button"); if(!b) return; if(b.dataset.bg==="photo"){ file.click(); return; } set("kc-bg",b.dataset.bg); apply(); };
@@ -1298,15 +1313,17 @@ function approve(o){ return new Promise(res=>{
     img.onerror=()=>{ URL.revokeObjectURL(u); toast("Couldn't read that photo"); }; img.src=u; };
   apply(); })();
 
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } } function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
 /* ---- Scrollable model list (replaces the iPhone suggestion bar) ---- */
 function fillModelOptions(){ const p=$("#addProv").value, all=S.keys[p]?.models?.length?S.keys[p].models:(PROVIDERS[p]?.defaults||[]);
   const q=$("#addModel").value.trim().toLowerCase(), ms=q?all.filter(m=>m.toLowerCase().includes(q)):all;
   $("#mCount").textContent=all.length?`${ms.length} of ${all.length} models. Tap one to add it.`:"";
   $("#modelList").innerHTML=ms.map(m=>{ const has=S.chain.some(e=>e.p===p&&e.m===m); return `<li data-m="${esc(m)}" class="${has?"in":""}">${esc(m)}<span>${has?"Added":"Add"}</span></li>`; }).join(""); }
-$("#addModel").removeAttribute("list"); $("#addProv").onchange=fillModelOptions; $("#addModel").oninput=fillModelOptions;
+$("#addModel").removeAttribute("list"); $("#addProv").onchange=()=>{ lsSet("kc-add-prov",$("#addProv").value); fillModelOptions(); }; $("#addModel").oninput=fillModelOptions;
 $("#modelList").onclick=e=>{ const li=e.target.closest("li"); if(!li) return; const p=$("#addProv").value, m=li.dataset.m;
   if(!S.chain.some(x=>x.p===p&&x.m===m)){ S.chain.unshift({p,m,on:true}); save(); toast("Added to the top of your chain"); }
-  const y=$("#routing .bd").scrollTop; renderRouting(); $("#routing .bd").scrollTop=y; };
+  const bd=$("#routing .bd"), t0=li.getBoundingClientRect().top; renderRouting();
+  const same=[...$("#modelList").children].find(x=>x.dataset.m===m); if(same) bd.scrollTop+=same.getBoundingClientRect().top-t0; };
 /* ---- Tidy: move models that keep failing to the bottom ---- */
 $("#tidyBtn").onclick=()=>{ const bad=e=>{ const s=st(e.p,e.m), n=s.ok+s.fail; return !configured(e.p)||(n>=2&&s.fail/n>.5); };
   const good=S.chain.filter(e=>!bad(e)), low=S.chain.filter(bad); S.chain=[...good,...low]; save(); renderRouting();
