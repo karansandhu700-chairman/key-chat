@@ -277,6 +277,20 @@ html[data-bg="photo"] .app::after{background:rgba(5,4,3,.58)}
 .bgs button i{display:block;height:46px}
 .bgs button span{display:block;padding:4px 2px}
 .bgs button.on{border-color:var(--accent);color:var(--accent)}
+/* ===== Frost glass theme (light) ===== */
+html[data-bg="frost"]{color-scheme:light;--bg:#dfe4ee;--bg2:rgba(255,255,255,.45);--panel:rgba(255,255,255,.55);--bubble:rgba(255,255,255,.7);--text:#1b2030;--muted:#5d6579;--line:rgba(40,55,100,.14);--hover:rgba(40,55,100,.07);--accent:#171a26;--accentText:#ffffff;--code:rgba(255,255,255,.6);--shadow:0 1px 2px rgba(40,55,100,.08),0 14px 36px rgba(40,55,100,.14);--glass:blur(22px) saturate(1.3)}
+html[data-bg="frost"],html[data-bg="frost"] body{background:#dfe4ee}
+html[data-bg="frost"] .app::before{inset:-20%;background:radial-gradient(42% 36% at 22% 22%,rgba(196,170,255,.55),transparent 70%),radial-gradient(40% 34% at 82% 30%,rgba(255,196,170,.5),transparent 70%),radial-gradient(46% 40% at 30% 85%,rgba(140,220,235,.5),transparent 70%),radial-gradient(50% 45% at 80% 80%,rgba(150,170,230,.55),transparent 70%),#dfe4ee;animation:bgdrift 20s ease-in-out infinite alternate}
+html[data-bg="frost"] .card{background:#edf0f6}
+html[data-bg="frost"] .sheet,html[data-bg="frost"] .scrim{background:rgba(60,70,110,.28)}
+html[data-bg="frost"] .apv{background:#f6f7fb}
+html[data-bg="frost"] .bgs button{background:#fff}
+html[data-bg="frost"] .apv .box{background:#fff;border-color:var(--line)}
+html[data-bg="frost"] .apv .tag{color:var(--text);border-color:rgba(40,55,100,.3)}
+html[data-bg="frost"] .chips.bouncy .chip{background:rgba(255,255,255,.75)}
+html[data-bg="frost"] .chips.bouncy .chip:nth-child(odd){background:var(--accent)}
+html[data-bg="frost"] .empty .key{mix-blend-mode:multiply;filter:invert(1) hue-rotate(180deg)}
+html[data-bg="frost"] .field,html[data-bg="frost"] .kin input{background:#fff}
 </style>
 </head>
 <body>
@@ -1207,7 +1221,7 @@ function approve(o){ return new Promise(res=>{
   addEventListener("touchend",reset,{passive:true}); document.addEventListener("pointerleave",reset); })();
 
 /* ---- Background options (saved on this device only) ---- */
-(function(){ const BG=[["black","Black","#0a0907"],["glow","Gold glow","radial-gradient(circle at 50% 40%,rgba(214,172,84,.55),#0a0907 75%)"],["aurora","Aurora","radial-gradient(circle at 25% 30%,rgba(90,120,255,.7),transparent 60%),radial-gradient(circle at 75% 60%,rgba(190,90,255,.6),#0a0907 70%)"],["midnight","Midnight","linear-gradient(#0b1430,#04060c)"],["ember","Ember","linear-gradient(#2a0f0a,#0a0605)"],["forest","Forest","linear-gradient(#0c2018,#040806)"],["photo","My photo","#16130d"]];
+(function(){ const BG=[["black","Black","#0a0907"],["glow","Gold glow","radial-gradient(circle at 50% 40%,rgba(214,172,84,.55),#0a0907 75%)"],["aurora","Aurora","radial-gradient(circle at 25% 30%,rgba(90,120,255,.7),transparent 60%),radial-gradient(circle at 75% 60%,rgba(190,90,255,.6),#0a0907 70%)"],["midnight","Midnight","linear-gradient(#0b1430,#04060c)"],["ember","Ember","linear-gradient(#2a0f0a,#0a0605)"],["forest","Forest","linear-gradient(#0c2018,#040806)"],["frost","Frost glass","radial-gradient(circle at 25% 25%,#c9b5ff,transparent 60%),radial-gradient(circle at 80% 75%,#a9c4ee,#e6e9f2 75%)"],["photo","My photo","#16130d"]];
   const get=k=>{ try{ return localStorage.getItem(k); }catch(e){ return null; } }, set=(k,v)=>{ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } };
   const R=document.documentElement, box=$("#bgList"), file=$("#bgFile");
   function apply(){ let cur=get("kc-bg")||"black"; const ph=get("kc-bg-photo"); if(cur==="photo"&&!ph) cur="black";
