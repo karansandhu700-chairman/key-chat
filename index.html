@@ -231,6 +231,34 @@ header{background:transparent}
 #aFileList button.on{background:var(--accent);color:var(--accentText)}
 #aEd{flex:1;border:0;outline:none;background:var(--code);padding:12px;font:13px/1.5 ui-monospace,Menlo,monospace;resize:none;white-space:pre;overflow:auto;tab-size:2;color:var(--text)}
 
+/* ===== Pop-up size switch + no snap-back ===== */
+.card .bd,#aLog{overscroll-behavior:none}
+.szw{display:flex;gap:4px;margin-left:auto;margin-right:6px}
+.szw button{border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:3px 10px;font-size:12px;line-height:1.3}
+.szw button.on{background:var(--accent);color:var(--accentText);border-color:var(--accent)}
+.sheet[data-size="half"] .card{height:56vh;height:56dvh;max-height:56dvh}
+.sheet[data-size="full"]{align-items:stretch}
+.sheet[data-size="full"] .card{height:100vh;height:100dvh;max-height:100dvh;max-width:none;border-radius:0;padding-top:env(safe-area-inset-top)}
+/* ===== Approval card ===== */
+#approve{z-index:60}#approve .card{max-width:520px}
+.apv{margin:14px 0 6px;border:1px solid var(--line);border-radius:18px;background:#1b1810;overflow:hidden}
+.apv .top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px 0}
+.apv .tag{border:1px solid rgba(214,172,84,.45);color:var(--accent);border-radius:8px;padding:3px 9px;font-size:13px}
+.apv .who{color:var(--muted);font-size:13px}
+.apv .ttl{padding:10px 16px 12px;font-size:16px;line-height:1.4}
+.apv .box{margin:0 8px;background:#0e0c08;border:1px solid rgba(214,172,84,.1);border-radius:14px;padding:4px 14px}
+.apv .r{padding:10px 0;border-bottom:1px solid rgba(214,172,84,.08)}.apv .r:last-child{border:0}
+.apv .r small{display:block;color:var(--muted);font-size:13px}.apv .r b{font-weight:500;font-size:15px;word-break:break-word}
+.apv .acts{display:flex;justify-content:flex-end;gap:10px;padding:12px 14px 14px}
+.apv .acts button{border-radius:12px;padding:9px 18px;font-size:15px}
+.apv .no{border:1px solid var(--line);color:var(--text)}.apv .ok{background:var(--accent);color:var(--accentText)}
+/* ===== Bouncy suggestion pills ===== */
+.chips.bouncy{gap:12px;padding:6px 4px}
+.chips.bouncy .chip{border-radius:16px;padding:12px 16px;font-size:14px;color:var(--text);background:#16130d;border:1px solid var(--line);transform:translate(var(--dx,0px),var(--dy,0px)) rotate(var(--r,0deg));transition:transform .5s cubic-bezier(.34,1.56,.64,1),background .2s}
+.chips.bouncy .chip:nth-child(odd){background:var(--accent);color:var(--accentText);border-color:var(--accent)}
+.chips.bouncy .chip:active{transform:translate(var(--dx,0px),var(--dy,0px)) rotate(0deg) scale(.92);transition-duration:.12s}
+@media (prefers-reduced-motion:reduce){.chips.bouncy .chip{transition:none;transform:none}}
+
 </style>
 </head>
 <body>
@@ -301,6 +329,12 @@ header{background:transparent}
   </div>
 </div></div>
 
+<div class="sheet" id="approve"><div class="card">
+  <div class="hd"><b>Needs your approval</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="bd"><div class="apv"><div class="top"><span class="tag" id="apTag"></span><span class="who" id="apWho"></span></div>
+    <div class="ttl" id="apTitle"></div><div class="box" id="apRows"></div>
+    <div class="acts"><button class="no" id="apNo">Reject</button><button class="ok" id="apOk">Approve</button></div></div></div>
+</div></div>
 <div class="sheet" id="routing"><div class="card">
   <div class="hd"><b>Model routing</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="bd">
@@ -676,7 +710,7 @@ function renderThread(){
   const c=curChat();
   if(!c||!c.msgs.length){
     const keyed=Object.keys(PROVIDERS).filter(p=>PROVIDERS[p].tier!=="nokey"&&configured(p)).map(p=>PROVIDERS[p].name);
-    thread.innerHTML=`<div class="empty"><img class="key" src="key.webp" alt="Key Chat" width="260" height="260"><h1>What can I help with?</h1><div class="chips">
+    thread.innerHTML=`<div class="empty"><img class="key" src="key.webp" alt="Key Chat" width="260" height="260"><h1>What can I help with?</h1><div class="chips bouncy">
       ${["Explain a topic simply","Draft a professional email","Summarise a PDF","Create an image","Write code for a task","What's in this photo?"].map(t=>`<button class="chip" data-sug="${esc(t)}">${t}</button>`).join("")}
       </div><div class="status-note">${keyed.length?`Using: ${esc(keyed.join(", "))} + free no-key models.`:`Running on free no-key models (OVH, LLM7). Add more providers in <a href="#" data-settings>Settings</a>: Groq, Gemini, Ollama, OpenCode and 45+ others.`}</div></div>`;
     return;
@@ -1092,7 +1126,7 @@ async function deployGH(){
   const o=$("#dOut"), repo=$("#dRepo").value.trim(), tok=$("#dTok").value.trim(), br=$("#dBranch").value.trim()||"main", F=A().files, names=Object.keys(F);
   if(!/^[\w.-]+\/[\w.-]+$/.test(repo)||!tok){ o.textContent="Enter owner/repo and your token."; return; }
   if(!names.length){ o.textContent="Project has no files yet."; return; }
-  if(!confirm(`Publish ${names.length} files to ${repo} (${br}) and turn on GitHub Pages?`)) return;
+  if(!await approve({tag:"Publishes online",who:"Deploy",title:`Publish ${names.length} files and turn on GitHub Pages`,rows:[["Repository",repo,""],["Branch",br,""],["Files",String(names.length),names.slice(0,4).join(", ")+(names.length>4?"…":"")]]})) return;
   Object.assign(A().gh,{repo,token:tok,branch:br}); save();
   try{
     o.textContent="Checking repo…"; await gh(`/repos/${repo}`,{},tok);
@@ -1116,12 +1150,41 @@ $("#aGo").onclick=agentSend; $("#aIn").addEventListener("keydown",e=>{ if(e.key=
 $("#aTabChat").onclick=()=>aTab("chat"); $("#aTabFiles").onclick=()=>aTab("files"); $("#aPrev").onclick=openPreview;
 $("#aEd").addEventListener("input",e=>{ const a=A(); if(a.sel){ a.files[a.sel]=e.target.value; save(); } });
 $("#aExport").onclick=async()=>{ const F=A().files, t=Object.keys(F).map(k=>`===== ${k} =====\n${F[k]}`).join("\n\n"); try{ await navigator.clipboard.writeText(t); toast("Copied all files"); }catch{ toast("Copy blocked by browser"); } };
-$("#aReset").onclick=()=>{ if(confirm("Start a new project? This clears the current agent files and chat.")){ S.agent=null; A(); save(); renderAgent(); } };
+$("#aReset").onclick=async()=>{ const a=A(); if(await approve({tag:"Can't be undone",who:"Agent",title:"Start a new project",rows:[["Clears",Object.keys(a.files||{}).length+" files","and the agent chat"]]})){ S.agent=null; A(); save(); renderAgent(); } };
 $("#aDeploy").onclick=()=>{ const g=A().gh; $("#dRepo").value=g.repo||""; $("#dTok").value=g.token||""; $("#dBranch").value=g.branch||"main"; $("#dOut").textContent=""; openSheet("#deploy"); };
 $("#dGo").onclick=deployGH;
 function openAgent(){ document.getElementById("app").classList.remove("open"); renderAgent(); aTab("chat"); openSheet("#agent"); }
 $("#agentBtn").onclick=openAgent; $("#agentNav").onclick=openAgent;
 window.__agent={A,execTools,buildPage,runJS,agentSystem};
+/* ---- Approval card (replaces browser confirm) ---- */
+function approve(o){ return new Promise(res=>{
+  $("#apTag").textContent=o.tag||"Check first"; $("#apWho").textContent=o.who||""; $("#apTitle").textContent=o.title||"";
+  $("#apRows").innerHTML=(o.rows||[]).map(r=>`<div class="r"><small>${esc(r[0])}</small><b>${esc(r[1])}</b>${r[2]?`<small>${esc(r[2])}</small>`:""}</div>`).join("");
+  const sh=$("#approve"); let done=false;
+  const bg=e=>{ if(e.target===sh||e.target.closest("[data-close]")) fin(false); };
+  const fin=v=>{ if(done) return; done=true; sh.classList.remove("show"); sh.removeEventListener("click",bg); res(v); };
+  $("#apOk").onclick=()=>fin(true); $("#apNo").onclick=()=>fin(false); sh.addEventListener("click",bg); openSheet("#approve"); }); }
+/* ---- Pop-up size switch: Half / Tall / Full, remembered ---- */
+(function(){ const SZ=["half","tall","full"], NM={half:"Half",tall:"Tall",full:"Full"};
+  let cur; try{ cur=localStorage.getItem("kc-sheet-size"); }catch(e){} if(!SZ.includes(cur)) cur="tall";
+  const apply=()=>document.querySelectorAll(".sheet").forEach(s=>{ if(s.id==="approve"||s.id==="agent") return; s.dataset.size=cur; s.querySelectorAll(".szw button").forEach(b=>b.classList.toggle("on",b.dataset.sz===cur)); });
+  document.querySelectorAll(".sheet").forEach(s=>{ if(s.id==="approve"||s.id==="agent") return; const hd=s.querySelector(".hd"), x=hd&&hd.querySelector("[data-close]"); if(!x) return;
+    const w=document.createElement("div"); w.className="szw"; w.innerHTML=SZ.map(k=>`<button type="button" data-sz="${k}" aria-label="${NM[k]} size">${NM[k]}</button>`).join("");
+    w.onclick=e=>{ const b=e.target.closest("button"); if(!b) return; e.stopPropagation(); cur=b.dataset.sz; try{ localStorage.setItem("kc-sheet-size",cur); }catch(_){} apply(); };
+    hd.insertBefore(w,x); });
+  apply(); })();
+/* ---- Bouncy pills: tilt and drift toward your finger ---- */
+(function(){ if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const pills=()=>document.querySelectorAll(".chips.bouncy .chip");
+  const tilt=()=>pills().forEach((c,i)=>{ if(!c.style.getPropertyValue("--r")) c.style.setProperty("--r",((i*37%9)-4)+"deg"); });
+  new MutationObserver(tilt).observe($("#thread"),{childList:true}); tilt();
+  const move=(x,y)=>pills().forEach(c=>{ const r=c.getBoundingClientRect(), dx=x-(r.left+r.width/2), dy=y-(r.top+r.height/2), d=Math.hypot(dx,dy)||1, f=Math.max(0,1-d/260)*10;
+    c.style.setProperty("--dx",(dx/d*f).toFixed(1)+"px"); c.style.setProperty("--dy",(dy/d*f).toFixed(1)+"px"); });
+  const reset=()=>pills().forEach(c=>{ c.style.setProperty("--dx","0px"); c.style.setProperty("--dy","0px"); });
+  addEventListener("pointermove",e=>move(e.clientX,e.clientY),{passive:true});
+  addEventListener("touchmove",e=>{ const t=e.touches[0]; if(t) move(t.clientX,t.clientY); },{passive:true});
+  addEventListener("touchend",reset,{passive:true}); document.addEventListener("pointerleave",reset); })();
+
 </script>
 </body>
 </html>
