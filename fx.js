@@ -365,7 +365,7 @@ function draw(){
 }
 function frame(now){
   raf=0; if(!cur||hidden||document.hidden) return;
-  if(now-last<33){ raf=requestAnimationFrame(frame); return; }           /* ~30 fps keeps the phone cool */
+  if(now-last<(window.KC_BATTERY?66:33)){ raf=requestAnimationFrame(frame); return; }           /* ~30 fps keeps the phone cool */
   const dt=Math.min(.05,last?(now-last)/1000:1/30); last=now;
   if(!reduce) time+=dt*cur.speed; draw();
   if(!reduce) raf=requestAnimationFrame(frame);

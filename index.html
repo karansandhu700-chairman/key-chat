@@ -98,6 +98,14 @@ header{display:flex;align-items:center;justify-content:space-between;padding:cal
 .b .katex-display{overflow-x:auto;overflow-y:hidden}
 .cursor::after{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--text);margin-left:4px;vertical-align:middle;animation:pulse 1s infinite}
 @keyframes pulse{50%{opacity:.25}}
+.thinking{display:inline-flex;gap:5px;padding:6px 0}
+.thinking i{width:8px;height:8px;border-radius:50%;background:var(--muted);animation:pulse 1.1s ease-in-out infinite}
+.thinking i:nth-child(2){animation-delay:.18s}.thinking i:nth-child(3){animation-delay:.36s}
+.speedpop{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 118px);z-index:60;background:var(--sheet);border:1px solid var(--line,rgba(255,255,255,.12));border-radius:18px;padding:6px;min-width:240px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.speedpop button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;text-align:left;padding:10px 14px;border-radius:12px}
+.speedpop button small{color:var(--muted);font-size:12.5px}
+.speedpop button.on{background:var(--hover)}
+.speedpop button.on b::after{content:" ✓"}
 .meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:8px;font-size:12.5px;color:var(--muted)}
 .meta .tag{display:inline-flex;align-items:center;gap:4px}
 .meta .dot{width:7px;height:7px;border-radius:50%;background:var(--ok)}
@@ -369,7 +377,7 @@ html[data-light] .wcard img{mix-blend-mode:multiply;filter:invert(1) hue-rotate(
     <header>
       <button class="iconbtn" id="menu" aria-label="Open sidebar"><svg viewBox="0 0 24 24"><path d="M4 8h16M4 16h10"/></svg></button>
       <button class="modelchip" id="routeBtn">Key Chat <small id="modeLabel">Auto</small><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
-      <button class="iconbtn" id="agentBtn" aria-label="Agent: code and deploy"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></button>
+      <button class="iconbtn" id="agentBtn" aria-label="Codex: plan, build and deploy code"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></button>
       <button class="iconbtn" id="newChat" aria-label="New chat"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
     </header>
     <div class="banner hidden" id="installBanner"><span>Install: tap <b>Share</b> then <b>Add to Home Screen</b> to use Key Chat like an app.</span><button id="dismissInstall" aria-label="Dismiss">✕</button></div>
@@ -396,8 +404,11 @@ html[data-light] .wcard img{mix-blend-mode:multiply;filter:invert(1) hue-rotate(
 <div class="sheet" id="settings"><div class="card">
   <div class="hd"><b>Settings &amp; AI providers</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="bd">
-    <div class="sec" style="margin-top:0">Background</div>
-    <div class="hint" id="kcVer" style="margin:0 0 8px">Key Chat version 14</div><div class="bgs" id="bgList"></div><input type="file" id="bgFile" accept="image/*" hidden><div class="hint" style="margin:6px 0 0;font-size:11px">Animated backgrounds adapted from React Bits (reactbits.dev, MIT + Commons Clause). They run on your phone and pause when the app is hidden.</div>
+    <div class="sec" style="margin-top:0">Performance</div>
+    <div class="seg" id="perfSeg"><button data-perf="smooth">Smooth</button><button data-perf="battery">Battery saver</button></div>
+    <div class="hint">Battery saver slows the animated backgrounds so your phone stays cooler.</div>
+    <div class="sec">Background</div>
+    <div class="hint" id="kcVer" style="margin:0 0 8px">Key Chat version 15</div><div class="bgs" id="bgList"></div><input type="file" id="bgFile" accept="image/*" hidden><div class="hint" style="margin:6px 0 0;font-size:11px">Animated backgrounds adapted from React Bits (reactbits.dev, MIT + Commons Clause). They run on your phone and pause when the app is hidden.</div>
     <div class="hint" style="margin-bottom:12px">Your photo stays on this device. It is never uploaded.</div>
     <div class="sec">Karan Chief</div>
     <div class="hint" id="chState"></div>
@@ -452,6 +463,10 @@ html[data-light] .wcard img{mix-blend-mode:multiply;filter:invert(1) hue-rotate(
 <div class="sheet" id="routing"><div class="card">
   <div class="hd"><b>Model routing</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="bd">
+    <div class="sec" style="margin-top:0">Speed</div>
+    <div class="seg" id="speedSeg"><button data-speed="instant">Instant</button><button data-speed="balanced">Balanced</button><button data-speed="deep">Deep</button></div>
+    <div class="hint" id="speedHint"></div>
+    <div class="sec">Which model</div>
     <div class="seg" id="modeSeg"><button data-mode="auto">Auto</button><button data-mode="priority">Priority order</button><button data-mode="fixed">One model</button></div>
     <div class="hint" id="modeHint"></div>
     <div class="sec">Model chain</div>
@@ -471,7 +486,7 @@ html[data-light] .wcard img{mix-blend-mode:multiply;filter:invert(1) hue-rotate(
 </div></div>
 
 <div class="sheet" id="agent"><div class="card">
-  <div class="hd"><b>Agent</b>
+  <div class="hd"><b>Codex</b>
     <div class="seg" id="aMode"><button data-m="plan">Plan</button><button data-m="build">Build</button><button data-m="spec">Spec</button></div>
     <button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="atools"><button class="btn ghost" id="aTabChat">Chat</button><button class="btn ghost" id="aTabFiles">Files</button><button class="btn ghost" id="aPrev">Preview</button><button class="btn" id="aDeploy">Deploy</button><button class="btn ghost" id="aExport">Copy all</button><button class="btn ghost" id="aReset">New</button></div>
@@ -588,7 +603,7 @@ const standalone = matchMedia("(display-mode: standalone)").matches || navigator
 
 /* ============ Storage (IndexedDB, falls back to localStorage) ============ */
 const LSKEY="keychat.v1";
-const blank = () => ({v:2, chats:[], cur:null, keys:{}, chain:null, mode:"auto", fixed:null, system:"", stats:{}, relay:{url:"",token:""}, voice:"", noInstall:false});
+const blank = () => ({v:2, chats:[], cur:null, keys:{}, chain:null, mode:"auto", fixed:null, system:"", stats:{}, relay:{url:"",token:""}, voice:"", noInstall:false, speed:"balanced", battery:false, pcool:{}});
 let S = blank();
 const idb = {
   db:null,
@@ -608,6 +623,7 @@ async function load(){
   try{ await idb.open(); useIDB=true; saved=await idb.get("state"); }catch{ useIDB=false; }
   if(!saved){ try{ saved=JSON.parse(localStorage.getItem(LSKEY)||"null"); }catch{} } // migrate v1
   S = Object.assign(blank(), saved||{});
+  window.KC_BATTERY=!!S.battery;
   S.relay = Object.assign({url:"",token:""}, S.relay||{});
   if(!S.chain) S.chain = defaultChain();
   if((saved?.v||1) < 2){ // add the new no-key provider (OVH) ahead of older no-key entries
@@ -682,17 +698,24 @@ async function enhance(el){
 }
 
 /* ============ Router ============ */
-const COOLDOWN_MS=60_000, FIRST_BYTE_TIMEOUT=35_000;
+const COOLDOWN_MS=60_000;
+const SPEED={
+  instant:{label:"Instant",timeout:12_000,tries:3,sys:"\n\nReply briefly and directly. Skip preamble."},
+  balanced:{label:"Balanced",timeout:25_000,tries:6,sys:""},
+  deep:{label:"Deep",timeout:45_000,tries:10,sys:"\n\nThink carefully and work through the problem step by step before giving a complete, well-checked answer."}
+};
+const spd=()=>SPEED[S.speed]||SPEED.balanced;
+const NONCHAT=/embed|flux|dreamshaper|diffusion|sdxl|animerge|pony|deliberate|whisper|tts|rerank|moderation|imagen|dall-?e|-image\b/i;
 function st(p,m){ const k=p+"|"+m; return S.stats[k] || (S.stats[k]={ok:0,fail:0,lat:0,cool:0,last:""}); }
 function score(e,i){ const s=st(e.p,e.m), n=s.ok+s.fail, fr=n?s.fail/n:0; return i + (s.lat? s.lat/4000 : 0.5) + fr*4; }
 function candidates({vision, search}){
   if(search) return configured("groq") ? [{...SEARCH_MODEL,on:true}] : [];
-  let list=S.chain.filter(e=>e.on && configured(e.p));
+  let list=S.chain.filter(e=>e.on && configured(e.p) && !NONCHAT.test(e.m));
   if(S.mode==="fixed" && S.fixed) list=list.filter(e=>e.p===S.fixed.p && e.m===S.fixed.m);
   if(vision) list=list.filter(e=>isVision(e.m));
   const now=Date.now();
   let ready=list.filter(e=>st(e.p,e.m).cool<now); const cooling=list.filter(e=>st(e.p,e.m).cool>=now);
-  if(S.mode==="auto") ready=ready.map((e,i)=>({e,s:score(e,i)})).sort((a,b)=>a.s-b.s).map(x=>x.e);
+  if(S.mode==="auto") ready=ready.map((e,i)=>({e,s:S.speed==="instant"?(st(e.p,e.m).lat||2500)+i:score(e,i)})).sort((a,b)=>a.s-b.s).map(x=>x.e);
   return [...ready,...cooling];
 }
 const retryable = s => s===408||s===409||s===425||s===429||s>=500;
@@ -709,16 +732,20 @@ async function routeChat(messages, opts, onToken, signal){
   if(!list.length) throw Object.assign(new Error(opts.search ? "Search needs a free Groq key. Add one in Settings." :
     opts.vision ? "None of your active models can read photos. Switch on OVH's Qwen2.5-VL model, or add a free Google Gemini key." :
     "No models are switched on. Open the model menu at the top."),{trail});
+  S.pcool ||= {}; const pfail={}; let tries=0; const sp=spd();
   for(const e of list){
     if(signal.aborted) break;
+    if((S.pcool[e.p]||0)>Date.now() || (pfail[e.p]||0)>=2) continue;   /* provider is resting: don't walk its whole list */
+    if(tries>=sp.tries) break; tries++;
     const s=st(e.p,e.m), tStart=performance.now(), ctl=new AbortController(), onAbort=()=>ctl.abort();
-    signal.addEventListener("abort",onAbort); const to=setTimeout(()=>ctl.abort("timeout"),FIRST_BYTE_TIMEOUT);
+    signal.addEventListener("abort",onAbort); const to=setTimeout(()=>ctl.abort("timeout"),sp.timeout);
     let got="", model=e.m;
     try{
       const headers=authHeaders(e.p); if(e.p==="openrouter") headers["X-Title"]="Key Chat";
       const resp=await fetch(endpoint(e.p,"/chat/completions"),{method:"POST",headers,body:JSON.stringify({model:e.m,messages,stream:true}),signal:ctl.signal});
       if(!resp.ok){
-        const err=new Error(`${resp.status} ${await errText(resp)}`.trim());
+        const err=new Error(`${resp.status} ${await errText(resp)}`.trim()); err.status=resp.status;
+        if(resp.status===401||resp.status===403) S.pcool[e.p]=Date.now()+10*60_000;   /* needs consent or a key: stop asking for a while */
         if(resp.status===429){ const ra=+resp.headers.get("retry-after"); s.cool=Date.now()+(ra>0?ra*1000:COOLDOWN_MS); }
         else if(retryable(resp.status)) s.cool=Date.now()+COOLDOWN_MS;
         else if(resp.status===401||resp.status===403) s.cool=Date.now()+10*60_000;
@@ -747,13 +774,14 @@ async function routeChat(messages, opts, onToken, signal){
       if(signal.aborted){ if(got) return {text:got,meta:{p:e.p,provider:PROVIDERS[e.p].name,model,ms:Math.round(performance.now()-t0),failovers:trail.length,trail,stopped:true}}; break; }
       const why = ctl.signal.reason==="timeout" ? "timed out" : (err instanceof TypeError ? netWhy(err) : err.message);
       s.fail++; s.last=why; if(!s.cool||s.cool<Date.now()) s.cool=Date.now()+COOLDOWN_MS;
+      pfail[e.p]=(pfail[e.p]||0)+1; if(pfail[e.p]>=2 && !S.pcool[e.p]) S.pcool[e.p]=Date.now()+90_000;
       trail.push({p:e.p,m:e.m,ok:false,why});
       if(got) return {text:got+"\n\n_(answer was cut off by the provider)_",meta:{p:e.p,provider:PROVIDERS[e.p].name,model,ms:Math.round(performance.now()-t0),failovers:trail.length-1,trail,partial:true}};
       onToken("");
     }
   }
   if(signal.aborted) throw Object.assign(new Error("Stopped."),{trail,stopped:true});
-  throw Object.assign(new Error("Every model in your chain failed or is rate-limited right now. Wait a minute, or add another free provider in Settings."),{trail});
+  throw Object.assign(new Error("Every model I tried is busy or rate-limited right now. Wait a minute, switch Speed to Deep to try more, or add another free provider in Settings."),{trail});
 }
 async function generateImage(prompt, signal){
   const trail=[], t0=performance.now();
@@ -777,7 +805,7 @@ const curChat = () => S.chats.find(c=>c.id===S.cur);
 function newChat(){ S.cur=null; cancelEdit(); renderAll(); $("#input").focus(); closeSide(); }
 function ensureChat(first){ let c=curChat(); if(c) return c; c={id:uid(),title:(first||"New chat").slice(0,48),msgs:[],updated:Date.now()}; S.chats.unshift(c); S.cur=c.id; return c; }
 function toApi(msgs){
-  const out=[]; out.push({role:"system",content:chiefSystem(msgs)});
+  const out=[]; out.push({role:"system",content:chiefSystem(msgs)+spd().sys});
   for(const m of msgs){
     if(m.role==="assistant"){ if(m.content) out.push({role:"assistant",content:m.content}); else if(m.image) out.push({role:"assistant",content:"[I created an image for: "+(m.prompt||"")+"]"}); continue; }
     let text=m.content||""; const docs=(m.att||[]).filter(a=>a.kind==="doc");
@@ -807,10 +835,10 @@ function renderList(){
   $("#chats").innerHTML = h || `<div class="hint" style="padding:10px">${q?"No chats match.":"Your chats will appear here."}</div>`;
 }
 function metaHtml(m){
-  if(!m.meta) return ""; const x=m.meta;
-  const fo = x.failovers ? `<span class="tag"><span class="dot fo"></span>${x.failovers} failover${x.failovers>1?"s":""}</span>` : `<span class="tag"><span class="dot"></span>no failover</span>`;
-  const tr = x.failovers ? `<details class="trail"><summary>Route details</summary>${x.trail.map(t=>`<div>${t.ok?"✓":"✗"} ${esc(PROVIDERS[t.p]?.name||t.p)} · ${esc(t.m)}${t.ok?" · "+fmtMs(t.ms):" · "+esc(t.why)}</div>`).join("")}</details>`:"";
-  return `<div class="meta"><span class="tag"><b>${esc(x.provider)}</b></span><span class="tag">${esc(x.model)}</span><span class="tag">${fmtMs(x.ms)}</span>${fo}${x.partial?'<span class="tag">cut off</span>':""}${x.stopped?'<span class="tag">stopped</span>':""}</div>${tr}`;
+  if(!m.meta) return ""; const x=m.meta, t=x.trail||[], shown=t.slice(-10), more=t.length-shown.length;
+  const tried = x.failovers ? `<span class="tag">tried ${x.failovers+1} models</span>` : "";
+  const tr = x.failovers ? `<details class="trail"><summary>Details</summary>${more>0?`<div>…${more} earlier attempts</div>`:""}${shown.map(r=>`<div>${r.ok?"✓":"✗"} ${esc(PROVIDERS[r.p]?.name||r.p)} · ${esc(r.m)}${r.ok?" · "+fmtMs(r.ms):" · "+esc(r.why)}</div>`).join("")}</details>`:"";
+  return `<div class="meta"><span class="tag">${esc(x.model)}</span><span class="tag">${fmtMs(x.ms)}</span>${tried}${x.partial?'<span class="tag">cut off</span>':""}${x.stopped?'<span class="tag">stopped</span>':""}</div>${tr}`;
 }
 function msgHtml(m,i,last){
   if(m.role==="user"){
@@ -828,7 +856,7 @@ function renderThread(){
   const c=curChat();
   if(!c||!c.msgs.length){
     const keyed=Object.keys(PROVIDERS).filter(p=>PROVIDERS[p].tier!=="nokey"&&configured(p)).map(p=>PROVIDERS[p].name);
-    thread.innerHTML=`<div class="empty"><img class="key" src="key.webp" alt="Key Chat" width="260" height="260"><h1>What can I help with?</h1><div class="chips bouncy">
+    thread.innerHTML=`<div class="empty"><h1>What can I help with?</h1><div class="chips bouncy">
       ${["Explain a topic simply","Draft a professional email","Summarise a PDF","Create an image","Write code for a task","What's in this photo?"].map(t=>`<button class="chip" data-sug="${esc(t)}">${t}</button>`).join("")}
       </div><div class="status-note">${keyed.length?`Using: ${esc(keyed.join(", "))} + free no-key models.`:`Running on free no-key models (OVH, LLM7). Add more providers in <a href="#" data-settings>Settings</a>: Groq, Gemini, Ollama, OpenCode and 45+ others.`}</div></div>`;
     return;
@@ -837,7 +865,7 @@ function renderThread(){
   thread.querySelectorAll(".msg.ai .b").forEach(enhance);
   thread.scrollTop=thread.scrollHeight;
 }
-function renderMode(){ $("#modeLabel").textContent = S.mode==="fixed"&&S.fixed ? S.fixed.m.split("/").pop() : S.mode==="priority"?"Priority":"Auto"; }
+function renderMode(){ const base=S.mode==="fixed"&&S.fixed ? S.fixed.m.split("/").pop() : S.mode==="priority"?"Priority":"Auto"; $("#modeLabel").textContent = base + (S.speed&&S.speed!=="balanced" ? " · "+spd().label : ""); }
 function renderAll(){ renderList(); renderThread(); renderMode(); }
 
 /* ============ Sending ============ */
@@ -859,14 +887,15 @@ async function send(override){
 }
 async function answer(c, imagePrompt){
   const ai={role:"assistant",content:""}; c.msgs.push(ai); c.updated=Date.now(); renderAll();
-  const node=thread.querySelector(".msg.ai:last-child"); node.innerHTML=`<div class="b cursor">${imagePrompt?'<span style="color:var(--muted)">Creating image…</span>':""}</div>`;
+  const node=thread.querySelector(".msg.ai:last-child"); const THINK='<span class="thinking" aria-label="Thinking"><i></i><i></i><i></i></span>';
+  node.innerHTML=`<div class="b">${imagePrompt?'<span style="color:var(--muted)">Creating image…</span>':THINK}</div>`;
   const bEl=node.querySelector(".b"); const ctl=new AbortController(); setBusy(ctl); let raf=0;
   try{
     if(imagePrompt){ const r=await generateImage(imagePrompt, ctl.signal); ai.image=r.data; ai.prompt=imagePrompt; ai.meta=r.meta; }
     else{
       const vision=c.msgs.some(m=>(m.att||[]).some(a=>a.kind==="img"&&a.data));
       const r=await routeChat(toApi(c.msgs.slice(0,-1)),{vision,search:searchOn},txt=>{
-        cancelAnimationFrame(raf); raf=requestAnimationFrame(()=>{ bEl.innerHTML=md(memStrip(txt)); bEl.classList.add("cursor");
+        cancelAnimationFrame(raf); raf=requestAnimationFrame(()=>{ if(!txt){ bEl.innerHTML=THINK; bEl.classList.remove("cursor"); return; } bEl.innerHTML=md(memStrip(txt)); bEl.classList.add("cursor");
           if(thread.scrollHeight-thread.scrollTop-thread.clientHeight<160) thread.scrollTop=thread.scrollHeight; }); }, ctl.signal);
       cancelAnimationFrame(raf); ai.content=memCapture(r.text); ai.meta=r.meta;
     }
@@ -993,6 +1022,7 @@ function provHtml(p){
 }
 let openGroups=new Set(["nokey","free"]);
 function renderSettings(){
+  document.querySelectorAll("#perfSeg button").forEach(x=>x.classList.toggle("on",(x.dataset.perf==="battery")===!!S.battery));
   const q=$("#provQ").value.toLowerCase().trim();
   $("#provList").innerHTML=GROUPS.map(([g,label])=>{
     const ids=Object.keys(PROVIDERS).filter(p=>PROVIDERS[p].tier===g && (!q||PROVIDERS[p].name.toLowerCase().includes(q)||p.includes(q)||PROVIDERS[p].note.toLowerCase().includes(q)));
@@ -1045,7 +1075,12 @@ async function testRelay(){
 }
 
 /* ============ Routing sheet ============ */
+const SPEED_HINT={instant:"Fastest answers. Tries up to 3 models, 12 s each, and keeps replies short.",balanced:"Good mix. Tries up to 6 models, 25 s each.",deep:"Most careful. Tries up to 10 models, 45 s each, and asks the model to think step by step."};
+function setSpeed(v){ S.speed=v; save(); renderRouting(); renderMode(); }
+function setPerf(b){ S.battery=b; save(); window.KC_BATTERY=b; document.querySelectorAll("#perfSeg button").forEach(x=>x.classList.toggle("on",(x.dataset.perf==="battery")===b)); }
 function renderRouting(){
+  document.querySelectorAll("#speedSeg button").forEach(b=>b.classList.toggle("on",b.dataset.speed===S.speed));
+  $("#speedHint").textContent=SPEED_HINT[S.speed]||"";
   document.querySelectorAll("#modeSeg button").forEach(b=>b.classList.toggle("on",b.dataset.mode===S.mode));
   $("#modeHint").textContent = S.mode==="auto"?"Auto ranks your models by speed and reliability for each message and fails over when one is busy or rate-limited.":S.mode==="priority"?"Uses the list from top to bottom and fails over in that order.":"Always uses the model you tap below. No failover.";
   $("#chain").innerHTML=S.chain.map((e,i)=>{ const s=st(e.p,e.m), avail=configured(e.p), cool=s.cool>Date.now(), fixed=S.mode==="fixed"&&S.fixed?.p===e.p&&S.fixed?.m===e.m;
@@ -1094,6 +1129,21 @@ $("#relaySave").onclick=testRelay;
 $("#provList").addEventListener("toggle",e=>{ const g=e.target.closest?.(".grp"); if(g&&e.target===g){ g.open?openGroups.add(g.dataset.g):openGroups.delete(g.dataset.g); } },true);
 $("#addProv").onchange=fillModelOptions;
 $("#addModelBtn").onclick=()=>{ const p=$("#addProv").value, m=$("#addModel").value.trim(); if(!p||!m) return; if(!S.chain.some(e=>e.p===p&&e.m===m)) S.chain.unshift({p,m,on:true}); $("#addModel").value=""; save(); renderRouting(); };
+$("#speedSeg").onclick=e=>{ const b=e.target.closest("button"); if(b) setSpeed(b.dataset.speed); };
+$("#perfSeg").onclick=e=>{ const b=e.target.closest("button"); if(b) setPerf(b.dataset.perf==="battery"); };
+/* long-press the send arrow: pick Instant / Balanced / Deep, like the ChatGPT app */
+(function(){ const btn=$("#sendBtn"); let tm=0, did=false, pop=null;
+  const close=()=>{ if(pop){ pop.remove(); pop=null; document.removeEventListener("pointerdown",away,true); } };
+  const away=e=>{ if(pop && !pop.contains(e.target)) close(); };
+  const open=()=>{ close(); pop=document.createElement("div"); pop.className="speedpop";
+    pop.innerHTML=Object.entries(SPEED).map(([k,v])=>`<button data-sp="${k}" class="${S.speed===k?"on":""}"><b>${v.label}</b><small>${SPEED_HINT[k].split(". ")[0]}.</small></button>`).join("");
+    pop.onclick=e=>{ const b=e.target.closest("button"); if(!b) return; setSpeed(b.dataset.sp); toast("Speed: "+SPEED[b.dataset.sp].label); close(); };
+    document.body.appendChild(pop); setTimeout(()=>document.addEventListener("pointerdown",away,true),0); };
+  btn.addEventListener("pointerdown",()=>{ did=false; clearTimeout(tm); tm=setTimeout(()=>{ did=true; if(navigator.vibrate) navigator.vibrate(8); open(); },450); });
+  ["pointerup","pointerleave","pointercancel"].forEach(ev=>btn.addEventListener(ev,()=>clearTimeout(tm)));
+  btn.addEventListener("click",e=>{ if(did){ e.preventDefault(); e.stopImmediatePropagation(); did=false; } },true);
+  btn.addEventListener("contextmenu",e=>e.preventDefault());
+})();
 $("#modeSeg").onclick=e=>{ const b=e.target.closest("button"); if(!b) return; S.mode=b.dataset.mode;
   if(S.mode==="fixed"&&!S.fixed){ const f=S.chain.find(x=>x.on&&configured(x.p)); if(f) S.fixed={p:f.p,m:f.m}; } save(); renderRouting(); renderMode(); };
 $("#chain").onclick=e=>{ const t=e.target.closest("[data-tog],[data-up],[data-dn],[data-rmc],[data-fix]"); if(!t) return; const d=t.dataset;
@@ -1315,7 +1365,7 @@ function approve(o){ return new Promise(res=>{
   function fxApply(cur){ if(!cur.startsWith("fx-")){ if(window.KCFX) KCFX.stop(); return; }
     const go=()=>{ if(!KCFX.supported()||!KCFX.start(cur)){ toast("This animated background needs a newer iPhone. Switched back to Black."); set("kc-bg","black"); apply(); } };
     if(window.KCFX){ go(); return; } if(fxLoading) return; fxLoading=true;
-    const s=document.createElement("script"); s.src="fx.js?v=14"; s.onload=()=>{ fxLoading=false; if((get("kc-bg")||"")===cur) go(); }; s.onerror=()=>{ fxLoading=false; toast("Couldn't load the animated background (needs internet the first time)"); }; document.head.appendChild(s); }
+    const s=document.createElement("script"); s.src="fx.js?v=15"; s.onload=()=>{ fxLoading=false; if((get("kc-bg")||"")===cur) go(); }; s.onerror=()=>{ fxLoading=false; toast("Couldn't load the animated background (needs internet the first time)"); }; document.head.appendChild(s); }
   box.innerHTML=BG.map(b=>`<button type="button" data-bg="${b[0]}"><i style="background:${b[2]}"></i><span>${b[1]}</span></button>`).join("");
   box.onclick=e=>{ const b=e.target.closest("button"); if(!b) return; if(b.dataset.bg==="photo"){ file.click(); return; } set("kc-bg",b.dataset.bg); apply(); };
   file.onchange=()=>{ const f=file.files[0]; file.value=""; if(!f) return; const img=new Image(), u=URL.createObjectURL(f);
