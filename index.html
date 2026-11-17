@@ -1252,13 +1252,28 @@ function plain(md){ return md.replace(/```[\s\S]*?```/g," (code block) ").replac
 function fillVoices(){ if(!window.speechSynthesis) return; const vs=speechSynthesis.getVoices(); if(!vs.length) return;
   $("#voiceSel").innerHTML=`<option value="">Default voice</option>`+vs.map(v=>`<option value="${esc(v.name)}" ${v.name===S.voice?"selected":""}>${esc(v.name)} (${esc(v.lang)})</option>`).join(""); }
 if(window.speechSynthesis){ speechSynthesis.onvoiceschanged=fillVoices; } else $("#voiceSel").innerHTML=`<option>Read aloud isn't available on this device</option>`;
+/* Speech helper: keeps each utterance alive until it ends, resumes a paused queue,
+   and waits briefly after cancel() before speaking (WebKit drops utterances queued right after cancel). */
+const uttKeep=new Set();
+function say(text, onDone){
+  const ss=window.speechSynthesis;
+  if(!ss){ toast("Read aloud isn't available here"); return false; }
+  if(ss.speaking||ss.pending) ss.cancel();
+  ss.resume();
+  const u=new SpeechSynthesisUtterance(text);
+  const v=ss.getVoices().find(v=>v.name===S.voice); if(v) u.voice=v;
+  uttKeep.add(u);
+  const finish=e=>{ uttKeep.delete(u); onDone&&onDone(); if(e&&e.error&&!["canceled","interrupted"].includes(e.error)) toast("Read aloud failed ("+e.error+")"); };
+  u.onend=()=>finish(null); u.onerror=finish;
+  setTimeout(()=>{ try{ ss.speak(u); }catch(err){ finish({error:"speak-failed"}); } },120);
+  return true;
+}
 function speak(i){
-  if(!window.speechSynthesis){ toast("Read aloud isn't available here"); return; }
-  if(speakingIdx===i){ speechSynthesis.cancel(); speakingIdx=null; renderThread(); return; }
-  speechSynthesis.cancel(); const m=curChat()?.msgs[i]; if(!m?.content) return;
-  const u=new SpeechSynthesisUtterance(plain(m.content)); const v=speechSynthesis.getVoices().find(v=>v.name===S.voice); if(v) u.voice=v;
-  u.onend=u.onerror=()=>{ if(speakingIdx===i){ speakingIdx=null; document.querySelector(`[data-speak="${i}"]`)?.classList.remove("on"); } };
-  speakingIdx=i; speechSynthesis.speak(u); document.querySelector(`[data-speak="${i}"]`)?.classList.add("on");
+  if(speakingIdx===i){ window.speechSynthesis?.cancel(); speakingIdx=null; renderThread(); return; }
+  const m=curChat()?.msgs[i]; if(!m?.content) return;
+  speakingIdx=i; document.querySelector(`[data-speak="${i}"]`)?.classList.add("on");
+  const ok=say(plain(m.content), ()=>{ if(speakingIdx===i){ speakingIdx=null; document.querySelector(`[data-speak="${i}"]`)?.classList.remove("on"); } });
+  if(!ok){ speakingIdx=null; document.querySelector(`[data-speak="${i}"]`)?.classList.remove("on"); }
 }
 
 /* ============ Share ============ */
@@ -1664,8 +1679,7 @@ function vStop(){ vOn=false; try{ vSR?.abort(); }catch{} vSR=null; if(vRec&&vRec
 async function vTurn(text){ if(!vOn) return; if(!text){ vListen(); return; }
   vSet("thinking","Thinking…"); await send(text); if(!vOn) return;
   const m=curChat()?.msgs.at(-1); if(!m?.content||!window.speechSynthesis){ vListen(); return; }
-  vSet("speaking","Speaking… tap End to stop"); const u=new SpeechSynthesisUtterance(plain(m.content)); const v=speechSynthesis.getVoices().find(v=>v.name===S.voice); if(v) u.voice=v;
-  u.onend=u.onerror=()=>{ if(vOn) vListen(); }; speechSynthesis.cancel(); speechSynthesis.speak(u); }
+  vSet("speaking","Speaking… tap End to stop"); if(!say(plain(m.content), ()=>{ if(vOn) vListen(); })) vListen(); }
 async function vListen(){ if(!vOn) return; $("#vsend").classList.add("hidden");
   if(SR){ vSet("listening","Listening…"); let said=""; vSR=new SR(); vSR.interimResults=true; vSR.lang=navigator.language||"en-US";
     vSR.onresult=e=>{ said=[...e.results].map(r=>r[0].transcript).join(""); vSet("listening",said||"Listening…"); };
