@@ -251,7 +251,7 @@ header{background:transparent}
 .szw button.on{background:var(--accent);color:var(--accentText);border-color:var(--accent)}
 .sheet[data-size="half"] .card{height:56vh;height:56dvh;max-height:56dvh}
 .sheet[data-size="full"]{align-items:stretch}
-.sheet[data-size="full"] .card{height:100vh;height:100dvh;max-height:100dvh;max-width:none;border-radius:0;padding-top:env(safe-area-inset-top)}
+.sheet[data-size="full"] .card{height:100vh;height:calc(100dvh / var(--tz,1));max-height:calc(100dvh / var(--tz,1));max-width:none;border-radius:0;padding-top:env(safe-area-inset-top)}
 /* ===== Approval card ===== */
 #approve{z-index:120}#recov{z-index:110}#approve .card{max-width:520px}
 .apv{margin:14px 0 6px;border:1px solid var(--line);border-radius:18px;background:#1b1810;overflow:hidden}
