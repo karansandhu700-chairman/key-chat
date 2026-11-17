@@ -571,6 +571,14 @@ html[data-light] #welcome .wcard h2,html[data-light] #welcome .wcard p{color:var
 html[data-light] #welcome .wcard p{color:var(--muted)!important}
 html[data-light] #welcome .wcard .btn:not(.ghost){background:var(--accent);color:var(--accentText)}
 html[data-light] #welcome .wcard .btn.ghost{color:var(--text);border-color:var(--line)}
+/* Remove spinning background logo on chat, lock and welcome (approved 2026-11-17) */
+.main::before,#lock::before,#welcome::before{display:none!important}
+/* Unslop pass (approved 2026-11-17): quiet chrome, no gold avatar gradient, no rings, calmer empty state */
+.avatar::before{display:none}
+.avatar{background:var(--panel);color:var(--text);border-color:var(--line);box-shadow:none}
+.main::after,#lock::after,#welcome::after{display:none!important}
+.newpill,#sendBtn{box-shadow:none!important}
+.empty .hello{flex:1;display:flex;align-items:flex-end;justify-content:center;padding-bottom:20px}
 </style>
 </head>
 <body>
@@ -1096,7 +1104,7 @@ function renderThread(){
   const c=curChat();
   if(!c||!c.msgs.length){
     const keyed=Object.keys(PROVIDERS).filter(p=>PROVIDERS[p].tier!=="nokey"&&configured(p)).map(p=>PROVIDERS[p].name);
-    thread.innerHTML=`<div class="empty"><div class="hello"><h1>What shall we unlock today?</h1></div><div class="sugg">
+    thread.innerHTML=`<div class="empty"><div class="hello"><h1>What should we work on?</h1></div><div class="sugg">
       ${SUGG.map(([t,ic])=>`<button data-sug="${esc(t)}">${ic}${t}</button>`).join("")}
       </div><div class="status-note">${keyed.length?`Using: ${esc(keyed.join(", "))} + free no-key models.`:`Running on free no-key models (OVH, LLM7). Add more providers in <a href="#" data-settings>Settings</a>: Groq, Gemini, Ollama, OpenCode and 45+ others.`}</div></div>`;
     return;
