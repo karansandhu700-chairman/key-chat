@@ -268,6 +268,13 @@ html[data-bg="aurora"] .app::before{inset:-20%;background:radial-gradient(40% 35
 html[data-bg="midnight"] .app::before{background:linear-gradient(180deg,#0b1430 0%,#070b18 55%,#04060c 100%)}
 html[data-bg="ember"] .app::before{background:linear-gradient(180deg,#2a0f0a 0%,#150907 55%,#0a0605 100%)}
 html[data-bg="forest"] .app::before{background:linear-gradient(180deg,#0c2018 0%,#07120e 55%,#040806 100%)}
+
+/* ===== Animated (premium) backgrounds: see fx.js ===== */
+#fxc{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;display:none}
+html[data-bg^="fx-"] .app::before,html[data-bg^="fx-"] .app::after{display:none}
+html[data-bg$="-l"]{--bg:#f1ece8;--sheet:#f8f5f2}
+html[data-bg="fx-aur-l"],html[data-bg="fx-soft-l"]{--bg:#f4f2f8}
+html[data-bg="fx-chr-l"]{--bg:#e9ebf0;--sheet:#f4f5f8}
 html[data-bg="photo"] .app::before{background:var(--bgphoto) center/cover no-repeat}
 html[data-bg="photo"] .app::after{background:rgba(5,4,3,.58)}
 @keyframes bgdrift{from{transform:translate3d(-3%,-2%,0) scale(1)}to{transform:translate3d(3%,3%,0) scale(1.12)}}
@@ -390,7 +397,7 @@ html[data-light] .wcard img{mix-blend-mode:multiply;filter:invert(1) hue-rotate(
   <div class="hd"><b>Settings &amp; AI providers</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="bd">
     <div class="sec" style="margin-top:0">Background</div>
-    <div class="hint" id="kcVer" style="margin:0 0 8px">Key Chat version 13</div><div class="bgs" id="bgList"></div><input type="file" id="bgFile" accept="image/*" hidden>
+    <div class="hint" id="kcVer" style="margin:0 0 8px">Key Chat version 14</div><div class="bgs" id="bgList"></div><input type="file" id="bgFile" accept="image/*" hidden><div class="hint" style="margin:6px 0 0;font-size:11px">Animated backgrounds adapted from React Bits (reactbits.dev, MIT + Commons Clause). They run on your phone and pause when the app is hidden.</div>
     <div class="hint" style="margin-bottom:12px">Your photo stays on this device. It is never uploaded.</div>
     <div class="sec">Karan Chief</div>
     <div class="hint" id="chState"></div>
@@ -1298,12 +1305,17 @@ function approve(o){ return new Promise(res=>{
   addEventListener("touchend",reset,{passive:true}); document.addEventListener("pointerleave",reset); })();
 
 /* ---- Background options (saved on this device only) ---- */
-(function(){ const BG=[["black","Black","#0a0907"],["glow","Gold glow","radial-gradient(circle at 50% 40%,rgba(214,172,84,.55),#0a0907 75%)"],["aurora","Aurora","radial-gradient(circle at 25% 30%,rgba(90,120,255,.7),transparent 60%),radial-gradient(circle at 75% 60%,rgba(190,90,255,.6),#0a0907 70%)"],["midnight","Midnight","linear-gradient(#0b1430,#04060c)"],["ember","Ember","linear-gradient(#2a0f0a,#0a0605)"],["forest","Forest","linear-gradient(#0c2018,#040806)"],["frost","Frost glass","radial-gradient(circle at 25% 25%,#c9b5ff,transparent 60%),radial-gradient(circle at 80% 75%,#a9c4ee,#e6e9f2 75%)"],["pearl","Pearl","linear-gradient(135deg,#ffffff,#e6e3dc)"],["sky","Sky","linear-gradient(135deg,#bfe0ff,#e8f3fc)"],["mint","Mint","linear-gradient(135deg,#b4ecd0,#eaf7ef)"],["peach","Peach","linear-gradient(135deg,#ffc9a8,#fcefe6)"],["rose","Rose","linear-gradient(135deg,#ffb9d2,#fbeef3)"],["sand","Sand","linear-gradient(135deg,#ead3a4,#f7f1e4)"],["photo","My photo","#16130d"]], LIGHT=["frost","pearl","sky","mint","peach","rose","sand"];
+(function(){ const BG=[["black","Black","#0a0907"],["glow","Gold glow","radial-gradient(circle at 50% 40%,rgba(214,172,84,.55),#0a0907 75%)"],["aurora","Aurora","radial-gradient(circle at 25% 30%,rgba(90,120,255,.7),transparent 60%),radial-gradient(circle at 75% 60%,rgba(190,90,255,.6),#0a0907 70%)"],["midnight","Midnight","linear-gradient(#0b1430,#04060c)"],["ember","Ember","linear-gradient(#2a0f0a,#0a0605)"],["forest","Forest","linear-gradient(#0c2018,#040806)"],["frost","Frost glass","radial-gradient(circle at 25% 25%,#c9b5ff,transparent 60%),radial-gradient(circle at 80% 75%,#a9c4ee,#e6e9f2 75%)"],["pearl","Pearl","linear-gradient(135deg,#ffffff,#e6e3dc)"],["sky","Sky","linear-gradient(135deg,#bfe0ff,#e8f3fc)"],["mint","Mint","linear-gradient(135deg,#b4ecd0,#eaf7ef)"],["peach","Peach","linear-gradient(135deg,#ffc9a8,#fcefe6)"],["rose","Rose","linear-gradient(135deg,#ffb9d2,#fbeef3)"],["sand","Sand","linear-gradient(135deg,#ead3a4,#f7f1e4)"],["fx-grain-l","Silk gradient","linear-gradient(135deg,#ffd9e3,#d6e6ff 55%,#e9ddff)"],["fx-silk-l","Satin","linear-gradient(135deg,#f3e8dc,#d9c7b6 55%,#f6efe8)"],["fx-iri-l","Pearl shift","linear-gradient(135deg,#ffd0f0,#c9e9ff 50%,#fff1c4)"],["fx-soft-l","Soft aurora","linear-gradient(135deg,#f4f2f8,#b9ccff 55%,#e9c4ff)"],["fx-aur-l","Northern light","linear-gradient(135deg,#f4f2f8,#bff0dc 50%,#cbbfff)"],["fx-chr-l","Liquid chrome","linear-gradient(135deg,#ffffff,#c9ced8 50%,#f3f4f7)"],["fx-grain-d","Deep silk","linear-gradient(135deg,#1a1f5c,#5b2a9a 60%,#0f6f86)"],["fx-silk-d","Bronze satin","linear-gradient(135deg,#3a2616,#8a6038 55%,#241608)"],["fx-iri-d","Night shift","linear-gradient(135deg,#102a5c,#5a2a8a 55%,#0c4a5a)"],["fx-soft-d","Night aurora","linear-gradient(135deg,#0a0907,#5a2a8a 60%,#1b2b5a)"],["fx-aur-d","Aurora curtain","linear-gradient(180deg,#0a0907,#134e4a 60%,#4c1d95)"],["fx-chr-d","Black chrome","linear-gradient(135deg,#050506,#6b7080 55%,#0a0a0c)"],["photo","My photo","#16130d"]], LIGHT=["frost","pearl","sky","mint","peach","rose","sand","fx-grain-l","fx-silk-l","fx-iri-l","fx-soft-l","fx-aur-l","fx-chr-l"];
   const get=k=>{ try{ return localStorage.getItem(k); }catch(e){ return null; } }, set=(k,v)=>{ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } };
   const R=document.documentElement, box=$("#bgList"), file=$("#bgFile");
   function apply(){ let cur=get("kc-bg")||"black"; const ph=get("kc-bg-photo"); if(cur==="photo"&&!ph) cur="black";
     if(ph) R.style.setProperty("--bgphoto",`url("${ph}")`); R.dataset.bg=cur; R.toggleAttribute("data-light",LIGHT.includes(cur)); const tc=document.querySelector('meta[name="theme-color"]'); if(tc) tc.content=LIGHT.includes(cur)?getComputedStyle(R).getPropertyValue("--bg").trim()||"#dfe4ee":"#0a0907";
-    box.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.bg===cur)); }
+    box.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.bg===cur)); fxApply(cur); }
+  let fxLoading=false;
+  function fxApply(cur){ if(!cur.startsWith("fx-")){ if(window.KCFX) KCFX.stop(); return; }
+    const go=()=>{ if(!KCFX.supported()||!KCFX.start(cur)){ toast("This animated background needs a newer iPhone. Switched back to Black."); set("kc-bg","black"); apply(); } };
+    if(window.KCFX){ go(); return; } if(fxLoading) return; fxLoading=true;
+    const s=document.createElement("script"); s.src="fx.js?v=14"; s.onload=()=>{ fxLoading=false; if((get("kc-bg")||"")===cur) go(); }; s.onerror=()=>{ fxLoading=false; toast("Couldn't load the animated background (needs internet the first time)"); }; document.head.appendChild(s); }
   box.innerHTML=BG.map(b=>`<button type="button" data-bg="${b[0]}"><i style="background:${b[2]}"></i><span>${b[1]}</span></button>`).join("");
   box.onclick=e=>{ const b=e.target.closest("button"); if(!b) return; if(b.dataset.bg==="photo"){ file.click(); return; } set("kc-bg",b.dataset.bg); apply(); };
   file.onchange=()=>{ const f=file.files[0]; file.value=""; if(!f) return; const img=new Image(), u=URL.createObjectURL(f);
