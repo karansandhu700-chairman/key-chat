@@ -362,9 +362,85 @@ html[data-light] .wcard img{mix-blend-mode:multiply;filter:invert(1) hue-rotate(
 #memList li{display:flex;gap:8px;justify-content:space-between;align-items:flex-start;padding:10px 12px;border-bottom:1px solid var(--line);font-size:14px}
 #memList li:last-child{border:0}
 #memList button{flex:none;color:var(--muted);padding:0 4px}
+
+/* ===== v17 redesign: calm surfaces, gold only where it matters ===== */
+:root{--bg:#0b0a08;--raise:#1b1813;--raise2:#24201a;--panel:#1b1813;--bubble:rgba(255,244,224,.075);--line:rgba(255,244,224,.10);--hover:rgba(255,244,224,.06);
+ --text:#efe9dc;--muted:#a39b8a;--accent:#e2b65c;--accentText:#14100a;--eIn:cubic-bezier(.19,1,.22,1);--eOut:cubic-bezier(.8,0,.4,1);--eMove:cubic-bezier(.65,0,.35,1)}
+html[data-light]{--raise:rgba(255,255,255,.86);--raise2:#fff}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,"Segoe UI",Roboto,sans-serif}
+.side{border-right:1px solid var(--line)}
+.composer .box{background:var(--raise);border:1px solid var(--line);border-radius:26px;box-shadow:0 10px 32px rgba(0,0,0,.42)}
+html[data-light] .composer .box{box-shadow:0 8px 26px rgba(40,50,80,.14)}
+.composer .box:focus-within{border-color:rgba(226,182,92,.45)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.toast{background:var(--raise2);color:var(--text);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.btn.ghost,.pill,.field,.search{border-color:var(--line)}
+.composer .row .pill:not(.on):not(.spd){display:none}
+.composer .row .pill.on{color:var(--accent);border-color:rgba(226,182,92,.42);background:rgba(226,182,92,.08)}
+.composer .row .pill.on::after{content:"×";margin-left:6px;font-size:16px;line-height:1}
+.pill.spd{color:var(--muted);gap:4px}.pill.spd svg{width:14px;height:14px}
+.round#voiceBtn.on{color:var(--accent)}
+/* start screen */
+.empty h1{font-size:27px;font-weight:600;letter-spacing:-.01em;margin:0 0 6px}
+.empty .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+.sugg{display:flex;flex-direction:column;gap:2px;width:min(100%,420px)}
+.sugg button{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;text-align:left;font-size:15px;color:var(--text);transition:background .15s var(--eMove),transform .15s var(--eMove)}
+.sugg button svg{width:20px;height:20px;color:var(--muted);flex:none}
+.sugg button:hover{background:var(--hover)}.sugg button:active{background:var(--hover);transform:scale(.985)}
+.status-note{font-size:12.5px;max-width:420px;margin-top:16px}
+/* messages */
+.msg.user .b{border:0;border-radius:22px}
+.msg.ai .b{font-size:16px;line-height:1.62}
+.acts button{transition:transform .15s var(--eMove),background .15s}.acts button:active{transform:scale(.94)}
+.acts button.on{color:var(--accent)}
+/* thinking shimmer */
+.thinking{display:inline-block;font-size:15px;color:transparent;background:linear-gradient(90deg,var(--muted) 0 35%,var(--accent) 50%,var(--muted) 65% 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;animation:kshim 1.6s linear infinite;padding:4px 0}
+.thinking i{display:none}
+@keyframes kshim{from{background-position:100% 0}to{background-position:-50% 0}}
+.composer .box.busy{border-color:transparent;background:linear-gradient(var(--raise),var(--raise)) padding-box,linear-gradient(90deg,var(--line) 20%,rgba(226,182,92,.7) 50%,var(--line) 80%) border-box;background-size:auto,250% 100%;animation:kbord 1.8s linear infinite}
+@keyframes kbord{from{background-position:0 0,100% 0}to{background-position:0 0,-150% 0}}
+.card{animation:up .32s var(--eIn)}
+.popm,.speedpop{animation:pop .2s var(--eIn);transform-origin:bottom left}
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.97)}}
+.speedpop{transform-origin:bottom center}
+/* sidebar chips */
+.sidechips{display:flex;gap:6px;padding:4px 10px 10px;overflow-x:auto}
+.sidechips button{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;padding:7px 10px;border-radius:999px;border:1px solid var(--line);font-size:13.5px;color:var(--text)}
+.sidechips button svg{width:15px;height:15px;color:var(--muted)}
+.sidechips button:active{background:var(--hover)}
+/* voice in chat */
+#vbar{display:flex;align-items:center;gap:10px;padding:8px 14px 0;font-size:14px;color:var(--muted)}
+#vbar .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);animation:vpulse 1.2s var(--eMove) infinite}
+#vbar[data-st="speaking"] .dot{background:var(--ok)}#vbar[data-st="thinking"] .dot{background:var(--muted)}
+#vbar button{margin-left:auto;color:var(--text);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px}
+#vbar .go{margin-left:0}
+@keyframes vpulse{50%{transform:scale(1.5);opacity:.5}}
+#vfull{position:fixed;inset:0;z-index:95;display:none;flex-direction:column;align-items:center;justify-content:center;gap:26px;background:var(--bg);padding:calc(var(--safeT) + 20px) 24px calc(var(--safeB) + 30px)}
+#vfull.show{display:flex}
+#vfull .orb{width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f6dc9a,var(--accent) 45%,#7a5a1d 100%);box-shadow:0 0 80px rgba(226,182,92,.35);animation:orb 2.4s var(--eMove) infinite}
+#vfull[data-st="listening"] .orb{animation-duration:1.2s}
+#vfull[data-st="thinking"] .orb{filter:saturate(.4) brightness(.8)}
+#vfull p{color:var(--muted);font-size:17px;margin:0;min-height:1.4em;text-align:center;max-width:320px}
+#vfull .end{background:var(--raise2);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:12px 28px;font-size:16px}
+@keyframes orb{50%{transform:scale(1.07)}}
+/* codex tasks + usage */
+#aTasks{padding:8px 12px 2px;display:flex;flex-direction:column;gap:6px;max-height:34%;overflow:auto;border-bottom:1px solid var(--line)}
+#aTasks:empty{display:none}
+.task{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:14px;background:var(--hover);font-size:14px}
+.task b{flex:1;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task small{color:var(--muted);font-size:12px;flex:none}
+.st{flex:none;font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.st.running{color:var(--accent);border-color:rgba(226,182,92,.45);animation:vpulse 1.6s var(--eMove) infinite}
+.st.input{color:var(--accentText);background:var(--accent);border-color:var(--accent)}
+.st.done{color:var(--ok);border-color:rgba(111,194,138,.4)}.st.failed{color:var(--danger);border-color:rgba(255,122,107,.4)}
+#aUsage{display:flex;align-items:center;gap:10px;padding:2px 14px 8px;font-size:12.5px;color:var(--muted);cursor:pointer}
+#aUsage .bar{flex:0 0 70px;height:5px;border-radius:3px;background:var(--hover);overflow:hidden}
+#aUsage .bar i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .3s var(--eMove)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
 </style>
 </head>
 <body>
+<div id="vfull" data-st="listening"><div class="orb"></div><p id="vfullTxt">Listening…</p><button class="end" id="vfullEnd">End</button></div>
 <div class="app" id="app">
   <aside class="side" id="side">
     <div class="top">
@@ -373,6 +449,7 @@ html[data-light] .wcard img{mix-blend-mode:multiply;filter:invert(1) hue-rotate(
       <button class="iconbtn" id="closeSide" aria-label="Close sidebar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
     </div>
     <button class="navitem" id="newChat2"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>New chat</button>
+    <div class="sidechips"><button data-sc="image"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>Images</button><button data-sc="codex"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></svg>Codex</button><button data-sc="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>Settings</button></div>
     <div class="chats" id="chats"></div>
     <button class="navitem" id="agentNav"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>Codex: code &amp; deploy</button>
     <button class="navitem" id="openSettings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>Settings &amp; AI providers</button>
@@ -389,14 +466,17 @@ html[data-light] .wcard img{mix-blend-mode:multiply;filter:invert(1) hue-rotate(
     <div class="thread" id="thread"></div>
     <div class="composer">
       <div class="box">
+        <div id="vbar" class="hidden"><span class="dot"></span><span id="vtxt">Listening…</span><button class="go hidden" id="vsend">Send</button><button id="vend">End voice</button></div>
         <div class="editing hidden" id="editing">Editing a message: sending replaces it and everything after it. <button id="cancelEdit">Cancel</button></div>
         <div class="pending hidden" id="pending"></div>
         <textarea id="input" rows="1" placeholder="Message" enterkeyhint="send"></textarea>
         <div class="row">
           <button class="round" id="attachBtn" aria-label="Attach photo or file"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+          <button class="pill spd" id="speedChip" aria-label="Speed">Balanced<svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
           <button class="pill" id="searchBtn" aria-pressed="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Search</button>
           <button class="pill" id="imageBtn" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>Image</button>
           <button class="round" id="micBtn" aria-label="Voice input"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+          <button class="round" id="voiceBtn" aria-label="Talk with Key Chat"><svg viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg></button>
           <button class="send" id="sendBtn" aria-label="Send" disabled><svg viewBox="0 0 24 24" id="sendIco"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
         </div>
       </div>
@@ -413,7 +493,7 @@ html[data-light] .wcard img{mix-blend-mode:multiply;filter:invert(1) hue-rotate(
     <div class="seg" id="perfSeg"><button data-perf="smooth">Smooth</button><button data-perf="battery">Battery saver</button></div>
     <div class="hint">Battery saver slows the animated backgrounds so your phone stays cooler.</div>
     <div class="sec">Background</div>
-    <div class="hint" id="kcVer" style="margin:0 0 8px">Key Chat version 16</div><div class="bgs" id="bgList"></div><input type="file" id="bgFile" accept="image/*" hidden><div class="hint" style="margin:6px 0 0;font-size:11px">Animated backgrounds adapted from React Bits (reactbits.dev, MIT + Commons Clause). They run on your phone and pause when the app is hidden.</div>
+    <div class="hint" id="kcVer" style="margin:0 0 8px">Key Chat version 17</div><div class="bgs" id="bgList"></div><input type="file" id="bgFile" accept="image/*" hidden><div class="hint" style="margin:6px 0 0;font-size:11px">Animated backgrounds adapted from React Bits (reactbits.dev, MIT + Commons Clause). They run on your phone and pause when the app is hidden.</div>
     <div class="hint" style="margin-bottom:12px">Your photo stays on this device. It is never uploaded.</div>
     <div class="sec">Karan Chief</div>
     <div class="hint" id="chState"></div>
@@ -439,6 +519,7 @@ html[data-light] .wcard img{mix-blend-mode:multiply;filter:invert(1) hue-rotate(
     <textarea class="field" id="sysPrompt" rows="3" placeholder="e.g. Answer briefly. I'm based in India."></textarea>
     <div class="sec">Read aloud voice</div>
     <select class="field" id="voiceSel"></select>
+    <label class="hint" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="checkbox" id="voiceFull"> Talk mode on a separate full screen (off = inside the chat)</label>
     <div class="sec">Your data</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn ghost" id="copyExport">Copy backup of chats</button>
@@ -496,8 +577,9 @@ html[data-light] .wcard img{mix-blend-mode:multiply;filter:invert(1) hue-rotate(
     <button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="atools"><button class="btn ghost" id="aTabChat">Chat</button><button class="btn ghost" id="aTabFiles">Files</button><button class="btn ghost" id="aPrev">Preview</button><button class="btn" id="aDeploy">Deploy</button><button class="btn ghost" id="aExport">Copy all</button><button class="btn ghost" id="aBranch">Branch</button><button class="btn ghost" id="aRestore">Restore</button><button class="btn ghost" id="aReset">New</button></div>
   <div id="aStats"></div>
+  <div id="aUsage" role="button" aria-label="Codex usage today, tap to set a daily budget"><span id="aUseTxt"></span><span class="bar"><i id="aUseBar"></i></span></div>
   <div id="aBody">
-    <div id="aChatPane" style="display:flex;flex-direction:column;flex:1;min-height:0"><div id="aLog"></div>
+    <div id="aChatPane" style="display:flex;flex-direction:column;flex:1;min-height:0"><div id="aTasks"></div><div id="aLog"></div>
       <div class="acomp"><textarea id="aIn" rows="1" placeholder="Describe the change"></textarea><button class="btn" id="aGo">Send</button></div></div>
     <div id="aFiles"><div id="aFileList"></div><textarea id="aEd" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="Pick a file"></textarea></div>
   </div>
@@ -858,12 +940,17 @@ function msgHtml(m,i,last){
   const acts=`<div class="acts"><button data-copy="${i}" aria-label="Copy">${I.copy}</button>${m.content?`<button data-speak="${i}" aria-label="Read aloud">${I.speak}</button>`:""}<button data-share="${i}" aria-label="Share">${I.share}</button>${last?`<button data-regen aria-label="Try again">${I.regen}</button>`:""}</div>`;
   return `<div class="msg ai" data-i="${i}">${body}${acts}</div>`;
 }
+const SUGG=[["Explain a topic simply",'<svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></svg>'],
+ ["Draft a professional email",'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>'],
+ ["Summarise a PDF",'<svg viewBox="0 0 24 24"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4M9 13h6M9 17h4"/></svg>'],
+ ["Create an image",'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>'],
+ ["Write code for a task",'<svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></svg>']];
 function renderThread(){
   const c=curChat();
   if(!c||!c.msgs.length){
     const keyed=Object.keys(PROVIDERS).filter(p=>PROVIDERS[p].tier!=="nokey"&&configured(p)).map(p=>PROVIDERS[p].name);
-    thread.innerHTML=`<div class="empty"><h1>What can I help with?</h1><div class="chips bouncy">
-      ${["Explain a topic simply","Draft a professional email","Summarise a PDF","Create an image","Write code for a task","What's in this photo?"].map(t=>`<button class="chip" data-sug="${esc(t)}">${t}</button>`).join("")}
+    thread.innerHTML=`<div class="empty"><h1>What shall we unlock today?</h1><p class="sub">Ask anything. Every free model, one key.</p><div class="sugg">
+      ${SUGG.map(([t,ic])=>`<button data-sug="${esc(t)}">${ic}${t}</button>`).join("")}
       </div><div class="status-note">${keyed.length?`Using: ${esc(keyed.join(", "))} + free no-key models.`:`Running on free no-key models (OVH, LLM7). Add more providers in <a href="#" data-settings>Settings</a>: Groq, Gemini, Ollama, OpenCode and 45+ others.`}</div></div>`;
     return;
   }
@@ -871,13 +958,14 @@ function renderThread(){
   thread.querySelectorAll(".msg.ai .b").forEach(enhance);
   thread.scrollTop=thread.scrollHeight;
 }
-function renderMode(){ const base=S.mode==="fixed"&&S.fixed ? S.fixed.m.split("/").pop() : S.mode==="priority"?"Priority":"Auto"; $("#modeLabel").textContent = base + (S.speed&&S.speed!=="balanced" ? " · "+spd().label : ""); }
+function renderSpeedChip(){ const el=$("#speedChip"); if(el) el.firstChild.nodeValue=spd().label; }
+function renderMode(){ renderSpeedChip(); const base=S.mode==="fixed"&&S.fixed ? S.fixed.m.split("/").pop() : S.mode==="priority"?"Priority":"Auto"; $("#modeLabel").textContent = base + (S.speed&&S.speed!=="balanced" ? " · "+spd().label : ""); }
 function renderAll(){ renderList(); renderThread(); renderMode(); }
 
 /* ============ Sending ============ */
 let busy=null, pendingAtt=[], searchOn=false, imageOn=false, editIdx=null, wake=null;
 async function keepAwake(on){ try{ if(on && navigator.wakeLock && !wake) wake=await navigator.wakeLock.request("screen"); if(!on && wake){ await wake.release(); wake=null; } }catch{ wake=null; } }
-function setBusy(b){ busy=b; $("#sendIco").innerHTML=b?'<rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor"/>':'<path d="M12 19V5M5 12l7-7 7 7"/>'; $("#sendBtn").setAttribute("aria-label",b?"Stop":"Send"); updateSend(); keepAwake(!!b); }
+function setBusy(b){ busy=b; document.querySelector(".composer .box")?.classList.toggle("busy",!!b); $("#sendIco").innerHTML=b?'<rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor"/>':'<path d="M12 19V5M5 12l7-7 7 7"/>'; $("#sendBtn").setAttribute("aria-label",b?"Stop":"Send"); updateSend(); keepAwake(!!b); }
 function updateSend(){ $("#sendBtn").disabled = !busy && !$("#input").value.trim() && !pendingAtt.length; }
 function cancelEdit(){ editIdx=null; $("#editing").classList.add("hidden"); }
 async function send(override){
@@ -893,7 +981,7 @@ async function send(override){
 }
 async function answer(c, imagePrompt){
   const ai={role:"assistant",content:""}; c.msgs.push(ai); c.updated=Date.now(); renderAll();
-  const node=thread.querySelector(".msg.ai:last-child"); const THINK='<span class="thinking" aria-label="Thinking"><i></i><i></i><i></i></span>';
+  const node=thread.querySelector(".msg.ai:last-child"); const THINK='<span class="thinking" role="status">Thinking</span>';
   node.innerHTML=`<div class="b">${imagePrompt?'<span style="color:var(--muted)">Creating image…</span>':THINK}</div>`;
   const bEl=node.querySelector(".b"); const ctl=new AbortController(); setBusy(ctl); let raf=0;
   try{
@@ -1028,6 +1116,7 @@ function provHtml(p){
 }
 let openGroups=new Set(["nokey","free"]);
 function renderSettings(){
+  $("#voiceFull").checked=!!S.voiceFull;
   document.querySelectorAll("#perfSeg button").forEach(x=>x.classList.toggle("on",(x.dataset.perf==="battery")===!!S.battery));
   const q=$("#provQ").value.toLowerCase().trim();
   $("#provList").innerHTML=GROUPS.map(([g,label])=>{
@@ -1285,10 +1374,20 @@ function renderAgent(){
     log.appendChild(d); }
   log.scrollTop=log.scrollHeight; renderStats(); renderFiles(); $("#aGo").textContent=aBusy?"Stop":"Send";
 }
-function renderStats(){
+const dayKey=()=>new Date().toISOString().slice(0,10);
+function addUse(chars){ const a=A(); a.use||={}; const k=dayKey(); a.use[k]=(a.use[k]||0)+Math.round(chars/4); const ks=Object.keys(a.use).sort(); while(ks.length>40) delete a.use[ks.shift()]; }
+function renderTasks(){
+  const a=A(), L={running:"Running",input:"Needs your input",done:"Done",failed:"Failed",stopped:"Stopped"};
+  $("#aTasks").innerHTML=(a.tasks||[]).slice(-5).reverse().map(t=>`<div class="task"><span class="st ${t.status==="input"?"input":t.status}">${L[t.status]||t.status}</span><b>${esc(t.title)}</b><small>${new Date(t.at).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}</small></div>`).join("");
+  const used=(a.use||{})[dayKey()]||0, bud=a.budget||200000;
+  $("#aUseTxt").textContent=`Today about ${used.toLocaleString()} tokens (estimate) of your ${bud.toLocaleString()} budget`;
+  $("#aUseBar").style.width=Math.min(100,used/bud*100).toFixed(1)+"%";
+}
+function renderStats(){ renderTasks();
   const a=A(), ks=Object.keys(a.files), ch=ks.reduce((n,k)=>n+(a.files[k]||"").length,0), us=a.msgs.filter(m=>m.role==="user"&&!m.tool).length;
   $("#aStats").textContent=`${us} request${us===1?"":"s"} · ${ks.length} file${ks.length===1?"":"s"} · about ${Math.round(ch/4).toLocaleString()} tokens of code (estimate) · ${(a.branches||[]).length} branch${(a.branches||[]).length===1?"":"es"}`;
 }
+$("#aUsage").onclick=()=>{ const a=A(); const v=parseInt((prompt("Daily Codex budget in tokens (your own limit, used only for this meter)",a.budget||200000)||"").replace(/\D/g,"")); if(v>0){ a.budget=v; save(); renderTasks(); } };
 $("#aBranch").onclick=()=>{ const a=A(); const n=(prompt("Name this branch (a saved copy of all files)","v"+((a.branches||[]).length+1))||"").trim(); if(!n) return; (a.branches||=[]).push({name:n.slice(0,30),at:Date.now(),files:JSON.parse(JSON.stringify(a.files))}); save(); renderStats(); toast("Branch saved: "+n); };
 $("#aRestore").onclick=()=>{ const a=A(), b=a.branches||[]; if(!b.length){ toast("No branches yet. Tap Branch first."); return; }
   popMenu(b.slice().reverse().map(x=>({label:x.name,sub:new Date(x.at).toLocaleString()+" · "+Object.keys(x.files).length+" files",fn:()=>{ if(confirm("Replace your current files with branch "+x.name+"? Branch your current work first if you want to keep it.")){ a.files=JSON.parse(JSON.stringify(x.files)); a.sel=Object.keys(a.files)[0]||""; save(); renderAgent(); toast("Restored "+x.name); } }}))); };
@@ -1301,18 +1400,22 @@ function renderFiles(){
 }
 async function agentSend(){
   if(aBusy){ aBusy.abort(); return; }
-  const inp=$("#aIn"), text=inp.value.trim(); if(!text) return; inp.value=""; const a=A(); a.msgs.push({role:"user",content:text}); renderAgent();
+  const inp=$("#aIn"), text=inp.value.trim(); if(!text) return; inp.value=""; const a=A(); a.msgs.push({role:"user",content:text}); const task={id:uid(),title:text.slice(0,80),status:"running",at:Date.now()}; (a.tasks||=[]).push(task); if(a.tasks.length>30) a.tasks.splice(0,a.tasks.length-30); renderAgent(); let rejected=false;
   const ctl=new AbortController(); aBusy=ctl; $("#aGo").textContent="Stop";
   try{
     for(let step=0;step<8&&!ctl.signal.aborted;step++){
       const ai={role:"assistant",content:""}; a.msgs.push(ai); renderAgent();
       const api=[{role:"system",content:agentSystem()+"\n"+(S.system||"")}, ...a.msgs.slice(0,-1).slice(-20).map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.content.slice(0,9000)}))];
       let raf=0; const r=await routeChat(api,{vision:false,search:false},t=>{ cancelAnimationFrame(raf); raf=requestAnimationFrame(()=>{ ai.content=t; renderAgent(); }); },ctl.signal);
-      cancelAnimationFrame(raf); ai.content=r.text; renderAgent();
+      cancelAnimationFrame(raf); ai.content=r.text; addUse(api.reduce((n,m)=>n+m.content.length,0)+r.text.length); renderAgent();
+      const dels=[...r.text.matchAll(/<delete path="([^"]*)"/g)].map(m=>m[1]);
+      if(dels.length && !await approve({tag:"Deletes files",who:"Codex",title:`Codex wants to delete ${dels.length} file${dels.length>1?"s":""}`,rows:dels.slice(0,5).map(d=>["File",d,""])})){ rejected=true; a.msgs.push({role:"user",tool:true,content:"Tool results:\nThe user rejected the delete. Do not delete files; ask what they want instead."}); break; }
       const res=await execTools(r.text); if(!res.n){ break; }
       a.msgs.push({role:"user",tool:true,content:"Tool results:\n"+res.out}); renderAgent();
     }
-  }catch(e){ if(!e.stopped&&!ctl.signal.aborted) a.msgs.push({role:"assistant",content:"Error: "+e.message}); }
+    const last=[...a.msgs].reverse().find(m=>m.role==="assistant")?.content.replace(/<[^>]+>/g,"").trim()||"";
+    task.status=ctl.signal.aborted?"stopped":(rejected||/\?\s*$/.test(last))?"input":"done";
+  }catch(e){ task.status=ctl.signal.aborted||e.stopped?"stopped":"failed"; if(!e.stopped&&!ctl.signal.aborted) a.msgs.push({role:"assistant",content:"Error: "+e.message}); }
   aBusy=null; save(); renderAgent();
 }
 /* ---- GitHub deploy (REST API, runs in your browser) ---- */
@@ -1351,6 +1454,40 @@ $("#dGo").onclick=deployGH;
 function openAgent(){ document.getElementById("app").classList.remove("open"); renderAgent(); aTab("chat"); openSheet("#agent"); }
 $("#agentBtn").onclick=openAgent; $("#agentNav").onclick=openAgent;
 window.__agent={A,execTools,buildPage,runJS,agentSystem};
+
+/* ---- v17: speed chip, sidebar chips ---- */
+$("#speedChip").onclick=()=>popMenu(["instant","balanced","deep"].map(k=>({label:SPEED[k].label,sub:SPEED_HINT[k],on:(S.speed||"balanced")===k,fn:()=>{ setSpeed(k); toast("Speed: "+SPEED[k].label); }})));
+document.querySelector(".sidechips").onclick=e=>{ const b=e.target.closest("[data-sc]"); if(!b) return; const k=b.dataset.sc; closeSide();
+  if(k==="image"){ S.cur=null; save(); renderAll(); setToggle("image",true); $("#input").focus(); }
+  else if(k==="codex") openAgent(); else $("#openSettings").click(); };
+renderSpeedChip();
+/* ---- v17: talk mode (voice inside the chat, or full screen) ---- */
+let vOn=false, vSR=null, vRec=null, vStream=null, vChunks=[];
+const vSet=(st,txt)=>{ $("#vbar").dataset.st=st; $("#vtxt").textContent=txt; $("#vfull").dataset.st=st; $("#vfullTxt").textContent=txt; };
+function vStop(){ vOn=false; try{ vSR?.abort(); }catch{} vSR=null; if(vRec&&vRec.state!=="inactive"){ vRec.onstop=null; vRec.stop(); } vRec=null; vStream?.getTracks().forEach(t=>t.stop()); vStream=null;
+  window.speechSynthesis?.cancel(); $("#vbar").classList.add("hidden"); $("#vfull").classList.remove("show"); $("#voiceBtn").classList.remove("on"); }
+async function vTurn(text){ if(!vOn) return; if(!text){ vListen(); return; }
+  vSet("thinking","Thinking…"); await send(text); if(!vOn) return;
+  const m=curChat()?.msgs.at(-1); if(!m?.content||!window.speechSynthesis){ vListen(); return; }
+  vSet("speaking","Speaking… tap End to stop"); const u=new SpeechSynthesisUtterance(plain(m.content)); const v=speechSynthesis.getVoices().find(v=>v.name===S.voice); if(v) u.voice=v;
+  u.onend=u.onerror=()=>{ if(vOn) vListen(); }; speechSynthesis.cancel(); speechSynthesis.speak(u); }
+async function vListen(){ if(!vOn) return; $("#vsend").classList.add("hidden");
+  if(SR){ vSet("listening","Listening…"); let said=""; vSR=new SR(); vSR.interimResults=true; vSR.lang=navigator.language||"en-US";
+    vSR.onresult=e=>{ said=[...e.results].map(r=>r[0].transcript).join(""); vSet("listening",said||"Listening…"); };
+    vSR.onerror=e=>{ if(e.error==="not-allowed"){ toast("Microphone blocked. Allow it in Settings › Safari › Microphone."); vStop(); } };
+    vSR.onend=()=>{ vSR=null; if(vOn) vTurn(said.trim()); };
+    try{ vSR.start(); }catch{ vStop(); } return; }
+  try{ vStream=await navigator.mediaDevices.getUserMedia({audio:true}); }catch{ toast("Microphone blocked. Allow it in Settings › Safari › Microphone."); vStop(); return; }
+  const mime=["audio/mp4","audio/webm;codecs=opus","audio/webm"].find(t=>MediaRecorder.isTypeSupported?.(t))||"";
+  vRec=new MediaRecorder(vStream,mime?{mimeType:mime}:{}); vChunks=[]; vRec.ondataavailable=e=>e.data.size&&vChunks.push(e.data);
+  vRec.onstop=async()=>{ vStream?.getTracks().forEach(t=>t.stop()); vStream=null; const type=vRec?.mimeType||mime||"audio/mp4"; vRec=null; if(!vOn) return;
+    vSet("thinking","Turning speech into text…"); try{ vTurn(await transcribe(new Blob(vChunks,{type}),type.includes("webm")?"webm":"m4a")); }catch(e){ toast("Voice: "+e.message); vStop(); } };
+  vRec.start(); vSet("listening","Listening… tap Send when you finish"); $("#vsend").classList.remove("hidden"); }
+$("#voiceBtn").onclick=()=>{ if(vOn){ vStop(); return; }
+  if(!SR && !(canRecord && STT_ROUTES.some(r=>configured(r.p)))){ toast("Talk mode needs speech recognition. Add a free Groq key in Settings to use it on this phone."); return; }
+  vOn=true; $("#voiceBtn").classList.add("on"); if(S.voiceFull) $("#vfull").classList.add("show"); else $("#vbar").classList.remove("hidden"); vListen(); };
+$("#vend").onclick=vStop; $("#vfullEnd").onclick=vStop; $("#vsend").onclick=()=>{ if(vRec&&vRec.state!=="inactive") vRec.stop(); };
+$("#voiceFull").onchange=e=>{ S.voiceFull=e.target.checked; save(); };
 /* ---- Approval card (replaces browser confirm) ---- */
 function approve(o){ return new Promise(res=>{
   $("#apTag").textContent=o.tag||"Check first"; $("#apWho").textContent=o.who||""; $("#apTitle").textContent=o.title||"";
@@ -1391,7 +1528,7 @@ function approve(o){ return new Promise(res=>{
   function fxApply(cur){ if(!cur.startsWith("fx-")){ if(window.KCFX) KCFX.stop(); return; }
     const go=()=>{ if(!KCFX.supported()||!KCFX.start(cur)){ toast("This animated background needs a newer iPhone. Switched back to Black."); set("kc-bg","black"); apply(); } };
     if(window.KCFX){ go(); return; } if(fxLoading) return; fxLoading=true;
-    const s=document.createElement("script"); s.src="fx.js?v=16"; s.onload=()=>{ fxLoading=false; if((get("kc-bg")||"")===cur) go(); }; s.onerror=()=>{ fxLoading=false; toast("Couldn't load the animated background (needs internet the first time)"); }; document.head.appendChild(s); }
+    const s=document.createElement("script"); s.src="fx.js?v=17"; s.onload=()=>{ fxLoading=false; if((get("kc-bg")||"")===cur) go(); }; s.onerror=()=>{ fxLoading=false; toast("Couldn't load the animated background (needs internet the first time)"); }; document.head.appendChild(s); }
   box.innerHTML=BG.map(b=>`<button type="button" data-bg="${b[0]}"><i style="background:${b[2]}"></i><span>${b[1]}</span></button>`).join("");
   box.onclick=e=>{ const b=e.target.closest("button"); if(!b) return; if(b.dataset.bg==="photo"){ file.click(); return; } set("kc-bg",b.dataset.bg); apply(); };
   file.onchange=()=>{ const f=file.files[0]; file.value=""; if(!f) return; const img=new Image(), u=URL.createObjectURL(f);
