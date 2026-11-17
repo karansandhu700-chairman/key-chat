@@ -584,7 +584,8 @@ html[data-light] #welcome .wcard .btn.ghost{color:var(--text);border-color:var(-
 #routeBtn b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #sendBtn{order:99;flex:none}
 #micBtn,#voiceBtn,#attachBtn{flex:none}
-.msg .b,.composer textarea{zoom:var(--tz,1)}
+html{zoom:var(--tz,1)}
+header .gbtn{flex:none;aspect-ratio:1/1;min-width:0}
 .tsbox{display:flex;align-items:center;gap:14px;padding:18px 16px;border-radius:20px;background:var(--panel);border:1px solid var(--line)}
 .tsbox input{flex:1;accent-color:var(--accent)}
 .tsA{color:var(--muted);font-size:15px}.tsA.big{font-size:26px;color:var(--text)}
@@ -698,8 +699,8 @@ html[data-light] #welcome .wcard .btn.ghost{color:var(--text);border-color:var(-
 <div class="sheet" id="textsize"><div class="card">
   <div class="hd"><button class="iconbtn" id="tsBack" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b>Text Size</b><span style="width:44px"></span></div>
   <div class="bd">
-    <div class="hint" style="margin:8px 0 16px;text-align:center;font-size:15px;color:var(--text)">Text in Key Chat adjusts to the size you choose below.</div>
-    <div class="tsbox"><span class="tsA">A</span><input type="range" id="tsRange" min="0" max="5" step="1" value="1" aria-label="Text size"><span class="tsA big">A</span></div>
+    <div class="hint" style="margin:8px 0 16px;text-align:center;font-size:15px;color:var(--text)">The whole screen and its text adjust to the size you choose below.</div>
+    <div class="tsbox"><span class="tsA">A</span><input type="range" id="tsRange" min="0" max="6" step="1" value="2" aria-label="Screen size"><span class="tsA big">A</span></div>
     <div class="msg ai" style="margin:24px 0 0"><div class="b" id="tsSample">This is how your messages will look.</div></div>
   </div>
 </div></div>
@@ -1423,9 +1424,9 @@ $("#addModelBtn").onclick=()=>{ const p=$("#addProv").value, m=$("#addModel").va
 $("#speedSeg").onclick=e=>{ const b=e.target.closest("button"); if(b) setSpeed(b.dataset.speed); };
 $("#perfSeg").onclick=e=>{ const b=e.target.closest("button"); if(b) setPerf(b.dataset.perf==="battery"); };
 /* Text size (approved 2026-11-17): six steps, applied to chat text and the composer */
-const TS_STEPS=[0.85,1,1.15,1.3,1.5,1.7];
-function setTS(i){ S.ts=i; save(); document.documentElement.style.setProperty("--tz",TS_STEPS[i]); $("#tsRange").value=i; }
-setTS(Number.isInteger(S.ts)&&S.ts>=0&&S.ts<=5?S.ts:1);
+const TS_STEPS=[0.75,0.85,1,1.15,1.3,1.5,1.7];
+function setTS(i){ S.tsi=i; save(); document.documentElement.style.setProperty("--tz",TS_STEPS[i]); $("#tsRange").value=i; $("#tsSample").style.fontSize=""; }
+setTS(Number.isInteger(S.tsi)&&S.tsi>=0&&S.tsi<TS_STEPS.length?S.tsi:2);
 $("#openTextSize").onclick=()=>{ $("#settings").classList.remove("show"); openSheet("#textsize"); };
 $("#tsBack").onclick=()=>{ $("#textsize").classList.remove("show"); openSheet("#settings"); };
 $("#tsRange").oninput=e=>setTS(+e.target.value);
