@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Key Chat</title>
 <meta name="description" content="Free multi-AI chat. Routes every message to the best free model you have, with automatic failover.">
 <meta name="theme-color" content="#0a0907">
@@ -578,6 +578,16 @@ html[data-light] #welcome .wcard .btn.ghost{color:var(--text);border-color:var(-
 .avatar{background:var(--panel);color:var(--text);border-color:var(--line);box-shadow:none}
 .main::after,#lock::after,#welcome::after{display:none!important}
 .newpill,#sendBtn{box-shadow:none!important}
+/* Composer (approved 2026-11-17): model name on its own line, send and mic always visible */
+.composer .row{flex-wrap:wrap;row-gap:6px}
+#routeBtn{order:-1;flex:1 1 100%;min-width:0;justify-content:flex-start;overflow:hidden}
+#routeBtn b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#sendBtn{order:99;flex:none}
+#micBtn,#voiceBtn,#attachBtn{flex:none}
+.msg .b,.composer textarea{zoom:var(--tz,1)}
+.tsbox{display:flex;align-items:center;gap:14px;padding:18px 16px;border-radius:20px;background:var(--panel);border:1px solid var(--line)}
+.tsbox input{flex:1;accent-color:var(--accent)}
+.tsA{color:var(--muted);font-size:15px}.tsA.big{font-size:26px;color:var(--text)}
 .empty .hello{flex:1;display:flex;align-items:flex-end;justify-content:center;padding-bottom:20px}
 </style>
 </head>
@@ -635,6 +645,8 @@ html[data-light] #welcome .wcard .btn.ghost{color:var(--text);border-color:var(-
     <div class="sec" style="margin-top:0">Performance</div>
     <div class="seg" id="perfSeg"><button data-perf="smooth">Smooth</button><button data-perf="battery">Battery saver</button></div>
     <div class="hint">Battery saver slows the animated backgrounds so your phone stays cooler.</div>
+    <div class="sec">Text size</div>
+    <button class="btn ghost" id="openTextSize" style="width:100%">Text size</button>
     <div class="sec">Background</div>
     <div class="hint" id="kcVer" style="margin:0 0 8px">Key Chat version 18</div><div class="bgs" id="bgList"></div><input type="file" id="bgFile" accept="image/*" hidden><div class="hint" style="margin:6px 0 0;font-size:11px">Animated backgrounds adapted from React Bits (reactbits.dev, MIT + Commons Clause). They run on your phone and pause when the app is hidden.</div>
     <div class="hint" style="margin-bottom:12px">Your photo stays on this device. It is never uploaded.</div>
@@ -683,6 +695,14 @@ html[data-light] #welcome .wcard .btn.ghost{color:var(--text);border-color:var(-
   <input class="field" id="rcIn" placeholder="XXXX-XXXX-XXXX-XXXX" autocapitalize="characters" autocorrect="off" spellcheck="false" autocomplete="off" style="max-width:300px;text-align:center;font-size:17px;margin-bottom:14px">
   <button class="btn" id="rcOk" style="min-width:200px;border-radius:999px;padding:13px"></button>
   <button class="lnk" id="rcErase">I lost the code too. Erase the app.</button><button class="lnk" id="rcBack">Back</button></div>
+<div class="sheet" id="textsize"><div class="card">
+  <div class="hd"><button class="iconbtn" id="tsBack" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b>Text Size</b><span style="width:44px"></span></div>
+  <div class="bd">
+    <div class="hint" style="margin:8px 0 16px;text-align:center;font-size:15px;color:var(--text)">Text in Key Chat adjusts to the size you choose below.</div>
+    <div class="tsbox"><span class="tsA">A</span><input type="range" id="tsRange" min="0" max="5" step="1" value="1" aria-label="Text size"><span class="tsA big">A</span></div>
+    <div class="msg ai" style="margin:24px 0 0"><div class="b" id="tsSample">This is how your messages will look.</div></div>
+  </div>
+</div></div>
 <div class="sheet" id="approve"><div class="card">
   <div class="hd"><b>Needs your approval</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="bd"><div class="apv"><div class="top"><span class="tag" id="apTag"></span><span class="who" id="apWho"></span></div>
@@ -1402,6 +1422,13 @@ $("#addProv").onchange=fillModelOptions;
 $("#addModelBtn").onclick=()=>{ const p=$("#addProv").value, m=$("#addModel").value.trim(); if(!p||!m) return; if(!S.chain.some(e=>e.p===p&&e.m===m)) S.chain.unshift({p,m,on:true}); $("#addModel").value=""; save(); renderRouting(); };
 $("#speedSeg").onclick=e=>{ const b=e.target.closest("button"); if(b) setSpeed(b.dataset.speed); };
 $("#perfSeg").onclick=e=>{ const b=e.target.closest("button"); if(b) setPerf(b.dataset.perf==="battery"); };
+/* Text size (approved 2026-11-17): six steps, applied to chat text and the composer */
+const TS_STEPS=[0.85,1,1.15,1.3,1.5,1.7];
+function setTS(i){ S.ts=i; save(); document.documentElement.style.setProperty("--tz",TS_STEPS[i]); $("#tsRange").value=i; }
+setTS(Number.isInteger(S.ts)&&S.ts>=0&&S.ts<=5?S.ts:1);
+$("#openTextSize").onclick=()=>{ $("#settings").classList.remove("show"); openSheet("#textsize"); };
+$("#tsBack").onclick=()=>{ $("#textsize").classList.remove("show"); openSheet("#settings"); };
+$("#tsRange").oninput=e=>setTS(+e.target.value);
 /* long-press the send arrow: pick Instant / Balanced / Deep, like the ChatGPT app */
 (function(){ const btn=$("#sendBtn"); let tm=0, did=false, pop=null;
   const close=()=>{ if(pop){ pop.remove(); pop=null; document.removeEventListener("pointerdown",away,true); } };
