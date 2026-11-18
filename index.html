@@ -594,13 +594,131 @@ header .gbtn{flex:none;aspect-ratio:1/1;min-width:0}
 .artcard small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
 .artcard .arti{width:34px;height:34px;border-radius:10px;background:var(--bg);display:grid;place-items:center;flex:none}
 .artcard .arti svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8}
+
+/* ===== v25 redesign: ChatGPT-style settings, composer, drawer ===== */
+.sec{text-transform:none!important;letter-spacing:0!important;font-size:14px!important;font-weight:600}
+#settings.sheet{align-items:stretch}
+#settings .card{height:calc(100dvh / var(--tz,1))!important;max-height:calc(100dvh / var(--tz,1))!important;max-width:none!important;border-radius:0!important;padding-top:env(safe-area-inset-top);background:var(--bg)!important;border:0!important}
+#settings .card::before,#settings .szw{display:none!important}
+#settings .hd{border:0;padding:10px 14px;gap:8px}
+#settings .hd b{flex:1;text-align:center;font-size:18px;font-weight:600}
+#settings .hd .iconbtn{width:44px;height:44px;border-radius:50%;background:var(--raise2);border:1px solid var(--line)}
+#settings[data-page="home"] #setBack{visibility:hidden}
+#settings .bd{padding:10px 16px 32px}
+.spage{display:none}.spage.on{display:block;animation:spIn .22s ease}
+@keyframes spIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+.sgrp{background:var(--raise2);border:1px solid var(--line);border-radius:24px;overflow:hidden;margin:0 0 18px}
+html[data-light] .sgrp{background:#fff}
+.srow{display:flex;align-items:center;gap:14px;width:100%;min-height:58px;padding:12px 16px;text-align:left;font-size:17px;position:relative}
+.srow+.srow::before{content:"";position:absolute;top:0;left:56px;right:0;border-top:1px solid var(--line)}
+.srow:active{background:var(--hover)}
+.srow .sic{width:26px;height:26px;display:grid;place-items:center;color:var(--c,var(--text));flex:none}
+.srow .sic svg{width:22px;height:22px}
+.srow span{flex:1;min-width:0}
+.srow em{font-style:normal;color:var(--muted);font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46%}
+.srow>svg{width:16px;height:16px;color:var(--muted)}
+.sfootnote{text-align:center;font-size:12.5px;color:var(--muted);margin:6px 0}
+#plugList{list-style:none;margin:6px 0 10px;padding:0;background:var(--raise2);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+html[data-light] #plugList,html[data-light] #memList{background:#fff}
+#plugList li{display:flex;gap:10px;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid var(--line);font-size:16px}
+#plugList li:last-child{border:0}
+#memList{background:var(--raise2);border-radius:20px}
+/* composer: one row */
+.composer .box{display:flex;flex-wrap:wrap;align-items:flex-end;gap:4px;padding:8px 8px 8px 6px}
+.composer .box>#vbar,.composer .box>#editing,.composer .box>#pending{flex:1 1 100%;order:-3}
+.composer .box>.row{display:contents}
+.composer .box>textarea{order:1;flex:1 1 0;min-width:0;padding:9px 4px!important;margin:0!important;align-self:center}
+#attachBtn{order:0}#micBtn{order:2}#voiceBtn{order:3}#sendBtn{order:4}.composer .row .pill{order:5}
+#attachBtn,#micBtn,#voiceBtn,#sendBtn{align-self:flex-end;margin-bottom:1px}
+#voiceBtn{width:40px;height:40px;box-shadow:none!important}
+/* model picker in header */
+.composer .box>textarea{order:-1!important;flex:1 1 100%!important;padding:10px 12px 2px!important}
+#attachBtn{order:1!important}
+.composer #routeBtn{order:2!important;flex:0 1 auto!important;margin:0 0 0 auto!important;padding:8px 10px;border-radius:999px;font-size:14.5px;display:inline-flex;align-items:center;gap:5px;align-self:flex-end;max-width:52%;min-width:0}
+.composer #routeBtn span{font-size:14.5px}
+#micBtn{order:3!important}#voiceBtn{order:4!important}#sendBtn{order:5!important}.composer .row .pill{order:6!important}
+/* drawer */
+:root{--sidebg:#0a0907}html[data-light]{--sidebg:var(--bg)}
+.side .brandmark{display:none!important}
+.sidetitle{flex:1;font-size:26px;font-weight:700;letter-spacing:-.02em;padding-left:6px}
+.side .top{align-items:center}
+.sdiv{background:var(--line)!important}
+.avatar::before{background:#e5533d!important}.avatar{color:#fff!important}
+
+/* ===== v26 Codex: history, chat header, menus, files, settings ===== */
+#agent.sheet{align-items:stretch}
+#agent .card{height:calc(100dvh / var(--tz,1))!important;max-height:calc(100dvh / var(--tz,1))!important;max-width:none!important;width:100%!important;border-radius:0!important;padding-top:env(safe-area-inset-top);background:var(--bg)!important;border:0!important;position:relative;box-shadow:none!important}
+#agent .card::before{display:none!important}
+#agent .agentHd,#agent .atools,#agent .agentStatusRow,#agent #aTasks{display:none!important}
+.ahd{display:flex;align-items:center;gap:10px;padding:8px 14px}
+.ahd .gbtn{flex:none}
+.atitle{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;font-size:19px;font-weight:600;padding:8px}
+.atitle svg{width:18px;height:18px;color:var(--muted)}
+#aHomeV{position:absolute;inset:0;padding-top:env(safe-area-inset-top);background:var(--bg);display:none;flex-direction:column;z-index:3}
+#agent .card.home #aHomeV{display:flex}
+#aSearchBox{margin:0 16px 8px}
+#aHist{flex:1;overflow-y:auto;padding:4px 20px 12px;-webkit-overflow-scrolling:touch}
+#aHist h6{display:flex;align-items:center;gap:6px;margin:18px 0 6px;font-size:16px;font-weight:600;color:var(--text)}
+#aHist h6 svg{width:14px;height:14px;color:var(--muted)}
+.ahrow{display:flex;align-items:center;width:100%;text-align:left;padding:10px 0;gap:10px}
+.ahrow span{flex:1;min-width:0}.ahrow b{display:block;font-weight:400;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ahrow small{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:14px;margin-top:2px}
+.ahrow small svg{width:15px;height:15px}
+.ahrow i{width:9px;height:9px;border-radius:50%;background:#3b82f6;flex:none}
+.ahempty{color:var(--muted);text-align:center;margin-top:30vh;font-size:15px;padding:0 20px}
+.apill{display:flex;align-items:flex-end;gap:4px;margin:8px 14px calc(var(--safeB) + 10px);padding:6px;border:1px solid var(--line);border-radius:30px;background:var(--raise2)}
+html[data-light] .apill{background:#fff;box-shadow:0 8px 26px rgba(40,50,80,.12)}
+.apill textarea{flex:1;min-width:0;border:0!important;background:none!important;resize:none;outline:none;padding:9px 6px!important;max-height:140px;font-size:16px;align-self:center}
+.apill .round{flex:none}
+.asend{flex:none;height:38px;min-width:38px;padding:0 12px;border-radius:999px;background:var(--accent);color:var(--accentText);display:grid;place-items:center;font-weight:600;font-size:15px}
+.asend svg{width:20px;height:20px}
+#agent .acomp{display:block;padding:0}
+#agent .acomp .apill{margin:6px 12px calc(var(--safeB) + 10px)}
+#aUseLine{text-align:center;color:var(--muted);font-size:12.5px;margin:-6px 0 calc(var(--safeB) + 8px)}
+.amic.listening{color:var(--danger)}
+.achd{border-bottom:0}
+.actitle{flex:1;min-width:0}.actitle b{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.actitle small{display:block;color:var(--muted);font-size:13.5px}
+.apair{display:flex;border:1px solid var(--line);border-radius:999px;background:var(--raise2)}
+.apair button{width:46px;height:44px;display:grid;place-items:center}
+#aLog{padding:10px 18px}
+#aLog .am{background:none;border:0;padding:6px 0;font-size:16px}
+#aLog .am.u{margin-left:auto;max-width:82%;width:fit-content;background:var(--bubble);border-radius:20px;padding:10px 14px}
+#aLog .am.t{background:var(--hover);border-radius:12px;padding:8px 10px}
+#agent.wrapcode #aLog pre,#agent.wrapcode #aLog code{white-space:pre-wrap!important;word-break:break-word}
+.aacts{display:flex;align-items:center;gap:12px;margin-top:6px;color:var(--muted);font-size:13px}
+.aacts button{display:grid;place-items:center;color:var(--muted)}.aacts svg{width:18px;height:18px}
+#aFiles{background:var(--bg)}
+.afhd{display:flex;align-items:center;justify-content:center;position:relative;padding:10px 14px}
+.afhd b{font-size:18px}.afhd .gbtn{position:absolute;right:14px}
+#aFSeg{display:flex;margin:4px 12px;background:var(--hover);border-radius:14px;padding:3px}
+#aFSeg button{flex:1;padding:8px;border-radius:11px;font-weight:600;font-size:15px;color:var(--muted)}
+#agent #aFSeg button.on{background:var(--raise2);color:var(--text)}
+html[data-light] #agent #aFSeg button.on{background:#fff}
+#aSet.sheet{align-items:stretch}
+#aSet .card{height:calc(100dvh / var(--tz,1))!important;max-height:calc(100dvh / var(--tz,1))!important;max-width:none!important;border-radius:0!important;padding-top:env(safe-area-inset-top);background:var(--bg)!important;border:0!important}
+#aSet .card::before,#aSet .szw{display:none!important}
+#aSet .hd{border:0}#aSet .hd b{flex:1;text-align:center;font-size:18px}
+#aSet .hd .iconbtn{width:44px;height:44px;border-radius:50%;background:var(--raise2);border:1px solid var(--line)}
+.aswrow{cursor:pointer}
+.asw{appearance:none;-webkit-appearance:none;width:52px;height:32px;border-radius:999px;background:var(--line);position:relative;transition:background .2s;flex:none;margin:0}
+.asw::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.asw:checked{background:#34c759}.asw:checked::after{transform:translateX(20px)}
+#aFiles .search,#aFSeg,.afhd{flex:none}
+#aFiles #aFileList{flex:none;display:flex;flex-direction:column;gap:0;overflow-y:auto;overflow-x:hidden;max-height:38%;padding:0;border-bottom:1px solid var(--line)}
+#aFiles #aFileList button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 20px;border-radius:0;background:none;font-size:16px;border-top:1px solid var(--line)}
+#aFiles #aFileList button::before{content:"";width:18px;height:18px;flex:none;background:var(--muted);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'%3E%3Cpath d='M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 3v5h5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'%3E%3Cpath d='M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 3v5h5'/%3E%3C/svg%3E") center/contain no-repeat}
+#aFiles #aFileList button.on{background:var(--hover);color:var(--text);font-weight:600}
+#aFiles #aFileList button:first-child{border-top:0}
+.popm.top{bottom:auto!important;top:calc(env(safe-area-inset-top) + 64px);left:50%!important;transform:translateX(-50%)}
+.popm .phead{padding:10px 14px 4px;font-size:12.5px;color:var(--muted);pointer-events:none}
 </style>
 </head>
 <body>
 <div id="vfull" data-st="listening"><div class="orb"></div><p id="vfullTxt">Listening…</p><button class="end" id="vfullEnd">End</button></div>
 <div class="app" id="app">
   <aside class="side" id="side">
-    <div class="top"><span class="brand brandmark" aria-label="Key Chat"></span><button class="gbtn" id="searchToggle" aria-label="Search chats"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button><button class="iconbtn" id="closeSide" aria-label="Close sidebar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button></div>
+    <div class="top"><span class="brand brandmark" aria-label="Key Chat"></span><b class="sidetitle">Key Chat</b><button class="gbtn" id="searchToggle" aria-label="Search chats"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button><button class="iconbtn" id="closeSide" aria-label="Close sidebar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button></div>
     <label class="search hidden" id="searchBox"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Search chats" autocomplete="off"></label>
     <nav class="snav">
       <button class="navitem" id="agentNav"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>Codex</button>
@@ -616,7 +734,7 @@ header .gbtn{flex:none;aspect-ratio:1/1;min-width:0}
   <main class="main">
     <header>
       <button class="gbtn" id="menu" aria-label="Open sidebar"><svg viewBox="0 0 24 24"><path d="M5 9h14M5 15h9"/></svg></button>
-      <div class="seg2" role="tablist"><button class="on" id="segChat" role="tab" aria-selected="true">Chat</button><button id="agentBtn" role="tab" aria-selected="false">Codex</button></div>
+      <div class="seg2" role="tablist"><button class="on" id="segChat" role="tab" aria-selected="true">Chat</button><button id="agentBtn" role="tab" aria-selected="false">Work</button></div>
       <button class="gbtn" id="newChat" aria-label="New chat"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
     </header>
     <div class="banner hidden" id="installBanner"><span>Install: tap <b>Share</b> then <b>Add to Home Screen</b> to use Key Chat like an app.</span><button id="dismissInstall" aria-label="Dismiss">✕</button></div>
@@ -644,30 +762,65 @@ header .gbtn{flex:none;aspect-ratio:1/1;min-width:0}
   </main>
 </div>
 
-<div class="sheet" id="settings"><div class="card">
-  <div class="hd"><b>Settings &amp; AI providers</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+<div class="sheet" id="settings" data-page="home"><div class="card">
+  <div class="hd"><button class="iconbtn" id="setBack" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b id="setTitle">Settings</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="bd">
-    <div class="sec" style="margin-top:0">Performance</div>
+    <div class="spage on" data-page="home">
+      <div class="sgrp"><button class="srow" data-go="plugins"><i class="sic" style="--c:#19c3a3"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9 12a3 3 0 1 0 3-3"/></svg></i><span>Plugins</span><em id="sumPlug"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="memory"><i class="sic" style="--c:#f0a03c"><svg viewBox="0 0 24 24"><path d="M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3zM21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z"/></svg></i><span>Memory</span><em id="sumMem"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="personality"><i class="sic" style="--c:#4cc3f0"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 8v4l3 2"/></svg></i><span>Personality</span><em id="sumPers"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
+      <div class="sgrp"><button class="srow" data-go="general"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></i><span>General</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="voice"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg></i><span>Voice</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="security"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></i><span>Security and login</span><em id="sumLock"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="codex"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></svg></i><span>Codex</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="storage"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 13h18M7 16h2"/></svg></i><span>Storage</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
+      <div class="sgrp"><button class="srow" data-go="providers"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="18" r="2.5"/></svg></i><span>AI providers</span><em id="sumProv"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
+      <div class="sfootnote" id="kcVer"></div>
+    </div>
+    <div class="spage" data-page="general">
+      <div class="sgrp"><button class="srow" id="openTextSize"><i class="sic"><svg viewBox="0 0 24 24"><path d="M4 18 9 6l5 12M5.6 14h6.8M15 18l3-7 3 7"/></svg></i><span>Text size</span><em id="sumTs"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="background"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg></i><span>Background</span><em id="sumBg"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
+      <div class="sec">Performance</div>
     <div class="seg" id="perfSeg"><button data-perf="smooth">Smooth</button><button data-perf="battery">Battery saver</button></div>
     <div class="hint">Battery saver slows the animated backgrounds so your phone stays cooler.</div>
-    <div class="sec">Text size</div>
-    <button class="btn ghost" id="openTextSize" style="width:100%">Text size</button>
-    <div class="sec">Background</div>
-    <div class="hint" id="kcVer" style="margin:0 0 8px">Key Chat version 18</div><div class="bgs" id="bgList"></div><input type="file" id="bgFile" accept="image/*" hidden><div class="hint" style="margin:6px 0 0;font-size:11px">Animated backgrounds adapted from React Bits (reactbits.dev, MIT + Commons Clause). They run on your phone and pause when the app is hidden.</div>
+    </div>
+    <div class="spage" data-page="background">
+      <div class="hint" style="margin:0 0 10px">Light backgrounds switch the app to light mode.</div>
+    <div class="bgs" id="bgList"></div><input type="file" id="bgFile" accept="image/*" hidden><div class="hint" style="margin:6px 0 0;font-size:11px">Animated backgrounds adapted from React Bits (reactbits.dev, MIT + Commons Clause). They run on your phone and pause when the app is hidden.</div>
     <div class="hint" style="margin-bottom:12px">Your photo stays on this device. It is never uploaded.</div>
-    <div class="sec">Plugins</div>
+    </div>
+    <div class="spage" data-page="plugins">
+      <label class="search" style="margin:0 0 6px"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="plugQ" placeholder="Search plugins" autocomplete="off"></label>
+      <div class="sec">Added</div>
+      <ul id="plugList"></ul>
     <div class="hint">Each plugin adds its instructions and reference files to every chat it is on. Import a .zip that contains a SKILL.md file.</div>
-    <ul id="plugList"></ul>
     <div class="lockrow"><button class="btn" id="chImport">Import plugin (.zip)</button></div><input type="file" id="chFile" accept=".zip,application/zip" hidden>
-    <div class="sec">Memory</div>
+    </div>
+    <div class="spage" data-page="memory">
     <div class="hint">Lasting facts the app remembers about you and uses in every chat. Stored on this phone only.</div>
     <ul id="memList"></ul>
     <div class="addm"><input class="field" id="memIn" placeholder="Add a fact, e.g. My company is Keystone"><button class="btn" id="memAddBtn">Add</button></div>
     <div class="lockrow"><button class="btn ghost" id="memBackup">Encrypted backup</button><button class="btn ghost" id="memRestore">Restore backup</button></div><input type="file" id="memFile" hidden>
-    <div class="sec">App lock</div>
+    </div>
+    <div class="spage" data-page="personality">
+      <div class="sec" style="margin-top:0">Instructions for every chat</div>
+    <textarea class="field" id="sysPrompt" rows="3" placeholder="e.g. Answer briefly. I'm based in India."></textarea>
+      <div class="hint">Key Chat follows these in every new reply.</div>
+    </div>
+    <div class="spage" data-page="voice">
+      <div class="sec" style="margin-top:0">Read aloud voice</div>
+    <select class="field" id="voiceSel"></select>
+    <label class="hint" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="checkbox" id="voiceFull"> Talk mode on a separate full screen (off = inside the chat)</label>
+    </div>
+    <div class="spage" data-page="security">
+      <div class="sec" style="margin-top:0">App lock</div>
     <div class="hint" id="lockState"></div>
     <div class="lockrow"><button class="btn" id="lkSet">Set a PIN</button><button class="btn ghost" id="lkFaceSet">Turn on Face ID</button><button class="btn ghost" id="lkCodeBtn">New recovery code</button><button class="btn ghost" id="lkOff">Turn off</button></div>
     <div class="hint" style="margin-bottom:12px">The PIN and Face ID are checked on this phone only. Nothing is sent anywhere.</div>
+    </div>
+    <div class="spage" data-page="storage">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn ghost" id="copyExport">Copy backup of chats</button>
+      <button class="btn ghost" id="importBtn">Restore from backup</button>
+      <button class="btn danger" id="wipe">Delete everything</button>
+    </div>
+    <textarea class="field hidden" id="importBox" rows="4" placeholder="Paste your backup here, then tap Restore again" style="margin-top:8px"></textarea>
+    <div class="hint" id="storageInfo"></div>
+    </div>
+    <div class="spage" data-page="providers">
     <div class="hint">Keys stay in this app on this device and are sent only to their own provider (or through your own relay, if you set one up).</div>
     <label class="search" style="margin:8px 0"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="provQ" placeholder="Find a provider (e.g. Ollama, OpenCode)" autocomplete="off"></label>
     <div id="provList"></div>
@@ -676,19 +829,7 @@ header .gbtn{flex:none;aspect-ratio:1/1;min-width:0}
     <div class="kin"><input id="relayUrl" placeholder="https://your-relay.your-name.workers.dev" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
     <div class="kin"><input id="relayToken" type="password" placeholder="Relay secret (RELAY_TOKEN)" autocomplete="off"><button class="btn" id="relaySave">Save &amp; test</button></div>
     <div class="hint" id="relayStatus"></div>
-    <div class="sec">Instructions for every chat</div>
-    <textarea class="field" id="sysPrompt" rows="3" placeholder="e.g. Answer briefly. I'm based in India."></textarea>
-    <div class="sec">Read aloud voice</div>
-    <select class="field" id="voiceSel"></select>
-    <label class="hint" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="checkbox" id="voiceFull"> Talk mode on a separate full screen (off = inside the chat)</label>
-    <div class="sec">Your data</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn ghost" id="copyExport">Copy backup of chats</button>
-      <button class="btn ghost" id="importBtn">Restore from backup</button>
-      <button class="btn danger" id="wipe">Delete everything</button>
     </div>
-    <textarea class="field hidden" id="importBox" rows="4" placeholder="Paste your backup here, then tap Restore again" style="margin-top:8px"></textarea>
-    <div class="hint" id="storageInfo"></div>
   </div>
 </div></div>
 
@@ -760,18 +901,38 @@ header .gbtn{flex:none;aspect-ratio:1/1;min-width:0}
   </div>
 </div></div>
 
-<div class="sheet" id="agent"><div class="card">
-  <div class="hd agentHd"><div class="agentHeading"><b>Codex workspace</b><small>Plan, build, inspect files, preview and deploy from one project surface.</small></div>
+<div class="sheet" id="agent"><div class="card home">
+  <div id="aHomeV">
+    <div class="ahd"><button class="gbtn" id="aMenuBtn" aria-label="Back to Key Chat"><svg viewBox="0 0 24 24"><path d="M5 9h14M5 15h9"/></svg></button><button class="atitle" id="aTitleBtn">Codex <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><button class="gbtn" id="aSearchBtn" aria-label="Search Codex chats"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button></div>
+    <label class="search hidden" id="aSearchBox"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="aQ" placeholder="Search Codex chats" autocomplete="off"></label>
+    <div id="aHist"></div>
+    <div class="apill"><button class="round" id="aHPlus" aria-label="Choose mode"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><textarea id="aHIn" rows="1" placeholder="Ask Codex"></textarea><button class="round amic" data-for="aHIn" aria-label="Dictate"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><button class="asend" id="aHGo" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div>
+  </div>
+  <div class="ahd achd"><button class="gbtn" id="aBackBtn" aria-label="All Codex chats"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><div class="actitle"><b id="aCTitle">New task</b><small id="aCSub"></small></div><div class="apair"><button id="aNewBtn" aria-label="New Codex chat"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button><button id="aMoreBtn" aria-label="More"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg></button></div></div>
+    <div class="hd agentHd"><div class="agentHeading"><b>Codex workspace</b><small>Plan, build, inspect files, preview and deploy from one project surface.</small></div>
     <div class="seg" id="aMode"><button data-m="plan">Plan</button><button data-m="build">Build</button><button data-m="spec">Spec</button></div>
     <button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="atools"><button class="btn ghost" id="aTabChat">Chat</button><button class="btn ghost" id="aTabFiles">Files</button><button class="btn ghost" id="aPrev">Preview</button><button class="btn" id="aDeploy">Deploy</button><span class="toolSep"></span><button class="btn ghost" id="aExport">Copy all</button><button class="btn ghost" id="aBranch">Branch</button><button class="btn ghost" id="aRestore">Restore</button><button class="btn ghost" id="aReset">New</button></div>
   <div class="agentStatusRow"><div id="aStats"></div><div id="aUsage" role="button" aria-label="Codex usage today, tap to set a daily budget"><span id="aUseTxt"></span><span class="bar"><i id="aUseBar"></i></span></div></div>
   <div id="aBody">
     <div id="aChatPane" style="display:flex;flex-direction:column;flex:1;min-height:0"><div id="aTasks"></div><div id="aLog"></div>
-      <div class="acomp"><textarea id="aIn" rows="1" placeholder="Describe the change"></textarea><button class="btn" id="aGo">Send</button></div></div>
-    <div id="aFiles"><div id="aFileList"></div><textarea id="aEd" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="Pick a file"></textarea></div>
+      <div class="acomp"><div class="apill"><button class="round" id="aCPlus" aria-label="Add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><button class="round" id="aShield" aria-label="Approvals"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4 3 7.5 7 9 4-1.5 7-5 7-9V6z"/><path d="m9 10 2 2-2 2M13 14h2"/></svg></button><textarea id="aIn" rows="1" placeholder="Follow up"></textarea><button class="round amic" data-for="aIn" aria-label="Dictate"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><button class="asend" id="aGo" aria-label="Send">Send</button></div><div id="aUseLine" class="hidden"></div></div></div>
+    <div id="aFiles"><div class="afhd"><b>Files</b><button class="gbtn" id="aFilesX" aria-label="Close files"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div class="seg" id="aFSeg"><button data-f="mod">Modified</button><button data-f="all" class="on">All Files</button></div><label class="search" style="margin:8px 12px"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="aFQ" placeholder="Search files" autocomplete="off"></label><div id="aFileList"></div><textarea id="aEd" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="Pick a file"></textarea></div>
   </div>
 </div></div>
+<div class="sheet" id="aSet"><div class="card">
+  <div class="hd"><span style="width:44px"></span><b>Codex</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="bd">
+    <div class="sec" style="margin-top:0">Connections</div>
+    <div class="sgrp"><button class="srow" id="aSetGh"><i class="sic"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-2.8 17.5c.5.1.6-.2.6-.4v-1.6c-2.5.5-3-1.1-3-1.1-.4-1-1-1.3-1-1.3-.8-.6.1-.6.1-.6.9.1 1.4 1 1.4 1 .8 1.4 2.1 1 2.6.8.1-.6.3-1 .6-1.2-2-.2-4.1-1-4.1-4.5 0-1 .4-1.8 1-2.4-.1-.3-.4-1.2.1-2.4 0 0 .8-.3 2.5.9a8.6 8.6 0 0 1 4.6 0c1.7-1.2 2.5-.9 2.5-.9.5 1.2.2 2.1.1 2.4.6.6 1 1.4 1 2.4 0 3.5-2.1 4.3-4.1 4.5.3.3.6.8.6 1.6v2.4c0 .2.1.5.6.4A9 9 0 0 0 12 3z"/></svg></i><span>GitHub deploy</span><em id="aSetGhSt"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
+    <div class="sec">Approvals</div>
+    <div class="sgrp"><button class="srow" id="aSetAp"><i class="sic"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4 3 7.5 7 9 4-1.5 7-5 7-9V6z"/></svg></i><span>Codex actions</span><em id="aSetApSt"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
+    <div class="sec">Composer</div>
+    <div class="sgrp"><label class="srow aswrow"><span>Dismiss keyboard after sending</span><input type="checkbox" class="asw" id="aOptDismiss"></label><label class="srow aswrow"><span>Show usage under the composer</span><input type="checkbox" class="asw" id="aOptUse"></label></div>
+    <div class="sec">Behaviour</div>
+    <div class="sgrp"><label class="srow aswrow"><span>Wrap code lines</span><input type="checkbox" class="asw" id="aOptWrap"></label></div>
+    <div class="hint">Publishing to GitHub always asks for your approval.</div>
+  </div></div></div>
 <div class="sheet" id="deploy"><div class="card">
   <div class="hd"><b>Deploy to GitHub Pages</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="bd">
@@ -1642,12 +1803,12 @@ async function agentSend(){
   const ctl=new AbortController(); aBusy=ctl; $("#aGo").textContent="Stop";
   try{
     for(let step=0;step<8&&!ctl.signal.aborted;step++){
-      const ai={role:"assistant",content:""}; a.msgs.push(ai); renderAgent();
+      const ai={role:"assistant",content:"",t:Date.now()}; a.msgs.push(ai); renderAgent();
       const api=[{role:"system",content:agentSystem()+"\n"+(S.system||"")}, ...a.msgs.slice(0,-1).slice(-20).map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.content.slice(0,9000)}))];
       let raf=0; const r=await routeChat(api,{vision:false,search:false},t=>{ cancelAnimationFrame(raf); raf=requestAnimationFrame(()=>{ ai.content=t; renderAgent(); }); },ctl.signal);
       cancelAnimationFrame(raf); ai.content=r.text; addUse(api.reduce((n,m)=>n+m.content.length,0)+r.text.length); renderAgent();
       const dels=[...r.text.matchAll(/<delete path="([^"]*)"/g)].map(m=>m[1]);
-      if(dels.length && !await approve({tag:"Deletes files",who:"Codex",title:`Codex wants to delete ${dels.length} file${dels.length>1?"s":""}`,rows:dels.slice(0,5).map(d=>["File",d,""])})){ rejected=true; a.msgs.push({role:"user",tool:true,content:"Tool results:\nThe user rejected the delete. Do not delete files; ask what they want instead."}); break; }
+      if(dels.length && S.agentApprove!=="me" && !await approve({tag:"Deletes files",who:"Codex",title:`Codex wants to delete ${dels.length} file${dels.length>1?"s":""}`,rows:dels.slice(0,5).map(d=>["File",d,""])})){ rejected=true; a.msgs.push({role:"user",tool:true,content:"Tool results:\nThe user rejected the delete. Do not delete files; ask what they want instead."}); break; }
       const res=await execTools(r.text); if(!res.n){ break; }
       a.msgs.push({role:"user",tool:true,content:"Tool results:\n"+res.out}); renderAgent();
     }
@@ -1920,6 +2081,159 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
   window.__chief={render}; const _rs=renderSettings; renderSettings=function(){ _rs.apply(this,arguments); render(); }; render(); setTimeout(render,800);
 })();
 
+</script>
+
+<script>
+/* ===== v25 settings navigation and header model button ===== */
+(function(){ const KC_V="26", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Plugins",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
+  const back={background:"general"};
+  function go(p){ sh.dataset.page=p; sh.querySelectorAll(".spage").forEach(x=>x.classList.toggle("on",x.dataset.page===p)); $("#setTitle").textContent=T[p]||"Settings"; sh.querySelector(".bd").scrollTop=0; if(p==="home") sums(); }
+  window.kcSettingsGo=go;
+  function sums(){ try{
+    const P=(typeof plugs==="function")?plugs():[]; $("#sumPlug").textContent=P.length?P.length+" added":"None";
+    const m=(S.memory||[]).length; $("#sumMem").textContent=m?m+(m===1?" fact":" facts"):"Empty";
+    $("#sumPers").textContent=(S.system||"").trim()?"Custom":"Default";
+    $("#sumLock").textContent=/^Off/.test($("#lockState").textContent)?"Off":"On";
+    const ready=Object.keys(PROVIDERS).filter(configured).length; $("#sumProv").textContent=ready+" ready";
+    const tz=getComputedStyle(document.documentElement).getPropertyValue("--tz").trim()||"1"; $("#sumTs").textContent=Math.round(parseFloat(tz)*100)+"%";
+    const bgb=document.querySelector("#bgList button.on span"); $("#sumBg").textContent=bgb?bgb.textContent:"";
+    $("#kcVer").textContent="Key Chat v"+KC_V;
+  }catch(e){} }
+  sh.querySelector(".bd").addEventListener("click",e=>{ const r=e.target.closest("[data-go]"); if(!r) return; const p=r.dataset.go;
+    if(p==="codex"){ sh.classList.remove("show"); if(typeof openAgent==="function") openAgent(); return; } go(p); });
+  $("#setBack").onclick=()=>go(back[sh.dataset.page]||"home");
+  const prevOpen=$("#openSettings").onclick; $("#openSettings").onclick=e=>{ prevOpen&&prevOpen(e); go("home"); };
+  const tsB=$("#tsBack").onclick; $("#tsBack").onclick=e=>{ tsB&&tsB(e); go("general"); };
+  $("#plugQ").oninput=()=>{ const q=$("#plugQ").value.toLowerCase().trim(); $("#plugList").querySelectorAll("li").forEach(li=>li.style.display=!q||li.textContent.toLowerCase().includes(q)?"":"none"); };
+  // providers link in the empty state opens the providers page
+  document.addEventListener("click",e=>{ if(e.target.closest("[data-settings]")) setTimeout(()=>go("providers"),0); });
+  // model button moves into the header, in place of the Chat/Codex switch
+  go("home"); })();
+</script>
+
+<script>
+/* ===== v26 Codex: several chats, history, menus, files, settings ===== */
+(function(){
+  const card=document.querySelector("#agent .card"), sh=$("#agent");
+  const LIST=()=>S.agentList||(S.agentList=[]);
+  const MODE={plan:"Plan",build:"Build",spec:"Spec"};
+  const has=a=>a&&((a.msgs||[]).length||Object.keys(a.files||{}).length);
+  function meta(a){ a.id||=uid(); a.created||=Date.now(); a.updated||=a.created;
+    if(!a.title){ const u=(a.msgs||[]).find(m=>m.role==="user"&&!m.tool); if(u) a.title=u.content.replace(/\s+/g," ").slice(0,60); }
+    const n=(a.msgs||[]).length; if(a._n!==n){ a._n=n; if(n) a.updated=Date.now(); } }
+  function all(){ meta(A()); LIST().forEach(meta); return [A(),...LIST()].filter(has); }
+  function busy(){ if(aBusy){ toast("Codex is still working. Tap Stop first."); return true; } return false; }
+  function carry(from,to){ to.gh=from.gh; to.use=from.use; to.budget=from.budget; }
+  function park(){ const cur=A(); meta(cur); if(has(cur)) LIST().unshift(cur); return cur; }
+  function newChat(mode){ if(busy()) return false; const cur=park(); const n={files:{},msgs:[],mode:mode||cur.mode||"plan",gh:{},sel:"",id:uid(),created:Date.now(),title:""}; carry(cur,n); S.agent=n; save(); return true; }
+  function switchTo(id){ if(A().id===id) return true; if(busy()) return false; const i=LIST().findIndex(x=>x.id===id); if(i<0) return false;
+    const nx=LIST().splice(i,1)[0], cur=park(); carry(cur,nx); nx.archived=false; S.agent=nx; save(); return true; }
+  function status(a){ const t=(a.tasks||[]).slice(-1)[0]; return t&&t.status; }
+  // ---- views ----
+  function showHome(){ card.classList.add("home"); renderHist(); }
+  function showChat(){ card.classList.remove("home"); aTab("chat"); renderAgent(); }
+  let sortBy="date", showArch=false;
+  const ENV='<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M4 19h16"/></svg>';
+  function group(t){ const d=Date.now()-t, day=864e5; if(d<day) return "Today"; if(d<7*day) return "Previous 7 days"; if(d<30*day) return "Previous 30 days";
+    return new Date(t).toLocaleDateString([], {month:"long",year:new Date(t).getFullYear()===new Date().getFullYear()?undefined:"numeric"}); }
+  function renderHist(){ const q=($("#aQ").value||"").toLowerCase().trim();
+    let L=all().filter(a=>!!a.archived===showArch && (!q||(a.title||"").toLowerCase().includes(q)));
+    L.sort((x,y)=>y.updated-x.updated);
+    const key=a=>sortBy==="mode"?(MODE[a.mode]||"Plan")+" mode":group(a.updated);
+    const G=[]; L.forEach(a=>{ const k=key(a); let g=G.find(x=>x.k===k); if(!g) G.push(g={k,items:[]}); g.items.push(a); });
+    $("#aHist").innerHTML=(showArch?`<h6>Archived chats</h6>`:"")+G.map(g=>`${showArch?"":`<h6>${esc(g.k)}</h6>`}${g.items.map(a=>`<button class="ahrow" data-aid="${esc(a.id)}"><span><b>${esc(a.title||"New task")}</b><small>${ENV}${MODE[a.mode]||"Plan"} mode · ${Object.keys(a.files||{}).length} files</small></span>${status(a)==="input"||status(a)==="running"?"<i></i>":""}</button>`).join("")}`).join("")
+      || `<div class="ahempty">${q?"No Codex chat matches.":showArch?"No archived chats.":"No Codex chats yet. Describe what you want to build below."}</div>`; }
+  $("#aHist").onclick=e=>{ const r=e.target.closest("[data-aid]"); if(r&&switchTo(r.dataset.aid)) showChat(); };
+  $("#aSearchBtn").onclick=()=>{ const b=$("#aSearchBox"); b.classList.toggle("hidden"); if(!b.classList.contains("hidden")) $("#aQ").focus(); else { $("#aQ").value=""; renderHist(); } };
+  $("#aQ").oninput=renderHist;
+  $("#aMenuBtn").onclick=()=>{ sh.classList.remove("show"); };
+  function topMenu(items){ popMenu(items); const m=document.querySelector(".popm:last-of-type"); if(m) m.classList.add("top"); }
+  function usageTxt(){ const a=A(), used=(a.use||{})[dayKey()]||0, bud=a.budget||200000; return `${used.toLocaleString()} of ${bud.toLocaleString()} tokens today (estimate)`; }
+  $("#aTitleBtn").onclick=()=>topMenu([
+    {label:"Chronological list",on:sortBy==="date"&&!showArch,fn:()=>{ sortBy="date"; showArch=false; renderHist(); }},
+    {label:"By mode",on:sortBy==="mode"&&!showArch,fn:()=>{ sortBy="mode"; showArch=false; renderHist(); }},
+    {label:"Archived chats",sub:LIST().filter(a=>a.archived).length+" archived",on:showArch,fn:()=>{ showArch=!showArch; renderHist(); }},
+    {label:"Settings",sub:"GitHub, approvals, composer",fn:openASet},
+    {label:"Usage today",sub:usageTxt()+". Tap to set your budget.",fn:()=>$("#aUsage").click()}]);
+  // home composer: starts a new chat
+  function autosz(t){ t.style.height="auto"; t.style.height=Math.min(140,t.scrollHeight)+"px"; }
+  ["aHIn","aIn"].forEach(id=>$("#"+id).addEventListener("input",e=>autosz(e.target)));
+  let homeMode=null;
+  $("#aHPlus").onclick=()=>popMenu(["plan","build","spec"].map(m=>({label:MODE[m]+" mode",sub:{plan:"Read-only. Explains what it would change.",build:"Creates and edits files, can preview.",spec:"Writes requirements, design and tasks first, then waits."}[m],on:(homeMode||A().mode)===m,fn:()=>{ homeMode=m; toast(MODE[m]+" mode for the next chat"); }})));
+  function homeSend(){ const t=$("#aHIn").value.trim(); if(!t) return; if(!newChat(homeMode)) return; homeMode=null; $("#aHIn").value=""; autosz($("#aHIn")); showChat(); $("#aIn").value=t; agentSend(); afterSend(); }
+  $("#aHGo").onclick=homeSend;
+  $("#aHIn").addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey&&!/iPhone|iPad|Android/.test(navigator.userAgent)){ e.preventDefault(); homeSend(); } });
+  // chat header
+  $("#aBackBtn").onclick=showHome;
+  $("#aNewBtn").onclick=()=>{ showHome(); setTimeout(()=>$("#aHIn").focus(),50); };
+  $("#aMoreBtn").onclick=()=>{ const a=A(); popMenu([
+    {label:"Files",sub:Object.keys(a.files).length+" in this project",fn:()=>aTab("files")},
+    {label:"Preview",fn:()=>$("#aPrev").click()},
+    {label:"Deploy to GitHub",fn:()=>$("#aDeploy").click()},
+    {label:"Copy all files",fn:()=>$("#aExport").click()},
+    {label:"Save a branch",sub:(a.branches||[]).length+" saved",fn:()=>$("#aBranch").click()},
+    {label:"Restore a branch",fn:()=>$("#aRestore").click()},
+    {label:"Rename chat",fn:()=>{ const n=(prompt("Chat name",a.title||"")||"").trim(); if(n){ a.title=n.slice(0,60); save(); renderAgent(); } }},
+    {label:"Archive chat",sub:"Hide it from the list. Find it under Codex ⌄",fn:()=>{ if(busy()) return; meta(a); a.archived=true; LIST().unshift(a); const n={files:{},msgs:[],mode:a.mode,gh:{},sel:"",id:uid(),created:Date.now(),title:""}; carry(a,n); S.agent=n; save(); showHome(); toast("Archived"); }},
+    {label:"Codex settings",fn:openASet}],true); };
+  // + menu inside a chat
+  const addFile=document.createElement("input"); addFile.type="file"; addFile.multiple=true; addFile.hidden=true; document.body.appendChild(addFile);
+  addFile.onchange=async()=>{ const a=A(); let n=0; for(const f of addFile.files){ if(f.size>400000){ toast(f.name+" is too big (over 400 KB)"); continue; } a.files[f.name.replace(/[^\w.\-\/]/g,"_")]=await f.text(); n++; } addFile.value=""; if(n){ save(); renderAgent(); toast(n+" file"+(n>1?"s":"")+" added to the project"); } };
+  $("#aCPlus").onclick=()=>{ const a=A(); popMenu([
+    {label:"Add files to project",sub:"Text and code files",fn:()=>addFile.click()},
+    {label:"Files",sub:Object.keys(a.files).length+" in this project",fn:()=>aTab("files")},
+    ...(typeof plugItems==="function"?plugItems():[]),
+    ...["plan","build","spec"].map(m=>({label:MODE[m]+" mode",on:a.mode===m,fn:()=>{ a.mode=m; save(); renderAgent(); }}))]); };
+  // approvals
+  function apMenu(){ popMenu([
+    {label:"Ask for approval",sub:"Always ask before Codex deletes files",on:S.agentApprove!=="me",fn:()=>{ S.agentApprove="ask"; save(); toast("Codex will ask first"); renderASet(); }},
+    {label:"Approve for me",sub:"Deletes files in this project without asking. Publishing still asks.",on:S.agentApprove==="me",fn:()=>{ S.agentApprove="me"; save(); toast("Codex deletes without asking"); renderASet(); }}]); }
+  $("#aShield").onclick=apMenu;
+  // reply actions, title, subtitle
+  const prevRender=renderAgent;
+  renderAgent=function(){ prevRender(); const a=A(); meta(a);
+    $("#aCTitle").textContent=a.title||"New task"; $("#aCSub").textContent=`${MODE[a.mode]||"Plan"} mode · ${Object.keys(a.files).length} files`;
+    const log=$("#aLog"), kids=[...log.children], last=a.msgs.length-1;
+    a.msgs.forEach((m,i)=>{ const d=kids[i]; if(!d||m.role!=="assistant"||!m.content||(aBusy&&i===last)) return;
+      const t=m.t?new Date(m.t).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}):"";
+      const x=document.createElement("div"); x.className="aacts"; x.innerHTML=`<button data-acopy="${i}" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg></button>${t?`<span>${t}</span>`:""}`; d.appendChild(x); });
+    $("#aGo").innerHTML=aBusy?'<svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor"/></svg>':'<svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+    const ul=$("#aUseLine"); ul.classList.toggle("hidden",!S.aShowUse); if(S.aShowUse) ul.textContent=usageTxt();
+    sh.classList.toggle("wrapcode",S.aWrap!==false);
+    if(card.classList.contains("home")) renderHist(); };
+  $("#aLog").addEventListener("click",async e=>{ const b=e.target.closest("[data-acopy]"); if(!b) return; const m=A().msgs[+b.dataset.acopy]; try{ await navigator.clipboard.writeText((m.content||"").replace(/<[^>]+>/g,"").trim()); toast("Copied"); }catch{ toast("Copy blocked by browser"); } });
+  function afterSend(){ if(S.aDismiss!==false) $("#aIn").blur(); autosz($("#aIn")); }
+  $("#aGo").onclick=()=>{ agentSend(); afterSend(); };
+  // files sheet
+  let fMode="all";
+  function modified(){ const set=new Set(); A().msgs.forEach(m=>{ if(m.role==="assistant") for(const x of (m.content||"").matchAll(/<(?:write|edit) path="([^"]*)"/g)) set.add(x[1]); }); return set; }
+  const prevFiles=renderFiles;
+  renderFiles=function(){ prevFiles(); const q=($("#aFQ").value||"").toLowerCase().trim(), mod=fMode==="mod"?modified():null;
+    $("#aFileList").querySelectorAll("button").forEach(b=>{ const name=b.textContent; if(name==="+ new file"){ b.style.display=mod?"none":""; return; } b.style.display=(!q||name.toLowerCase().includes(q))&&(!mod||mod.has(name))?"":"none"; }); };
+  $("#aFSeg").onclick=e=>{ const b=e.target.closest("button"); if(!b) return; fMode=b.dataset.f; $("#aFSeg").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b)); renderFiles(); };
+  $("#aFQ").oninput=()=>renderFiles();
+  $("#aFilesX").onclick=()=>aTab("chat");
+  // dictation (Safari speech recognition)
+  const SRc=window.SpeechRecognition||window.webkitSpeechRecognition; let rc=null;
+  document.querySelectorAll(".amic").forEach(btn=>{ if(!SRc){ btn.classList.add("hidden"); return; }
+    btn.onclick=()=>{ if(rc){ rc.stop(); return; } const ta=$("#"+btn.dataset.for); rc=new SRc(); rc.lang=navigator.language||"en-US"; rc.interimResults=false;
+      rc.onresult=e=>{ const t=[...e.results].map(r=>r[0].transcript).join(" ").trim(); if(t){ ta.value=(ta.value?ta.value+" ":"")+t; autosz(ta); } };
+      rc.onerror=e=>toast(e.error==="not-allowed"?"Microphone blocked. Allow it in Settings › Safari › Microphone.":"Voice: "+e.error);
+      rc.onend=()=>{ btn.classList.remove("listening"); rc=null; }; btn.classList.add("listening"); rc.start(); }; });
+  // Codex settings
+  function renderASet(){ const g=A().gh||{}; $("#aSetGhSt").textContent=g.repo?g.repo:"Not connected"; $("#aSetApSt").textContent=S.agentApprove==="me"?"Approve for me":"Ask for approval";
+    $("#aOptDismiss").checked=S.aDismiss!==false; $("#aOptUse").checked=!!S.aShowUse; $("#aOptWrap").checked=S.aWrap!==false; }
+  function openASet(){ renderASet(); openSheet("#aSet"); }
+  $("#aSetGh").onclick=()=>{ $("#aSet").classList.remove("show"); $("#aDeploy").click(); };
+  $("#aSetAp").onclick=apMenu;
+  $("#aOptDismiss").onchange=e=>{ S.aDismiss=e.target.checked; save(); };
+  $("#aOptUse").onchange=e=>{ S.aShowUse=e.target.checked; save(); renderAgent(); };
+  $("#aOptWrap").onchange=e=>{ S.aWrap=e.target.checked; save(); renderAgent(); };
+  // open Codex on the history page
+  window.openAgent=function(){ document.getElementById("app").classList.remove("open"); meta(A()); aTab("chat"); renderAgent(); showHome(); openSheet("#agent"); };
+  $("#agentBtn").onclick=openAgent; $("#agentNav").onclick=openAgent;
+  window.__codex={newChat,switchTo,all,showHome,showChat};
+})();
 </script>
 </body>
 </html>
