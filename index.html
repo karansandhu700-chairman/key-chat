@@ -645,7 +645,7 @@ html[data-light] #plugList,html[data-light] #memList{background:#fff}
 .sdiv{background:var(--line)!important}
 .avatar::before{background:#e5533d!important}.avatar{color:#fff!important}
 
-/* ===== v26 Codex: history, chat header, menus, files, settings ===== */
+/* ===== v26 Studio: history, chat header, menus, files, settings ===== */
 #agent.sheet{align-items:stretch}
 #agent .card{height:calc(100dvh / var(--tz,1))!important;max-height:calc(100dvh / var(--tz,1))!important;max-width:none!important;width:100%!important;border-radius:0!important;padding-top:env(safe-area-inset-top);background:var(--bg)!important;border:0!important;position:relative;box-shadow:none!important}
 #agent .card::before{display:none!important}
@@ -712,6 +712,27 @@ html[data-light] #agent #aFSeg button.on{background:#fff}
 #aFiles #aFileList button:first-child{border-top:0}
 .popm.top{bottom:auto!important;top:calc(env(safe-area-inset-top) + 64px);left:50%!important;transform:translateX(-50%)}
 .popm .phead{padding:10px 14px 4px;font-size:12.5px;color:var(--muted);pointer-events:none}
+
+/* ===== v27 Studio: steps, diffs, model, goal ===== */
+#aLog .am.t.steps{font:inherit;max-height:none;background:none;border:0;padding:0;color:var(--text)}
+.astep{border:1px solid var(--line);border-radius:14px;margin:6px 0;background:var(--raise2);overflow:hidden}
+.astep summary{list-style:none;display:flex;align-items:center;gap:8px;padding:9px 12px;font-size:14px;color:var(--muted);cursor:pointer}
+.astep summary::-webkit-details-marker{display:none}
+.astep summary b{color:var(--text);font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.astep pre{margin:0;padding:8px 12px 12px;font:12px/1.45 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-word;color:var(--muted);max-height:240px;overflow:auto}
+.astep.chk summary{color:#e5a33a}
+.adiff{border:1px solid var(--line);border-radius:14px;margin:6px 0;overflow:hidden;background:var(--code)}
+.adh{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:13.5px;border-bottom:1px solid var(--line)}
+.adh b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.adh .ad{color:#3fb950}.adh .dl{color:#f85149}
+.adh button{padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:12.5px}
+.adiff pre{margin:0;font:12px/1.5 ui-monospace,Menlo,monospace;max-height:260px;overflow:auto;padding:4px 0}
+.adiff pre span{display:block;padding:0 12px;white-space:pre-wrap;word-break:break-word}
+.adiff .la{background:rgba(63,185,80,.14)}.adiff .lr{background:rgba(248,81,73,.14);text-decoration:line-through;opacity:.8}.adiff .lg{color:var(--muted);text-align:center}
+.adiff.undone{opacity:.55}
+.arun{font-style:normal;font-size:12px;color:#3fb950;border:1px solid rgba(63,185,80,.4);border-radius:999px;padding:2px 8px;flex:none}
+.aqueue{margin:6px 0;padding:8px 12px;border-radius:14px;border:1px dashed var(--line);color:var(--muted);font-size:14px}
+#aCSub{cursor:pointer}
 </style>
 </head>
 <body>
@@ -721,7 +742,7 @@ html[data-light] #agent #aFSeg button.on{background:#fff}
     <div class="top"><span class="brand brandmark" aria-label="Key Chat"></span><b class="sidetitle">Key Chat</b><button class="gbtn" id="searchToggle" aria-label="Search chats"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button><button class="iconbtn" id="closeSide" aria-label="Close sidebar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button></div>
     <label class="search hidden" id="searchBox"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Search chats" autocomplete="off"></label>
     <nav class="snav">
-      <button class="navitem" id="agentNav"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>Codex</button>
+      <button class="navitem" id="agentNav"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>Studio</button>
       <button class="navitem" data-sc="image"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>Images</button>
       <button class="navitem" data-sc="models"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="18" r="2.5"/></svg>Models</button>
       <button class="navitem" data-sc="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Customize</button>
@@ -734,7 +755,7 @@ html[data-light] #agent #aFSeg button.on{background:#fff}
   <main class="main">
     <header>
       <button class="gbtn" id="menu" aria-label="Open sidebar"><svg viewBox="0 0 24 24"><path d="M5 9h14M5 15h9"/></svg></button>
-      <div class="seg2" role="tablist"><button class="on" id="segChat" role="tab" aria-selected="true">Chat</button><button id="agentBtn" role="tab" aria-selected="false">Work</button></div>
+      <div class="seg2" role="tablist"><button class="on" id="segChat" role="tab" aria-selected="true">Chat</button><button id="agentBtn" role="tab" aria-selected="false">Studio</button></div>
       <button class="gbtn" id="newChat" aria-label="New chat"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
     </header>
     <div class="banner hidden" id="installBanner"><span>Install: tap <b>Share</b> then <b>Add to Home Screen</b> to use Key Chat like an app.</span><button id="dismissInstall" aria-label="Dismiss">✕</button></div>
@@ -767,7 +788,7 @@ html[data-light] #agent #aFSeg button.on{background:#fff}
   <div class="bd">
     <div class="spage on" data-page="home">
       <div class="sgrp"><button class="srow" data-go="plugins"><i class="sic" style="--c:#19c3a3"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9 12a3 3 0 1 0 3-3"/></svg></i><span>Plugins</span><em id="sumPlug"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="memory"><i class="sic" style="--c:#f0a03c"><svg viewBox="0 0 24 24"><path d="M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3zM21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z"/></svg></i><span>Memory</span><em id="sumMem"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="personality"><i class="sic" style="--c:#4cc3f0"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 8v4l3 2"/></svg></i><span>Personality</span><em id="sumPers"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
-      <div class="sgrp"><button class="srow" data-go="general"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></i><span>General</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="voice"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg></i><span>Voice</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="security"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></i><span>Security and login</span><em id="sumLock"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="codex"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></svg></i><span>Codex</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="storage"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 13h18M7 16h2"/></svg></i><span>Storage</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
+      <div class="sgrp"><button class="srow" data-go="general"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></i><span>General</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="voice"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg></i><span>Voice</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="security"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></i><span>Security and login</span><em id="sumLock"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="codex"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></svg></i><span>Studio</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="storage"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 13h18M7 16h2"/></svg></i><span>Storage</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
       <div class="sgrp"><button class="srow" data-go="providers"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="18" r="2.5"/></svg></i><span>AI providers</span><em id="sumProv"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
       <div class="sfootnote" id="kcVer"></div>
     </div>
@@ -903,17 +924,17 @@ html[data-light] #agent #aFSeg button.on{background:#fff}
 
 <div class="sheet" id="agent"><div class="card home">
   <div id="aHomeV">
-    <div class="ahd"><button class="gbtn" id="aMenuBtn" aria-label="Back to Key Chat"><svg viewBox="0 0 24 24"><path d="M5 9h14M5 15h9"/></svg></button><button class="atitle" id="aTitleBtn">Codex <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><button class="gbtn" id="aSearchBtn" aria-label="Search Codex chats"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button></div>
-    <label class="search hidden" id="aSearchBox"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="aQ" placeholder="Search Codex chats" autocomplete="off"></label>
+    <div class="ahd"><button class="gbtn" id="aMenuBtn" aria-label="Back to Key Chat"><svg viewBox="0 0 24 24"><path d="M5 9h14M5 15h9"/></svg></button><button class="atitle" id="aTitleBtn">Studio <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><button class="gbtn" id="aSearchBtn" aria-label="Search Studio chats"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button></div>
+    <label class="search hidden" id="aSearchBox"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="aQ" placeholder="Search Studio chats" autocomplete="off"></label>
     <div id="aHist"></div>
-    <div class="apill"><button class="round" id="aHPlus" aria-label="Choose mode"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><textarea id="aHIn" rows="1" placeholder="Ask Codex"></textarea><button class="round amic" data-for="aHIn" aria-label="Dictate"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><button class="asend" id="aHGo" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div>
+    <div class="apill"><button class="round" id="aHPlus" aria-label="Choose mode"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><textarea id="aHIn" rows="1" placeholder="What should we build?"></textarea><button class="round amic" data-for="aHIn" aria-label="Dictate"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><button class="asend" id="aHGo" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div>
   </div>
-  <div class="ahd achd"><button class="gbtn" id="aBackBtn" aria-label="All Codex chats"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><div class="actitle"><b id="aCTitle">New task</b><small id="aCSub"></small></div><div class="apair"><button id="aNewBtn" aria-label="New Codex chat"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button><button id="aMoreBtn" aria-label="More"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg></button></div></div>
-    <div class="hd agentHd"><div class="agentHeading"><b>Codex workspace</b><small>Plan, build, inspect files, preview and deploy from one project surface.</small></div>
+  <div class="ahd achd"><button class="gbtn" id="aBackBtn" aria-label="All Studio chats"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><div class="actitle"><b id="aCTitle">New task</b><small id="aCSub"></small></div><div class="apair"><button id="aNewBtn" aria-label="New Studio chat"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button><button id="aMoreBtn" aria-label="More"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg></button></div></div>
+    <div class="hd agentHd"><div class="agentHeading"><b>Studio workspace</b><small>Plan, build, inspect files, preview and deploy from one project surface.</small></div>
     <div class="seg" id="aMode"><button data-m="plan">Plan</button><button data-m="build">Build</button><button data-m="spec">Spec</button></div>
     <button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="atools"><button class="btn ghost" id="aTabChat">Chat</button><button class="btn ghost" id="aTabFiles">Files</button><button class="btn ghost" id="aPrev">Preview</button><button class="btn" id="aDeploy">Deploy</button><span class="toolSep"></span><button class="btn ghost" id="aExport">Copy all</button><button class="btn ghost" id="aBranch">Branch</button><button class="btn ghost" id="aRestore">Restore</button><button class="btn ghost" id="aReset">New</button></div>
-  <div class="agentStatusRow"><div id="aStats"></div><div id="aUsage" role="button" aria-label="Codex usage today, tap to set a daily budget"><span id="aUseTxt"></span><span class="bar"><i id="aUseBar"></i></span></div></div>
+  <div class="agentStatusRow"><div id="aStats"></div><div id="aUsage" role="button" aria-label="Studio usage today, tap to set a daily budget"><span id="aUseTxt"></span><span class="bar"><i id="aUseBar"></i></span></div></div>
   <div id="aBody">
     <div id="aChatPane" style="display:flex;flex-direction:column;flex:1;min-height:0"><div id="aTasks"></div><div id="aLog"></div>
       <div class="acomp"><div class="apill"><button class="round" id="aCPlus" aria-label="Add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><button class="round" id="aShield" aria-label="Approvals"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4 3 7.5 7 9 4-1.5 7-5 7-9V6z"/><path d="m9 10 2 2-2 2M13 14h2"/></svg></button><textarea id="aIn" rows="1" placeholder="Follow up"></textarea><button class="round amic" data-for="aIn" aria-label="Dictate"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><button class="asend" id="aGo" aria-label="Send">Send</button></div><div id="aUseLine" class="hidden"></div></div></div>
@@ -921,12 +942,12 @@ html[data-light] #agent #aFSeg button.on{background:#fff}
   </div>
 </div></div>
 <div class="sheet" id="aSet"><div class="card">
-  <div class="hd"><span style="width:44px"></span><b>Codex</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="hd"><span style="width:44px"></span><b>Studio</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="bd">
     <div class="sec" style="margin-top:0">Connections</div>
     <div class="sgrp"><button class="srow" id="aSetGh"><i class="sic"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-2.8 17.5c.5.1.6-.2.6-.4v-1.6c-2.5.5-3-1.1-3-1.1-.4-1-1-1.3-1-1.3-.8-.6.1-.6.1-.6.9.1 1.4 1 1.4 1 .8 1.4 2.1 1 2.6.8.1-.6.3-1 .6-1.2-2-.2-4.1-1-4.1-4.5 0-1 .4-1.8 1-2.4-.1-.3-.4-1.2.1-2.4 0 0 .8-.3 2.5.9a8.6 8.6 0 0 1 4.6 0c1.7-1.2 2.5-.9 2.5-.9.5 1.2.2 2.1.1 2.4.6.6 1 1.4 1 2.4 0 3.5-2.1 4.3-4.1 4.5.3.3.6.8.6 1.6v2.4c0 .2.1.5.6.4A9 9 0 0 0 12 3z"/></svg></i><span>GitHub deploy</span><em id="aSetGhSt"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
     <div class="sec">Approvals</div>
-    <div class="sgrp"><button class="srow" id="aSetAp"><i class="sic"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4 3 7.5 7 9 4-1.5 7-5 7-9V6z"/></svg></i><span>Codex actions</span><em id="aSetApSt"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
+    <div class="sgrp"><button class="srow" id="aSetAp"><i class="sic"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4 3 7.5 7 9 4-1.5 7-5 7-9V6z"/></svg></i><span>Studio actions</span><em id="aSetApSt"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
     <div class="sec">Composer</div>
     <div class="sgrp"><label class="srow aswrow"><span>Dismiss keyboard after sending</span><input type="checkbox" class="asw" id="aOptDismiss"></label><label class="srow aswrow"><span>Show usage under the composer</span><input type="checkbox" class="asw" id="aOptUse"></label></div>
     <div class="sec">Behaviour</div>
@@ -1165,7 +1186,7 @@ async function* sse(resp){
 async function errText(r){ try{ const j=await r.json(); return j.error?.message||j.message||j.detail||JSON.stringify(j).slice(0,140); }catch{ return r.statusText||""; } }
 const netWhy = e => /Failed to fetch|NetworkError|Load failed|fetch/i.test(e.message||"") ? "couldn't connect (the provider may block browser apps; try your relay)" : (e.message||"network error");
 async function routeChat(messages, opts, onToken, signal){
-  const list=candidates(opts), trail=[], t0=performance.now();
+  const cl=candidates(opts), list=opts.pin&&configured(opts.pin.p)?[opts.pin,...cl.filter(e=>!(e.p===opts.pin.p&&e.m===opts.pin.m))]:cl, trail=[], t0=performance.now();
   if(!list.length) throw Object.assign(new Error(opts.search ? "Search needs a free Groq key. Add one in Settings." :
     opts.vision ? "None of your active models can read photos. Switch on OVH's Qwen2.5-VL model, or add a free Google Gemini key." :
     "No models are switched on. Open the model menu at the top."),{trail});
@@ -1598,7 +1619,7 @@ $("#attachBtn").onclick=()=>popMenu([
   {label:"Web search",sub:searchOn?"On, tap to turn off":"Answer with live web results",on:searchOn,fn:()=>setToggle("search",!searchOn)},
   {label:"Create image",sub:imageOn?"On, tap to turn off":"Describe a picture to make",on:imageOn,fn:()=>setToggle("image",!imageOn)},
   ...plugItems(),
-  {label:"Codex",sub:"Plan, build and deploy a website",fn:()=>$("#agentBtn").click()}]);
+  {label:"Studio",sub:"Plan, build and deploy a website",fn:()=>$("#agentBtn").click()}]);
 $("#file").onchange=e=>{ addFiles([...e.target.files]); e.target.value=""; };
 function setToggle(which,on){
   if(which==="search"){ searchOn=on; if(on) setToggle("image",false); $("#searchBtn").classList.toggle("on",on); $("#searchBtn").setAttribute("aria-pressed",on); if(on&&!configured("groq")) toast("Search runs on Groq's free web-search model. Add a free Groq key in Settings."); }
@@ -1712,8 +1733,8 @@ const AMODES={
  build:"BUILD mode: you may create and change files with write/edit/delete, test logic with run, and show the result with preview.",
  spec:"SPEC mode: first write requirements.md (user stories + acceptance criteria), design.md, and tasks.md. Stop and ask the user to approve. Only after approval, implement task by task."
 };
-function agentSystem(){
-  const a=A(), F=a.files, rules=F["AGENTS.md"]?`\nProject rules (AGENTS.md):\n${F["AGENTS.md"].slice(0,3000)}`:"";
+function agentSystem(a=A()){
+  const F=a.files, rules=F["AGENTS.md"]?`\nProject rules (AGENTS.md):\n${F["AGENTS.md"].slice(0,3000)}`:"";
   return `You are Key Agent, a careful coding agent inside a phone app. No shell exists. Project files live in a virtual folder.
 ${AMODES[a.mode]}
 Use XML tags; one or more per reply; then wait for results:
@@ -1731,16 +1752,14 @@ function runJS(code){ return new Promise(res=>{
   const h=e=>{ if(e.source===f.contentWindow&&e.data&&e.data.id===id) done(e.data); }; addEventListener("message",h);
   f.srcdoc=`<script>const L=[],fm=a=>a.map(x=>typeof x==='object'?JSON.stringify(x):String(x)).join(' ');console.log=(...a)=>L.push(fm(a));console.error=(...a)=>L.push('ERROR '+fm(a));(async()=>{try{const r=await eval(${JSON.stringify(code)});parent.postMessage({id:${JSON.stringify(id)},out:L.join('\\n'),ret:r===undefined?'':String(r)},'*')}catch(e){parent.postMessage({id:${JSON.stringify(id)},out:L.join('\\n'),err:String(e)},'*')}})()<\/script>`;
   document.body.appendChild(f); setTimeout(()=>done({out:"",err:"timed out after 5s"}),5000); }); }
-function buildPage(){
-  const F=A().files; let h=F["index.html"]; if(h==null) return null;
-  h=h.replace(/<link[^>]*>/g,m=>{ const p=(m.match(/href=["']([^"']+)["']/)||[])[1]; return p&&F[p]!=null&&/stylesheet/.test(m)?`<style>${F[p]}/* Welcome logo: silver monogram centred (approved 2026-11-17) */
-#welcome .wcard .wlogo{display:block;width:120px;height:120px;margin:4px auto 14px;mix-blend-mode:normal!important;filter:none!important;-webkit-mask-image:none!important;mask-image:none!important;object-fit:contain}
-</style>`:m; });
+function buildPage(a=A()){
+  const F=a.files; let h=F["index.html"]; if(h==null) return null;
+  h=h.replace(/<link[^>]*>/g,m=>{ const p=(m.match(/href=["']([^"']+)["']/)||[])[1]; return p&&F[p]!=null&&/stylesheet/.test(m)?`<style>${F[p]}</style>`:m; });
   h=h.replace(/<script([^>]*)><\/script>/g,(m,at)=>{ const p=(at.match(/src=["']([^"']+)["']/)||[])[1]; return p&&F[p]!=null?`<script${at.replace(/src=["'][^"']+["']/,"")}>${F[p].replace(/<\/script/g,"<\\/script")}<\/script>`:m; });
   return h; }
 function openPreview(){ const h=buildPage(); if(h==null){ toast("No index.html yet"); return false; } $("#previewFrame").srcdoc=h; openSheet("#preview"); return true; }
-async function execTools(text){
-  const a=A(), F=a.files, out=[], re=/<(write|edit|read|delete|ls|search|run|todo|preview)\b([^>]*?)(?:\/>|>([\s\S]*?)<\/\1>)/g; let m, n=0;
+async function execTools(text,a=A()){
+  const F=a.files, out=[], re=/<(write|edit|read|delete|ls|search|run|todo|preview)\b([^>]*?)(?:\/>|>([\s\S]*?)<\/\1>)/g; let m, n=0;
   const ro=a.mode==="plan";
   while((m=re.exec(text))&&n<12){ n++; const [,t,at,body]=m, p=((at.match(/path="([^"]*)"/)||[])[1]||"").replace(/^\/+/,"");
     if(["write","edit","delete"].includes(t)){
@@ -1758,20 +1777,20 @@ async function execTools(text){
     else if(t==="delete"){ if(F[p]!=null){ delete F[p]; out.push(`deleted ${p}`); } else out.push(`delete ${p}: not found`); }
     else if(t==="run"){ const r=await runJS(body||""); out.push("run result:\n"+(r.out||"")+(r.err?"\nERROR "+r.err:"")+(r.ret?"\n=> "+r.ret:"")); }
     else if(t==="todo") out.push("todo noted");
-    else if(t==="preview"){ out.push(buildPage()==null?"preview: no index.html yet":"preview ready (user can tap Preview)"); }
+    else if(t==="preview"){ out.push(buildPage(a)==null?"preview: no index.html yet":"preview ready (user can tap Preview)"); }
   }
   save(); return {out:out.join("\n\n"), n};
 }
 let aBusy=null;
 function renderAgent(){
   const a=A(); $("#aMode").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.m===a.mode));
-  const log=$("#aLog"); log.innerHTML=a.msgs.length?"":`<div class="am agentEmpty"><h3>Start a project</h3><p>Describe the result you want. Codex already has three working modes; choose one above before you send.</p><div class="agentModeCards"><div class="agentModeCard"><b>Plan</b><small>Read-only. Inspects files and explains what it would change.</small></div><div class="agentModeCard"><b>Build</b><small>Creates and edits files, runs tests, and can prepare a preview.</small></div><div class="agentModeCard"><b>Spec</b><small>Writes requirements, design and tasks first, then waits for approval.</small></div></div></div>`;
+  const log=$("#aLog"); log.innerHTML=a.msgs.length?"":`<div class="am agentEmpty"><h3>Start a project</h3><p>Describe the result you want. Studio already has three working modes; choose one above before you send.</p><div class="agentModeCards"><div class="agentModeCard"><b>Plan</b><small>Read-only. Inspects files and explains what it would change.</small></div><div class="agentModeCard"><b>Build</b><small>Creates and edits files, runs tests, and can prepare a preview.</small></div><div class="agentModeCard"><b>Spec</b><small>Writes requirements, design and tasks first, then waits for approval.</small></div></div></div>`;
   for(const m of a.msgs){ const d=document.createElement("div");
     if(m.role==="user"&&m.tool){ d.className="am t"; d.textContent=m.content.slice(0,1500); }
     else if(m.role==="user"){ d.className="am u"; d.textContent=m.content; }
     else { d.className="am"; d.innerHTML=md(m.content.replace(/<write path="([^"]*)">[\s\S]*?<\/write>/g,"Wrote `$1`").replace(/<edit path="([^"]*)">[\s\S]*?<\/edit>/g,"Edited `$1`").replace(/<(ls|read|search|run|delete|todo|preview)\b[^>]*?(\/>|>[\s\S]*?<\/\1>)/g,"")); }
     log.appendChild(d); }
-  log.scrollTop=log.scrollHeight; renderStats(); renderFiles(); $("#aGo").textContent=aBusy?"Stop":"Send";
+  log.scrollTop=log.scrollHeight; renderStats(); renderFiles(); 
 }
 const dayKey=()=>new Date().toISOString().slice(0,10);
 function addUse(chars){ const a=A(); a.use||={}; const k=dayKey(); a.use[k]=(a.use[k]||0)+Math.round(chars/4); const ks=Object.keys(a.use).sort(); while(ks.length>40) delete a.use[ks.shift()]; }
@@ -1786,7 +1805,7 @@ function renderStats(){ renderTasks();
   const a=A(), ks=Object.keys(a.files), ch=ks.reduce((n,k)=>n+(a.files[k]||"").length,0), us=a.msgs.filter(m=>m.role==="user"&&!m.tool).length, br=(a.branches||[]).length;
   $("#aStats").innerHTML=`<div class="aStat"><small>Mode</small><b>${(a.mode||"plan").toUpperCase()}</b></div><div class="aStat"><small>Requests</small><b>${us}</b></div><div class="aStat"><small>Files</small><b>${ks.length}</b></div><div class="aStat"><small>Branches</small><b>${br}</b></div>`;
 }
-$("#aUsage").onclick=()=>{ const a=A(); const v=parseInt((prompt("Daily Codex budget in tokens (your own limit, used only for this meter)",a.budget||200000)||"").replace(/\D/g,"")); if(v>0){ a.budget=v; save(); renderTasks(); } };
+$("#aUsage").onclick=()=>{ const a=A(); const v=parseInt((prompt("Daily Studio budget in tokens (your own limit, used only for this meter)",a.budget||200000)||"").replace(/\D/g,"")); if(v>0){ a.budget=v; save(); renderTasks(); } };
 $("#aBranch").onclick=()=>{ const a=A(); const n=(prompt("Name this branch (a saved copy of all files)","v"+((a.branches||[]).length+1))||"").trim(); if(!n) return; (a.branches||=[]).push({name:n.slice(0,30),at:Date.now(),files:JSON.parse(JSON.stringify(a.files))}); save(); renderStats(); toast("Branch saved: "+n); };
 $("#aRestore").onclick=()=>{ const a=A(), b=a.branches||[]; if(!b.length){ toast("No branches yet. Tap Branch first."); return; }
   popMenu(b.slice().reverse().map(x=>({label:x.name,sub:new Date(x.at).toLocaleString()+" · "+Object.keys(x.files).length+" files",fn:()=>{ if(confirm("Replace your current files with branch "+x.name+"? Branch your current work first if you want to keep it.")){ a.files=JSON.parse(JSON.stringify(x.files)); a.sel=Object.keys(a.files)[0]||""; save(); renderAgent(); toast("Restored "+x.name); } }}))); };
@@ -1797,25 +1816,49 @@ function renderFiles(){
   const nb=document.createElement("button"); nb.textContent="+ new file"; nb.onclick=()=>{ const n=(prompt("File name (e.g. index.html)")||"").trim(); if(n&&!/\.\./.test(n)){ a.files[n]=a.files[n]??""; a.sel=n; save(); renderFiles(); } }; L.appendChild(nb);
   const ed=$("#aEd"); ed.value=a.sel?a.files[a.sel]:""; ed.disabled=!a.sel;
 }
+const BUSY={};
+const GOAL_RULES=`
+GOAL MODE: the user's message is a goal. First write a <todo> checklist. Then work through it step by step without stopping to chat. After each change, check your work (read the file back, use <run> for logic, <preview/> for pages). Stop and ask the user only at a real decision point or before anything risky. When every item is done, reply with a short summary that starts with "GOAL DONE".`;
+function snapFiles(F){ return Object.assign({},F); }
+function fileChanges(before,after){ const out=[]; new Set([...Object.keys(before),...Object.keys(after)]).forEach(p=>{ const b=before[p]??null, c=after[p]??null; if(b!==c) out.push({p,before:(b==null||b.length<80000)?b:undefined,after:(c==null||c.length<80000)?c:undefined,big:(b&&b.length>=80000)||(c&&c.length>=80000)}); }); return out; }
+function pageCheck(a){ return new Promise(res=>{ const h=buildPage(a); if(h==null){ res({errors:[],skipped:true}); return; }
+  const f=document.createElement("iframe"), id=Math.random().toString(36).slice(2); f.sandbox="allow-scripts"; f.style.cssText="position:fixed;left:-9999px;width:390px;height:700px";
+  const done=r=>{ removeEventListener("message",hm); f.remove(); res(r); };
+  const hm=e=>{ if(e.source===f.contentWindow&&e.data&&e.data.id===id) done({errors:e.data.errors||[],text:e.data.text||""}); }; addEventListener("message",hm);
+  const probe=`<script>(function(){var E=[];window.addEventListener("error",function(e){E.push("Error: "+(e.message||"resource failed to load")+(e.filename?" ("+e.filename.split("/").pop()+":"+e.lineno+")":""))},true);window.addEventListener("unhandledrejection",function(e){E.push("Unhandled promise: "+(e.reason&&e.reason.message||e.reason))});var ce=console.error;console.error=function(){E.push("console.error: "+[].map.call(arguments,String).join(" "));ce.apply(console,arguments)};setTimeout(function(){var t=(document.body&&document.body.innerText||"").trim();if(!t&&!document.querySelector("canvas,img,svg,video"))E.push("The page shows nothing: no text or images");parent.postMessage({id:${JSON.stringify(id)},errors:E.slice(0,10),text:t.slice(0,300)},"*")},2500)})()<\/script>`;
+  f.srcdoc=h.includes("<head>")?h.replace("<head>","<head>"+probe):probe+h; document.body.appendChild(f); setTimeout(()=>done({errors:[],timedOut:true}),6000); }); }
 async function agentSend(){
-  if(aBusy){ aBusy.abort(); return; }
-  const inp=$("#aIn"), text=inp.value.trim(); if(!text) return; inp.value=""; const a=A(); a.msgs.push({role:"user",content:text}); const task={id:uid(),title:text.slice(0,80),status:"running",at:Date.now()}; (a.tasks||=[]).push(task); if(a.tasks.length>30) a.tasks.splice(0,a.tasks.length-30); renderAgent(); let rejected=false;
-  const ctl=new AbortController(); aBusy=ctl; $("#aGo").textContent="Stop";
+  const a=A(); a.id||=uid(); const inp=$("#aIn"), text=inp.value.trim();
+  if(BUSY[a.id]){ if(text){ inp.value=""; (a.queue||=[]).push(text); toast("Got it. Studio will read this before its next step."); renderAgent(); } else BUSY[a.id].abort(); return; }
+  if(!text) return;
+  if(Object.keys(BUSY).length>=3){ toast("3 Studio tasks are already running. Wait for one to finish."); return; }
+  inp.value=""; a.msgs.push({role:"user",content:text}); const goal=!!a.goalNext; a.goalNext=false;
+  const task={id:uid(),title:text.slice(0,80),status:"running",at:Date.now(),goal}; (a.tasks||=[]).push(task); if(a.tasks.length>30) a.tasks.splice(0,a.tasks.length-30);
+  const ctl=new AbortController(); BUSY[a.id]=ctl; renderAgent(); let rejected=false, changed=false, checked=false;
+  const maxSteps=goal?(S.goalSteps||30):8;
   try{
-    for(let step=0;step<8&&!ctl.signal.aborted;step++){
+    for(let step=0;step<maxSteps&&!ctl.signal.aborted;step++){
+      while(a.queue&&a.queue.length) a.msgs.push({role:"user",content:"(Sent while you were working) "+a.queue.shift()});
       const ai={role:"assistant",content:"",t:Date.now()}; a.msgs.push(ai); renderAgent();
-      const api=[{role:"system",content:agentSystem()+"\n"+(S.system||"")}, ...a.msgs.slice(0,-1).slice(-20).map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.content.slice(0,9000)}))];
-      let raf=0; const r=await routeChat(api,{vision:false,search:false},t=>{ cancelAnimationFrame(raf); raf=requestAnimationFrame(()=>{ ai.content=t; renderAgent(); }); },ctl.signal);
-      cancelAnimationFrame(raf); ai.content=r.text; addUse(api.reduce((n,m)=>n+m.content.length,0)+r.text.length); renderAgent();
+      const api=[{role:"system",content:agentSystem(a)+(goal?GOAL_RULES:"")+"\n"+(S.system||"")}, ...a.msgs.slice(0,-1).slice(-20).map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.content.slice(0,9000)}))];
+      const opts={vision:false,search:false}; if(a.model) opts.pin=a.model;
+      let raf=0; const r=await routeChat(api,opts,t=>{ cancelAnimationFrame(raf); raf=requestAnimationFrame(()=>{ ai.content=t; renderAgent(); }); },ctl.signal);
+      cancelAnimationFrame(raf); ai.content=r.text; ai.model=r.meta&&r.meta.model; addUse(api.reduce((n,m)=>n+m.content.length,0)+r.text.length); renderAgent();
       const dels=[...r.text.matchAll(/<delete path="([^"]*)"/g)].map(m=>m[1]);
-      if(dels.length && S.agentApprove!=="me" && !await approve({tag:"Deletes files",who:"Codex",title:`Codex wants to delete ${dels.length} file${dels.length>1?"s":""}`,rows:dels.slice(0,5).map(d=>["File",d,""])})){ rejected=true; a.msgs.push({role:"user",tool:true,content:"Tool results:\nThe user rejected the delete. Do not delete files; ask what they want instead."}); break; }
-      const res=await execTools(r.text); if(!res.n){ break; }
-      a.msgs.push({role:"user",tool:true,content:"Tool results:\n"+res.out}); renderAgent();
+      if(dels.length && S.agentApprove!=="me" && !await approve({tag:"Deletes files",who:"Studio",title:`Studio wants to delete ${dels.length} file${dels.length>1?"s":""}`,rows:dels.slice(0,5).map(d=>["File",d,""])})){ rejected=true; a.msgs.push({role:"user",tool:true,content:"Tool results:\nThe user rejected the delete. Do not delete files; ask what they want instead."}); break; }
+      const before=snapFiles(a.files); const res=await execTools(r.text,a); const ch=fileChanges(before,a.files); if(ch.length) changed=true;
+      if(!res.n){
+        if(!checked && changed && a.mode!=="plan" && S.aCheck!==false && buildPage(a)!=null && step<maxSteps-1){ checked=true; const pc=await pageCheck(a);
+          if(pc.errors&&pc.errors.length){ a.msgs.push({role:"user",tool:true,check:true,content:"Tool results:\nAutomatic page check found problems:\n"+pc.errors.join("\n")+"\nFix them, then give a short summary."}); renderAgent(); continue; } }
+        break; }
+      a.msgs.push({role:"user",tool:true,content:"Tool results:\n"+res.out,changes:ch.length?ch:undefined}); renderAgent();
+      let k=0; for(let x=a.msgs.length-1;x>=0;x--){ if(a.msgs[x].changes&&++k>15) delete a.msgs[x].changes; }
     }
     const last=[...a.msgs].reverse().find(m=>m.role==="assistant")?.content.replace(/<[^>]+>/g,"").trim()||"";
     task.status=ctl.signal.aborted?"stopped":(rejected||/\?\s*$/.test(last))?"input":"done";
   }catch(e){ task.status=ctl.signal.aborted||e.stopped?"stopped":"failed"; if(!e.stopped&&!ctl.signal.aborted) a.msgs.push({role:"assistant",content:"Error: "+e.message}); }
-  aBusy=null; save(); renderAgent();
+  delete BUSY[a.id]; save(); renderAgent();
+  if(A()!==a) toast(`Studio finished: ${(a.title||task.title).slice(0,40)}`);
 }
 /* ---- GitHub deploy (REST API, runs in your browser) ---- */
 async function gh(path,opt,tok){ const r=await fetch("https://api.github.com"+path,{...opt,headers:{Accept:"application/vnd.github+json",Authorization:"Bearer "+tok,"Content-Type":"application/json","X-GitHub-Api-Version":"2022-11-28"}}); let j=null; try{ j=await r.json(); }catch{} if(!r.ok&&!opt.soft) throw new Error(`${r.status} ${(j&&j.message)||""}`); return {s:r.status,j}; }
@@ -2085,7 +2128,7 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
 
 <script>
 /* ===== v25 settings navigation and header model button ===== */
-(function(){ const KC_V="26", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Plugins",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
+(function(){ const KC_V="27", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Plugins",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
   const back={background:"general"};
   function go(p){ sh.dataset.page=p; sh.querySelectorAll(".spage").forEach(x=>x.classList.toggle("on",x.dataset.page===p)); $("#setTitle").textContent=T[p]||"Settings"; sh.querySelector(".bd").scrollTop=0; if(p==="home") sums(); }
   window.kcSettingsGo=go;
@@ -2107,12 +2150,12 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
   $("#plugQ").oninput=()=>{ const q=$("#plugQ").value.toLowerCase().trim(); $("#plugList").querySelectorAll("li").forEach(li=>li.style.display=!q||li.textContent.toLowerCase().includes(q)?"":"none"); };
   // providers link in the empty state opens the providers page
   document.addEventListener("click",e=>{ if(e.target.closest("[data-settings]")) setTimeout(()=>go("providers"),0); });
-  // model button moves into the header, in place of the Chat/Codex switch
+  // model button moves into the header, in place of the Chat/Studio switch
   go("home"); })();
 </script>
 
 <script>
-/* ===== v26 Codex: several chats, history, menus, files, settings ===== */
+/* ===== v26 Studio: several chats, history, menus, files, settings ===== */
 (function(){
   const card=document.querySelector("#agent .card"), sh=$("#agent");
   const LIST=()=>S.agentList||(S.agentList=[]);
@@ -2122,11 +2165,11 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
     if(!a.title){ const u=(a.msgs||[]).find(m=>m.role==="user"&&!m.tool); if(u) a.title=u.content.replace(/\s+/g," ").slice(0,60); }
     const n=(a.msgs||[]).length; if(a._n!==n){ a._n=n; if(n) a.updated=Date.now(); } }
   function all(){ meta(A()); LIST().forEach(meta); return [A(),...LIST()].filter(has); }
-  function busy(){ if(aBusy){ toast("Codex is still working. Tap Stop first."); return true; } return false; }
+  function busy(a){ a=a||A(); if(BUSY[a.id]){ toast("This Studio chat is still working. Tap Stop first."); return true; } return false; }
   function carry(from,to){ to.gh=from.gh; to.use=from.use; to.budget=from.budget; }
   function park(){ const cur=A(); meta(cur); if(has(cur)) LIST().unshift(cur); return cur; }
-  function newChat(mode){ if(busy()) return false; const cur=park(); const n={files:{},msgs:[],mode:mode||cur.mode||"plan",gh:{},sel:"",id:uid(),created:Date.now(),title:""}; carry(cur,n); S.agent=n; save(); return true; }
-  function switchTo(id){ if(A().id===id) return true; if(busy()) return false; const i=LIST().findIndex(x=>x.id===id); if(i<0) return false;
+  function newChat(mode){ const cur=park(); const n={files:{},msgs:[],mode:mode||cur.mode||"plan",gh:{},sel:"",id:uid(),created:Date.now(),title:""}; carry(cur,n); S.agent=n; save(); return true; }
+  function switchTo(id){ if(A().id===id) return true; const i=LIST().findIndex(x=>x.id===id); if(i<0) return false;
     const nx=LIST().splice(i,1)[0], cur=park(); carry(cur,nx); nx.archived=false; S.agent=nx; save(); return true; }
   function status(a){ const t=(a.tasks||[]).slice(-1)[0]; return t&&t.status; }
   // ---- views ----
@@ -2141,8 +2184,8 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
     L.sort((x,y)=>y.updated-x.updated);
     const key=a=>sortBy==="mode"?(MODE[a.mode]||"Plan")+" mode":group(a.updated);
     const G=[]; L.forEach(a=>{ const k=key(a); let g=G.find(x=>x.k===k); if(!g) G.push(g={k,items:[]}); g.items.push(a); });
-    $("#aHist").innerHTML=(showArch?`<h6>Archived chats</h6>`:"")+G.map(g=>`${showArch?"":`<h6>${esc(g.k)}</h6>`}${g.items.map(a=>`<button class="ahrow" data-aid="${esc(a.id)}"><span><b>${esc(a.title||"New task")}</b><small>${ENV}${MODE[a.mode]||"Plan"} mode · ${Object.keys(a.files||{}).length} files</small></span>${status(a)==="input"||status(a)==="running"?"<i></i>":""}</button>`).join("")}`).join("")
-      || `<div class="ahempty">${q?"No Codex chat matches.":showArch?"No archived chats.":"No Codex chats yet. Describe what you want to build below."}</div>`; }
+    $("#aHist").innerHTML=(showArch?`<h6>Archived chats</h6>`:"")+G.map(g=>`${showArch?"":`<h6>${esc(g.k)}</h6>`}${g.items.map(a=>`<button class="ahrow" data-aid="${esc(a.id)}"><span><b>${esc(a.title||"New task")}</b><small>${ENV}${MODE[a.mode]||"Plan"} mode · ${Object.keys(a.files||{}).length} files</small></span>${BUSY[a.id]?'<em class="arun">Running</em>':status(a)==="input"?"<i></i>":""}</button>`).join("")}`).join("")
+      || `<div class="ahempty">${q?"No Studio chat matches.":showArch?"No archived chats.":"No Studio chats yet. Describe what you want to build below."}</div>`; }
   $("#aHist").onclick=e=>{ const r=e.target.closest("[data-aid]"); if(r&&switchTo(r.dataset.aid)) showChat(); };
   $("#aSearchBtn").onclick=()=>{ const b=$("#aSearchBox"); b.classList.toggle("hidden"); if(!b.classList.contains("hidden")) $("#aQ").focus(); else { $("#aQ").value=""; renderHist(); } };
   $("#aQ").oninput=renderHist;
@@ -2160,7 +2203,7 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
   ["aHIn","aIn"].forEach(id=>$("#"+id).addEventListener("input",e=>autosz(e.target)));
   let homeMode=null;
   $("#aHPlus").onclick=()=>popMenu(["plan","build","spec"].map(m=>({label:MODE[m]+" mode",sub:{plan:"Read-only. Explains what it would change.",build:"Creates and edits files, can preview.",spec:"Writes requirements, design and tasks first, then waits."}[m],on:(homeMode||A().mode)===m,fn:()=>{ homeMode=m; toast(MODE[m]+" mode for the next chat"); }})));
-  function homeSend(){ const t=$("#aHIn").value.trim(); if(!t) return; if(!newChat(homeMode)) return; homeMode=null; $("#aHIn").value=""; autosz($("#aHIn")); showChat(); $("#aIn").value=t; agentSend(); afterSend(); }
+  function homeSend(){ const t=$("#aHIn").value.trim(); if(!t) return; if(Object.keys(BUSY).length>=3){ toast("3 Studio tasks are already running. Wait for one to finish."); return; } if(!newChat(window.__homeMode||homeMode)) return; window.__homeMode=null; if(homeGoal){ A().goalNext=true; homeGoal=false; } homeMode=null; $("#aHIn").value=""; autosz($("#aHIn")); showChat(); $("#aIn").value=t; agentSend(); afterSend(); }
   $("#aHGo").onclick=homeSend;
   $("#aHIn").addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey&&!/iPhone|iPad|Android/.test(navigator.userAgent)){ e.preventDefault(); homeSend(); } });
   // chat header
@@ -2174,8 +2217,8 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
     {label:"Save a branch",sub:(a.branches||[]).length+" saved",fn:()=>$("#aBranch").click()},
     {label:"Restore a branch",fn:()=>$("#aRestore").click()},
     {label:"Rename chat",fn:()=>{ const n=(prompt("Chat name",a.title||"")||"").trim(); if(n){ a.title=n.slice(0,60); save(); renderAgent(); } }},
-    {label:"Archive chat",sub:"Hide it from the list. Find it under Codex ⌄",fn:()=>{ if(busy()) return; meta(a); a.archived=true; LIST().unshift(a); const n={files:{},msgs:[],mode:a.mode,gh:{},sel:"",id:uid(),created:Date.now(),title:""}; carry(a,n); S.agent=n; save(); showHome(); toast("Archived"); }},
-    {label:"Codex settings",fn:openASet}],true); };
+    {label:"Archive chat",sub:"Hide it from the list. Find it under Studio ⌄",fn:()=>{ if(busy()) return; meta(a); a.archived=true; LIST().unshift(a); const n={files:{},msgs:[],mode:a.mode,gh:{},sel:"",id:uid(),created:Date.now(),title:""}; carry(a,n); S.agent=n; save(); showHome(); toast("Archived"); }},
+    {label:"Studio settings",fn:openASet}],true); };
   // + menu inside a chat
   const addFile=document.createElement("input"); addFile.type="file"; addFile.multiple=true; addFile.hidden=true; document.body.appendChild(addFile);
   addFile.onchange=async()=>{ const a=A(); let n=0; for(const f of addFile.files){ if(f.size>400000){ toast(f.name+" is too big (over 400 KB)"); continue; } a.files[f.name.replace(/[^\w.\-\/]/g,"_")]=await f.text(); n++; } addFile.value=""; if(n){ save(); renderAgent(); toast(n+" file"+(n>1?"s":"")+" added to the project"); } };
@@ -2186,18 +2229,18 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
     ...["plan","build","spec"].map(m=>({label:MODE[m]+" mode",on:a.mode===m,fn:()=>{ a.mode=m; save(); renderAgent(); }}))]); };
   // approvals
   function apMenu(){ popMenu([
-    {label:"Ask for approval",sub:"Always ask before Codex deletes files",on:S.agentApprove!=="me",fn:()=>{ S.agentApprove="ask"; save(); toast("Codex will ask first"); renderASet(); }},
-    {label:"Approve for me",sub:"Deletes files in this project without asking. Publishing still asks.",on:S.agentApprove==="me",fn:()=>{ S.agentApprove="me"; save(); toast("Codex deletes without asking"); renderASet(); }}]); }
+    {label:"Ask for approval",sub:"Always ask before Studio deletes files",on:S.agentApprove!=="me",fn:()=>{ S.agentApprove="ask"; save(); toast("Studio will ask first"); renderASet(); }},
+    {label:"Approve for me",sub:"Deletes files in this project without asking. Publishing still asks.",on:S.agentApprove==="me",fn:()=>{ S.agentApprove="me"; save(); toast("Studio deletes without asking"); renderASet(); }}]); }
   $("#aShield").onclick=apMenu;
   // reply actions, title, subtitle
   const prevRender=renderAgent;
   renderAgent=function(){ prevRender(); const a=A(); meta(a);
     $("#aCTitle").textContent=a.title||"New task"; $("#aCSub").textContent=`${MODE[a.mode]||"Plan"} mode · ${Object.keys(a.files).length} files`;
     const log=$("#aLog"), kids=[...log.children], last=a.msgs.length-1;
-    a.msgs.forEach((m,i)=>{ const d=kids[i]; if(!d||m.role!=="assistant"||!m.content||(aBusy&&i===last)) return;
+    a.msgs.forEach((m,i)=>{ const d=kids[i]; if(!d||m.role!=="assistant"||!m.content||(BUSY[a.id]&&i===last)) return;
       const t=m.t?new Date(m.t).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}):"";
       const x=document.createElement("div"); x.className="aacts"; x.innerHTML=`<button data-acopy="${i}" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg></button>${t?`<span>${t}</span>`:""}`; d.appendChild(x); });
-    $("#aGo").innerHTML=aBusy?'<svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor"/></svg>':'<svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+    const bz=!!BUSY[a.id], typed=!!$("#aIn").value.trim(); $("#aGo").innerHTML=bz&&!typed?'<svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor"/></svg>':'<svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
     const ul=$("#aUseLine"); ul.classList.toggle("hidden",!S.aShowUse); if(S.aShowUse) ul.textContent=usageTxt();
     sh.classList.toggle("wrapcode",S.aWrap!==false);
     if(card.classList.contains("home")) renderHist(); };
@@ -2220,7 +2263,7 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
       rc.onresult=e=>{ const t=[...e.results].map(r=>r[0].transcript).join(" ").trim(); if(t){ ta.value=(ta.value?ta.value+" ":"")+t; autosz(ta); } };
       rc.onerror=e=>toast(e.error==="not-allowed"?"Microphone blocked. Allow it in Settings › Safari › Microphone.":"Voice: "+e.error);
       rc.onend=()=>{ btn.classList.remove("listening"); rc=null; }; btn.classList.add("listening"); rc.start(); }; });
-  // Codex settings
+  // Studio settings
   function renderASet(){ const g=A().gh||{}; $("#aSetGhSt").textContent=g.repo?g.repo:"Not connected"; $("#aSetApSt").textContent=S.agentApprove==="me"?"Approve for me":"Ask for approval";
     $("#aOptDismiss").checked=S.aDismiss!==false; $("#aOptUse").checked=!!S.aShowUse; $("#aOptWrap").checked=S.aWrap!==false; }
   function openASet(){ renderASet(); openSheet("#aSet"); }
@@ -2229,10 +2272,71 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
   $("#aOptDismiss").onchange=e=>{ S.aDismiss=e.target.checked; save(); };
   $("#aOptUse").onchange=e=>{ S.aShowUse=e.target.checked; save(); renderAgent(); };
   $("#aOptWrap").onchange=e=>{ S.aWrap=e.target.checked; save(); renderAgent(); };
-  // open Codex on the history page
+  // open Studio on the history page
   window.openAgent=function(){ document.getElementById("app").classList.remove("open"); meta(A()); aTab("chat"); renderAgent(); showHome(); openSheet("#agent"); };
   $("#agentBtn").onclick=openAgent; $("#agentNav").onclick=openAgent;
   window.__codex={newChat,switchTo,all,showHome,showChat};
+})();
+</script>
+
+<script>
+/* ===== v27 Studio: step view, diffs with undo, model per chat, goal mode ===== */
+var homeGoal=false;
+(function(){
+  const MODE={plan:"Plan",build:"Build",spec:"Spec"}, CODE_RE=/deepseek-v4-pro|glm-5\.[23]|kimi-k3|qwen3\.8|coder/i;
+  const short=m=>(m||"").split("/").pop().replace(/:free$/,"").slice(0,28);
+  function lineDiff(a,b){ const A=(a||"").split("\n"), B=(b||"").split("\n"), n=A.length, m=B.length;
+    if(a==null) return {rows:B.map(l=>["a",l]),add:m,del:0}; if(b==null) return {rows:A.map(l=>["r",l]),add:0,del:n};
+    if(n*m>250000){ return {rows:[["g",`Large change: ${n} lines before, ${m} lines after`]],add:Math.max(0,m-n),del:Math.max(0,n-m)}; }
+    const L=Array.from({length:n+1},()=>new Uint16Array(m+1)); for(let i=n-1;i>=0;i--) for(let j=m-1;j>=0;j--) L[i][j]=A[i]===B[j]?L[i+1][j+1]+1:Math.max(L[i+1][j],L[i][j+1]);
+    const out=[]; let i=0,j=0,add=0,del=0; while(i<n&&j<m){ if(A[i]===B[j]){ out.push(["s",A[i]]); i++; j++; } else if(L[i+1][j]>=L[i][j+1]){ out.push(["r",A[i++]]); del++; } else { out.push(["a",B[j++]]); add++; } }
+    while(i<n){ out.push(["r",A[i++]]); del++; } while(j<m){ out.push(["a",B[j++]]); add++; }
+    const keep=out.map((r,k)=>r[0]!=="s"||out.slice(Math.max(0,k-2),k+3).some(x=>x[0]!=="s")), rows=[]; let gap=false;
+    out.forEach((r,k)=>{ if(keep[k]){ rows.push(r); gap=false; } else if(!gap){ rows.push(["g","⋯"]); gap=true; } });
+    return {rows:rows.slice(0,160),add,del}; }
+  const ICON={wrote:"✎",edited:"✎",deleted:"🗑",read:"📄","---":"📄",files:"📁",run:"▶",preview:"👁",todo:"☑",search:"🔍"};
+  function stepsHtml(m,i){ const body=m.content.replace(/^Tool results:\n/,""); let h="";
+    if(m.check) h+=`<details class="astep chk" open><summary>⚠<b>Page check found problems</b></summary><pre>${esc(body.replace(/^Automatic page check found problems:\n/,"").replace(/\nFix them.*$/s,""))}</pre></details>`;
+    else body.split("\n\n").forEach(part=>{ const [first,...rest]=part.split("\n"), key=(first.split(/\s|:/)[0]||"").toLowerCase(), ic=ICON[key]||(first.startsWith("---")?"📄":"•");
+      const title=first.startsWith("---")?"Read "+first.replace(/-/g,"").trim():first; h+=`<details class="astep"><summary>${ic}<b>${esc(title.slice(0,90))}</b></summary>${rest.length?`<pre>${esc(rest.join("\n").slice(0,4000))}</pre>`:""}</details>`; });
+    (m.changes||[]).forEach((c,k)=>{ const d=c.big?{rows:[["g","Large file: no line view"]],add:0,del:0}:lineDiff(c.before,c.after);
+      const canUndo=c.before!==undefined&&!c.undone;
+      h+=`<div class="adiff${c.undone?" undone":""}"><div class="adh"><b>${esc(c.p)}</b>${c.before==null&&c.after!=null?"<span>new</span>":""}${c.after==null?"<span>deleted</span>":""}<span class="ad">+${d.add}</span><span class="dl">−${d.del}</span>${canUndo?`<button data-undo="${i}:${k}">Undo</button>`:c.undone?"<span>undone</span>":""}</div><pre>${d.rows.map(r=>`<span class="${r[0]==="a"?"la":r[0]==="r"?"lr":r[0]==="g"?"lg":""}">${r[0]==="a"?"+ ":r[0]==="r"?"− ":r[0]==="g"?"":"  "}${esc(r[1])}</span>`).join("")}</pre></div>`; });
+    return h; }
+  const prev=renderAgent;
+  renderAgent=function(){ prev(); const a=A(), log=$("#aLog"), kids=[...log.children];
+    a.msgs.forEach((m,i)=>{ const d=kids[i]; if(d&&m.role==="user"&&m.tool){ d.classList.add("steps"); d.innerHTML=stepsHtml(m,i); } });
+    (a.queue||[]).forEach(q=>{ const x=document.createElement("div"); x.className="aqueue"; x.textContent="Waiting to send: "+q; log.appendChild(x); });
+    log.scrollTop=log.scrollHeight;
+    $("#aCSub").textContent=`${MODE[a.mode]||"Plan"} mode${a.goalNext?" · Goal":""} · ${a.model?short(a.model.m):"Auto model"}`; };
+  $("#aLog").addEventListener("click",e=>{ const b=e.target.closest("[data-undo]"); if(!b) return; const [i,k]=b.dataset.undo.split(":").map(Number), a=A(), c=a.msgs[i]?.changes?.[k]; if(!c||c.undone) return;
+    if(c.before==null) delete a.files[c.p]; else a.files[c.p]=c.before; c.undone=true; save(); renderAgent(); toast("Undid the change to "+c.p); });
+  $("#aIn").addEventListener("input",()=>{ const a=A(); if(BUSY[a.id]) $("#aGo").innerHTML=$("#aIn").value.trim()?'<svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>':'<svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor"/></svg>'; });
+  // model per chat
+  function modelMenu(){ const a=A(), L=S.chain.filter(e=>e.on&&configured(e.p)&&!NONCHAT.test(e.m)).slice(0,40);
+    L.sort((x,y)=>CODE_RE.test(y.m)-CODE_RE.test(x.m));
+    popMenu([{label:"Automatic",sub:"Key Chat picks the best working model",on:!a.model,fn:()=>{ a.model=null; save(); renderAgent(); }},
+      ...L.map(e=>({label:short(e.m),sub:PROVIDERS[e.p].name+(CODE_RE.test(e.m)?" · good for coding":""),on:!!a.model&&a.model.p===e.p&&a.model.m===e.m,fn:()=>{ a.model={p:e.p,m:e.m}; save(); renderAgent(); toast("This chat now uses "+short(e.m)); }}))]); }
+  $("#aCSub").onclick=modelMenu;
+  // + menus with goal mode and model
+  const addFile=document.querySelectorAll('body>input[type=file][multiple]'); 
+  $("#aCPlus").onclick=()=>{ const a=A(); popMenu([
+    {label:"Pursue goal",sub:a.goalNext?"On for your next message. Tap to turn off":"Works through a checklist until done ("+(S.goalSteps||30)+" steps max)",on:!!a.goalNext,fn:()=>{ a.goalNext=!a.goalNext; save(); renderAgent(); }},
+    {label:"Model",sub:a.model?short(a.model.m):"Automatic",fn:modelMenu},
+    {label:"Add files to project",sub:"Text and code files",fn:()=>{ const f=addFile[addFile.length-1]; f&&f.click(); }},
+    {label:"Files",sub:Object.keys(a.files).length+" in this project",fn:()=>aTab("files")},
+    ...(typeof plugItems==="function"?plugItems():[]),
+    ...["plan","build","spec"].map(m=>({label:MODE[m]+" mode",on:a.mode===m,fn:()=>{ a.mode=m; save(); renderAgent(); }}))]); };
+  $("#aHPlus").onclick=()=>popMenu([
+    {label:"Pursue goal",sub:homeGoal?"On for the next chat":"Keep working until the goal is done",on:homeGoal,fn:()=>{ homeGoal=!homeGoal; toast(homeGoal?"Goal mode on for the next chat":"Goal mode off"); }},
+    ...["plan","build","spec"].map(m=>({label:MODE[m]+" mode",sub:{plan:"Read-only. Explains what it would change.",build:"Creates and edits files, can preview.",spec:"Writes requirements, design and tasks first, then waits."}[m],fn:()=>{ window.__homeMode=m; toast(MODE[m]+" mode for the next chat"); }}))]);
+  // settings: steps per goal, page check
+  const grp=[...document.querySelectorAll("#aSet .sgrp")].pop();
+  grp.insertAdjacentHTML("beforeend",`<label class="srow aswrow"><span>Check the page after changes</span><input type="checkbox" class="asw" id="aOptCheck"></label><button class="srow" id="aOptSteps"><span>Steps per goal</span><em id="aOptStepsV"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>`);
+  const sync=()=>{ $("#aOptCheck").checked=S.aCheck!==false; $("#aOptStepsV").textContent=S.goalSteps||30; };
+  $("#aOptCheck").onchange=e=>{ S.aCheck=e.target.checked; save(); };
+  $("#aOptSteps").onclick=()=>popMenu([15,30,50].map(n=>({label:n+" steps",on:(S.goalSteps||30)===n,fn:()=>{ S.goalSteps=n; save(); sync(); }})));
+  new MutationObserver(()=>{ if($("#aSet").classList.contains("show")) sync(); }).observe($("#aSet"),{attributes:true,attributeFilter:["class"]}); sync();
 })();
 </script>
 </body>
