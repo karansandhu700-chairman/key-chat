@@ -1,11 +1,21 @@
-// Caches the app shell so it opens instantly and offline. AI requests always go to the network.
-const C = "keychat-v27";
-const SHELL = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "key.webp", "fx.js"];
-self.addEventListener("install", e => { e.waitUntil(caches.open(C).then(c => c.addAll(SHELL))); self.skipWaiting(); });
-self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C).map(k => caches.delete(k))))); self.clients.claim(); });
-self.addEventListener("fetch", e => {
-  const u = new URL(e.request.url);
-  if (e.request.method !== "GET" || u.origin !== location.origin) return; // never touch API calls
-  e.respondWith(fetch(e.request).then(r => { const copy = r.clone(); caches.open(C).then(c => c.put(e.request, copy)); return r; })
-    .catch(() => caches.match(e.request).then(r => r || caches.match("index.html"))));
+// Caches the Key Chat app shell and Studio presentation files for offline opening.
+// AI/provider requests are not cached or intercepted.
+const C = "keychat-v28";
+const SHELL = ["./", "index.html", "studio-live.html", "studio-preview.html", "studio-polish.css", "studio-polish.js", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "key.webp", "fx.js"];
+self.addEventListener("install", event => {
+  event.waitUntil(caches.open(C).then(cache => cache.addAll(SHELL)));
+  self.skipWaiting();
+});
+self.addEventListener("activate", event => {
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== C).map(key => caches.delete(key)))));
+  self.clients.claim();
+});
+self.addEventListener("fetch", event => {
+  const url = new URL(event.request.url);
+  if (event.request.method !== "GET" || url.origin !== location.origin) return;
+  event.respondWith(fetch(event.request).then(response => {
+    const copy = response.clone();
+    caches.open(C).then(cache => cache.put(event.request, copy));
+    return response;
+  }).catch(() => caches.match(event.request).then(response => response || caches.match("index.html"))));
 });

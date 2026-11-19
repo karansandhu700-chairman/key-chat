@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#181818">
+  <title>Key Chat — Studio</title>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#181818}iframe{display:block;width:100%;height:100%;border:0}
+  </style>
+</head>
+<body>
+  <!-- Same-origin frame keeps Key Chat's existing browser-local data and app behavior. -->
+  <iframe id="keyChat" src="./index.html" title="Key Chat Studio"></iframe>
+  <script>
+    (() => {
+      "use strict";
+      const frame = document.getElementById("keyChat");
+      frame.addEventListener("load", () => {
+        try {
+          const doc = frame.contentDocument;
+          if (!doc || doc.querySelector('[data-studio-polish="loaded"]')) return;
+          const css = doc.createElement("link");
+          css.rel = "stylesheet";
+          css.href = "./studio-polish.css";
+          doc.head.appendChild(css);
+          const script = doc.createElement("script");
+          script.src = "./studio-polish.js";
+          script.defer = false;
+          script.dataset.studioPolish = "loaded";
+          doc.body.appendChild(script);
+        } catch (_) {
+          // If the host prevents same-origin access, keep the original app usable.
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

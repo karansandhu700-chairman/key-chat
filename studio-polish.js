@@ -1,1 +1,80 @@
-(()=>{"use strict";const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>Array.from(r.queryAll(s));const qa=(s,r=document)=>Array.from(r.querySelectorAll(s));function previewTools(){const p=$("#preview");if(!p||$(".kc-preview-tools",p))return;const card=$(".card",p),head=$(".hd",card||p);if(!card||!head)return;const bar=document.createElement("div");bar.className="kc-preview-tools";bar.innerHTML='<button type="button" class="on" data-tab="preview">Preview</button><button type="button" data-tab="code">Code</button><button type="button" data-tab="refresh">Refresh</button><label class="viewport"><span class="hidden">Preview width</span><select class="field"><option value="phone">Phone</option><option value="tablet">Tablet</option><option value="desktop">Desktop</option></select></label>';head.insertAdjacentElement("afterend",bar);bar.addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(!b)return;qa("button[data-tab]",bar).forEach(x=>x.classList.toggle("on",x===b));if(b.dataset.tab==="refresh"){const f=$("#previewFrame");if(f)f.src=f.src}});$("select",bar).addEventListener("change",e=>{const f=$("#previewFrame");if(!f)return;const w={phone:"390px",tablet:"768px",desktop:"100%"};f.style.width=w[e.target.value]||"100%";f.style.maxWidth="100%";f.style.margin="0 auto"})}function addModelControl(){const r=$("#routing");if(!r)return;const l=$(".routeLibrary",r);if(!l||$(".kc-add-model",l))return;const h=$(".routeTitleRow",l);if(!h)return;const b=document.createElement("button");b.type="button";b.className="kc-add-model";b.textContent="+ Add model";h.insertAdjacentElement("afterend",b);const n=document.createElement("div");n.className="kc-local-note";n.textContent="Existing provider and custom/local model setup stays in local app settings. This control does not change routing or save credentials.";b.insertAdjacentElement("afterend",n);b.addEventListener("click",()=>{const i=$("#addModel");if(i){i.focus();i.scrollIntoView({block:"center",behavior:"smooth"}}})}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{previewTools();addModelControl()},{once:true});else{previewTools();addModelControl()}})();
+(() => {
+  "use strict";
+
+  // Local presentation improvements only: no network requests, storage, analytics,
+  // provider/model changes, or chat/routing behavior.
+  const one = (selector, root = document) => root.querySelector(selector);
+
+  function enhancePreview() {
+    const sheet = one("#preview");
+    const card = sheet && one(".card", sheet);
+    const header = card && one(".hd", card);
+    if (!card || !header || one(".kc-preview-tools", card)) return;
+
+    const toolbar = document.createElement("div");
+    toolbar.className = "kc-preview-tools";
+    toolbar.innerHTML = `
+      <button type="button" class="on" data-kc-action="refresh">Preview</button>
+      <button type="button" data-kc-action="refresh" aria-label="Refresh preview">Refresh</button>
+      <label class="viewport">
+        <span class="hidden">Preview size</span>
+        <select aria-label="Preview size">
+          <option value="phone">Phone</option>
+          <option value="tablet">Tablet</option>
+          <option value="desktop">Desktop</option>
+        </select>
+      </label>`;
+    header.insertAdjacentElement("afterend", toolbar);
+
+    toolbar.addEventListener("click", (event) => {
+      if (!event.target.closest('[data-kc-action="refresh"]')) return;
+      const frame = one("#previewFrame", card);
+      if (frame) frame.src = frame.src;
+    });
+
+    const select = one("select", toolbar);
+    select.addEventListener("change", () => {
+      const frame = one("#previewFrame", card);
+      if (!frame) return;
+      const width = { phone: "390px", tablet: "768px", desktop: "100%" }[select.value];
+      frame.style.width = width;
+      frame.style.maxWidth = "100%";
+      frame.style.marginInline = "auto";
+    });
+  }
+
+  function enhanceModelLibrary() {
+    const library = one("#routing .routeLibrary");
+    const heading = library && one(".routeTitleRow", library);
+    if (!heading || one(".kc-add-model", library)) return;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "kc-add-model";
+    button.textContent = "+ Add model";
+    heading.insertAdjacentElement("afterend", button);
+
+    const note = document.createElement("p");
+    note.className = "kc-local-note";
+    note.textContent = "Add a model ID to a connected provider below. Configure or connect providers in Settings. These controls use the existing local model setup.";
+    button.insertAdjacentElement("afterend", note);
+
+    button.addEventListener("click", () => {
+      const input = one("#addModel", library);
+      if (!input) return;
+      input.focus();
+      input.scrollIntoView({ block: "center", behavior: "smooth" });
+    });
+  }
+
+  function run() {
+    enhancePreview();
+    enhanceModelLibrary();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", run, { once: true });
+  } else {
+    run();
+  }
+})();
