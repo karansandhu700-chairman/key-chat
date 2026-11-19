@@ -21,7 +21,7 @@ const definition={
  "kc-v28-research":"Distinguish facts, assumptions and open questions. Cite only retrieved sources."
 };
 const apps=[
- ["↗","GitHub","Existing Work repository settings; separate permission required.",()=>{q("#agentBtn").click()}],
+ ["↗","GitHub","Existing Workspace repository settings; separate permission required.",()=>{q("#agentBtn").click()}],
  ["⇄","Webhook connectors","Configure and test HTTPS webhooks.",()=>openHub("connectors")],
  ["☁","Sync","Configure a compatible sync endpoint.",()=>openHub("sync")],
  ["▧","Artifacts","Review local HTML version history.",()=>openHub("artifacts")],
@@ -65,21 +65,14 @@ for(const name of ["Featured","Installed","Skills","Connections"])tabs.append(bt
 search.oninput=render;body.append(search,tabs,note,rows,importBtn);card.append(head,body);panel.append(card);document.body.append(panel);
 panel.onclick=e=>{if(e.target===panel)panel.classList.remove("show")};
 function discover(){close();tab="Featured";search.value="";render();panel.classList.add("show")}
-const quick=q("#quickTools");if(quick){quick.textContent="Discover";quick.addEventListener("click",e=>{e.stopImmediatePropagation();discover()},true)}
+const settings=q("#quickSettings");if(settings)settings.onclick=()=>{close();q("#openSettings").click()}
 const attach=q("#attachBtn");
 if(attach)attach.onclick=()=>popMenu([
- {label:"Camera",sub:"Take a photo",fn:()=>camera.click()},
  {label:"Photos & files",sub:"Images, documents and source files",fn:()=>q("#file").click()},
- {label:"Discover skills",sub:"Choose AI skills and connections",fn:discover},
  {label:"Web search",sub:"Search-enabled chat provider",on:searchOn,fn:()=>setToggle("search",!searchOn)},
- {label:"Deep research",sub:"Search sources and create a cited report",fn:()=>go("kc-intelligence.html")},
  {label:"Create image",sub:"Uses your configured image provider",on:imageOn,fn:()=>setToggle("image",!imageOn)},
- {label:"File Studio",sub:"Create ZIP, Word, Excel, PowerPoint and more",fn:()=>go("kc29-studio.html")},
- {label:"Work",sub:"Plan, build and inspect projects",fn:()=>q("#agentBtn").click()},
- {label:"Artifact history",sub:"Open saved HTML versions",fn:()=>openHub("artifacts")},
- {label:"Live media",sub:"Existing camera and audio controls",fn:()=>openHub("media")},
- {label:"Quick file export",sub:"Original file creation tools",fn:()=>q("[data-open-create]")?.click()},
- ...plugItems().filter(x=>x.label!=="Skills")
+ {label:"Create a file",sub:"Make a document, presentation, spreadsheet or project",fn:()=>q("[data-open-create]")?.click()},
+ {label:"Workspace",sub:"Plan, build and manage a project",fn:()=>q("#agentBtn").click()}
 ]);
 const camera=mk("input");camera.type="file";camera.accept="image/*";camera.setAttribute("capture","environment");camera.hidden=true;document.body.append(camera);camera.onchange=()=>{addFiles([...camera.files]);camera.value=""};
 // Test up to three configured chat-capable models, using the same provider functions and stats as chat.
@@ -120,8 +113,8 @@ const security=q('#settings [data-page="security"]');
 if(security){
  const wrap=mk("section","kc-v28-section"), label=mk("label"), check=mk("input");check.type="checkbox";check.id="kcSessionCredentials";
  label.append(check,document.createTextNode(" Keep chat credentials only for this session"));
- const detail=mk("p","","When enabled, chat provider keys, relay tokens and Work GitHub tokens are omitted from future saves. You must re-enter them after reloading. This does not encrypt existing data or change connector storage.");
- check.onchange=async()=>{if(check.checked&&!confirm("Stop saving chat provider, relay and Work GitHub credentials? You will need to enter them again after reloading.")){check.checked=false;return}S.sessionCredentials=check.checked;await flush();};
+ const detail=mk("p","","When enabled, chat provider keys, relay tokens and Workspace GitHub tokens are omitted from future saves. You must re-enter them after reloading. This does not encrypt existing data or change connector storage.");
+ check.onchange=async()=>{if(check.checked&&!confirm("Stop saving chat provider, relay and Workspace GitHub credentials? You will need to enter them again after reloading.")){check.checked=false;return}S.sessionCredentials=check.checked;await flush();};
  const refresh=()=>{check.checked=!!S.sessionCredentials};new MutationObserver(refresh).observe(q("#settings"),{attributes:true,attributeFilter:["data-page","class"]});
  wrap.append(label,detail);security.append(wrap);
 }

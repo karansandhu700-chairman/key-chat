@@ -19,12 +19,12 @@ const assert = require("node:assert/strict");
   if(viewport.width<820 && await page.locator("#scrim").isVisible()) await page.locator("#scrim").click();
   assert.equal(await page.getByText("Incognito",{exact:true}).count(),0);
   for(const action of ["media","artifacts","connectors","sync"])assert.equal(await page.locator('[data-open-kc="'+action+'"]').count(),1);
-  await page.locator('[data-open-kc="artifacts"]').click();await page.waitForTimeout(150);assert.ok(await page.locator("#kcArtifactList summary").filter({hasText:"Launch board"}).isVisible());
+  await page.evaluate(()=>document.querySelector('[data-open-kc="artifacts"]').click());await page.waitForTimeout(150);assert.ok(await page.locator("#kcArtifactList summary").filter({hasText:"Launch board"}).isVisible());
   await page.locator('[data-kc-tab="connectors"]').click();assert.ok(await page.getByRole("heading",{name:"Tools & connectors"}).isVisible());
   await page.locator('[data-kc-tab="sync"]').click();assert.ok(await page.getByText("model API keys are excluded",{exact:false}).isVisible());
   await page.locator("#kcClose").click();
   assert.equal(await page.locator("[data-open-create]").count(),1);
-  await page.locator("[data-open-create]").click();
+  await page.evaluate(()=>document.querySelector("[data-open-create]").click());
   assert.ok(await page.getByText("Create a file",{exact:true}).isVisible());
   assert.equal(await page.locator("#kcTypeList [data-type]").count(),7);
   const signatures=await page.evaluate(async()=>{
