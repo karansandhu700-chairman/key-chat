@@ -910,6 +910,14 @@ html[data-light] #kcCreateHub .kc-create-shell {
 /* Focused shell: Chat is the product; secondary work lives behind Workspace. */
 .kc-premium-tools{display:none!important}
 .composer #searchBtn,.composer #imageBtn{display:none!important}
+.platinum-intro{margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.5}
+.platinum-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.platinum-profile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:14px;border:1px solid var(--line);border-radius:16px;text-align:left;background:var(--hover)}
+.platinum-profile.on{border-color:var(--accent);background:var(--panel);box-shadow:inset 0 0 0 1px var(--accent)}
+.platinum-profile b{font-size:15px}.platinum-profile small{color:var(--muted);line-height:1.35}
+.platinum-status{margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--hover);font-size:13px;color:var(--muted)}
+.platinum-status b{color:var(--text)}
+@media(max-width:500px){.platinum-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -919,7 +927,7 @@ html[data-light] #kcCreateHub .kc-create-shell {
     <div class="top"><span class="brand brandmark" aria-label="Key Chat"></span><b class="sidetitle">Key Chat</b><button class="gbtn" id="searchToggle" aria-label="Search chats"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button><button class="iconbtn" id="closeSide" aria-label="Close sidebar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button></div>
     <label class="search hidden" id="searchBox"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Search chats" autocomplete="off"></label>
     <nav class="snav">
-      <button class="navitem" id="quickModels" type="button">Models</button>
+      <button class="navitem" id="platinumNav" type="button">✦ Platinum Intelligence</button>
       <button class="navitem" id="agentNav"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>Workspace</button>
       <button class="navitem" id="quickSettings" type="button">Settings</button>
     </nav>
@@ -932,7 +940,7 @@ html[data-light] #kcCreateHub .kc-create-shell {
     <header>
       <img class="premium-logo" src="icon-512.png" alt="Key Chat" width="48" height="48">
       <button class="gbtn" id="menu" aria-label="Open sidebar"><svg viewBox="0 0 24 24"><path d="M5 9h14M5 15h9"/></svg></button>
-      <div class="seg2" role="tablist"><button class="on" id="segChat" role="tab" aria-selected="true">Chat</button><button id="agentBtn" role="tab" aria-selected="false">Workspace</button></div>
+      <div class="seg2"><button class="on" id="segChat" type="button">Chat</button><button id="agentBtn" type="button">Workspace</button><button id="platinumBtn" type="button">Intelligence</button></div>
       <button class="gbtn" id="newChat" aria-label="New chat"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
     </header>
     <div class="banner hidden" id="installBanner"><span>Install: tap <b>Share</b> then <b>Add to Home Screen</b> to use Key Chat like an app.</span><button id="dismissInstall" aria-label="Dismiss">✕</button></div>
@@ -1099,6 +1107,24 @@ html[data-light] #kcCreateHub .kc-create-shell {
   </div>
 </div></div>
 
+<div class="sheet" id="platinum"><div class="card">
+  <div class="hd"><div><b>Platinum Intelligence</b><small style="display:block;color:var(--muted);font-size:12px;margin-top:2px">Private on this device</small></div><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="bd">
+    <p class="platinum-intro">Your private control layer for choosing how Key Chat thinks and routes. It uses your existing connections only—no account, billing, or telemetry is added.</p>
+    <div class="sec" style="margin-top:0">Choose a response profile</div>
+    <div class="platinum-grid" id="platinumProfiles">
+      <button class="platinum-profile" data-platinum="fast"><b>Fast</b><small>Shortest wait, direct answers, rapid failover.</small></button>
+      <button class="platinum-profile" data-platinum="balanced"><b>Balanced</b><small>Everyday quality and reliability.</small></button>
+      <button class="platinum-profile" data-platinum="expert"><b>Expert</b><small>More attempts, deeper reasoning, careful answers.</small></button>
+      <button class="platinum-profile" data-platinum="private"><b>Private</b><small>Only configured local providers are eligible.</small></button>
+    </div>
+    <div class="platinum-status" id="platinumStatus" aria-live="polite"></div>
+    <div class="sec">Model confidence</div>
+    <div class="lockrow"><button class="btn" id="platinumRouting">Manage models</button><button class="btn ghost" id="platinumHealth">Check model health</button></div>
+    <p class="hint">Private mode is only as private as the local endpoint you configure. It never sends a message to a non-local provider from this router.</p>
+  </div>
+</div></div>
+
 <div class="sheet" id="agent"><div class="card home">
   <div id="aHomeV">
     <div class="ahd"><button class="gbtn" id="aMenuBtn" aria-label="Back to Key Chat"><svg viewBox="0 0 24 24"><path d="M5 9h14M5 15h9"/></svg></button><button class="atitle" id="aTitleBtn">Studio <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><button class="gbtn" id="aSearchBtn" aria-label="Search Studio chats"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button></div>
@@ -1238,7 +1264,7 @@ const standalone = matchMedia("(display-mode: standalone)").matches || navigator
 
 /* ============ Storage (IndexedDB, falls back to localStorage) ============ */
 const LSKEY="keychat.v1";
-const blank = () => ({v:2, chats:[], cur:null, keys:{}, chain:null, mode:"auto", fixed:null, system:"", stats:{}, relay:{url:"",token:""}, voice:"", noInstall:false, speed:"balanced", battery:false, pcool:{}});
+const blank = () => ({v:2, chats:[], cur:null, keys:{}, chain:null, mode:"auto", fixed:null, system:"", stats:{}, relay:{url:"",token:""}, voice:"", noInstall:false, speed:"balanced", battery:false, pcool:{}, platinum:{profile:"balanced"}});
 let S = blank();
 const idb = {
   db:null,
@@ -1266,6 +1292,7 @@ async function load(){
   S = Object.assign(blank(), saved||{});
   window.KC_BATTERY=!!S.battery;
   S.relay = Object.assign({url:"",token:""}, S.relay||{});
+  S.platinum = Object.assign({profile:"balanced"}, S.platinum||{});
   if(!S.chain) S.chain = defaultChain();
   if((saved?.v||1) < 2){ // add the new no-key provider (OVH) ahead of older no-key entries
     const add=PROVIDERS.ovh.defaults.filter(m=>!S.chain.some(e=>e.p==="ovh"&&e.m===m)).map(m=>({p:"ovh",m,on:true}));
@@ -1350,8 +1377,9 @@ const NONCHAT=/embed|flux|dreamshaper|diffusion|sdxl|animerge|pony|deliberate|wh
 function st(p,m){ const k=p+"|"+m; return S.stats[k] || (S.stats[k]={ok:0,fail:0,lat:0,cool:0,last:""}); }
 function score(e,i){ const s=st(e.p,e.m), n=s.ok+s.fail, fr=n?s.fail/n:0; return i + (s.lat? s.lat/4000 : 0.5) + fr*4; }
 function candidates({vision, search}){
-  if(search) return configured("groq") ? [{...SEARCH_MODEL,on:true}] : [];
+  if(search) return S.platinum?.profile==="private" ? [] : configured("groq") ? [{...SEARCH_MODEL,on:true}] : [];
   let list=S.chain.filter(e=>e.on && configured(e.p) && !NONCHAT.test(e.m));
+  if(S.platinum?.profile==="private") list=list.filter(e=>PROVIDERS[e.p]?.tier==="local");
   if(S.mode==="fixed" && S.fixed) list=list.filter(e=>e.p===S.fixed.p && e.m===S.fixed.m);
   if(vision) list=list.filter(e=>isVision(e.m));
   const now=Date.now();
@@ -1369,8 +1397,8 @@ async function* sse(resp){
 async function errText(r){ try{ const j=await r.json(); return j.error?.message||j.message||j.detail||JSON.stringify(j).slice(0,140); }catch{ return r.statusText||""; } }
 const netWhy = e => /Failed to fetch|NetworkError|Load failed|fetch/i.test(e.message||"") ? "couldn't connect (the provider may block browser apps; try your relay)" : (e.message||"network error");
 async function routeChat(messages, opts, onToken, signal){
-  const cl=candidates(opts), list=opts.pin&&configured(opts.pin.p)?[opts.pin,...cl.filter(e=>!(e.p===opts.pin.p&&e.m===opts.pin.m))]:cl, trail=[], t0=performance.now();
-  if(!list.length) throw Object.assign(new Error(opts.search ? "Search needs a free Groq key. Add one in Settings." :
+  const cl=candidates(opts), privateMode=S.platinum?.profile==="private", pinAllowed=opts.pin&&configured(opts.pin.p)&&(!privateMode||PROVIDERS[opts.pin.p]?.tier==="local"), list=pinAllowed?[opts.pin,...cl.filter(e=>!(e.p===opts.pin.p&&e.m===opts.pin.m))]:cl, trail=[], t0=performance.now();
+  if(!list.length) throw Object.assign(new Error(S.platinum?.profile==="private" ? "Private profile needs an active local provider. Open Platinum Intelligence → Manage models." : opts.search ? "Search needs a free Groq key. Add one in Settings." :
     opts.vision ? "None of your active models can read photos. Switch on OVH's Qwen2.5-VL model, or add a free Google Gemini key." :
     "No eligible models are available. Check configured models or wait for cooldowns to expire."),{trail});
   S.pcool ||= {}; const pfail={}; let tries=0; const sp=spd();
@@ -1514,7 +1542,7 @@ function renderThread(){
   thread.scrollTop=thread.scrollHeight;
 }
 function renderSpeedChip(){ const el=$("#speedChip"); if(el) el.firstChild.nodeValue=spd().label; }
-function renderMode(){ renderSpeedChip(); const base=S.mode==="fixed"&&S.fixed ? S.fixed.m.split("/").pop() : S.mode==="priority"?"Priority":"Auto"; $("#modeLabel").textContent = base; }
+function renderMode(){ renderSpeedChip(); const base=S.platinum?.profile==="private"?"Private":S.mode==="fixed"&&S.fixed ? S.fixed.m.split("/").pop() : S.mode==="priority"?"Priority":"Auto"; $("#modeLabel").textContent = base; }
 function renderAll(){ renderList(); renderThread(); renderMode(); }
 
 /* ============ Sending ============ */
@@ -1756,7 +1784,23 @@ async function testRelay(){
 
 /* ============ Routing sheet ============ */
 const SPEED_HINT={instant:"Fastest answers. Tries up to 3 models, 12 s each, and keeps replies short.",balanced:"Good mix. Tries up to 6 models, 25 s each.",deep:"Most careful. Tries up to 10 models, 45 s each, and asks the model to think step by step."};
-function setSpeed(v){ S.speed=v; save(); renderRouting(); renderMode(); }
+const PLATINUM_PROFILES={fast:{speed:"instant",label:"Fast"},balanced:{speed:"balanced",label:"Balanced"},expert:{speed:"deep",label:"Expert"},private:{speed:"balanced",label:"Private"}};
+function setPlatinumProfile(profile){
+  const p=PLATINUM_PROFILES[profile]||PLATINUM_PROFILES.balanced;
+  S.platinum=Object.assign({},S.platinum||{}, {profile}); S.speed=p.speed; save(); renderRouting(); renderMode(); renderPlatinum();
+  toast("Platinum profile: "+p.label);
+}
+function renderPlatinum(){
+  const profile=S.platinum?.profile||"balanced", p=PLATINUM_PROFILES[profile]||PLATINUM_PROFILES.balanced;
+  document.querySelectorAll("[data-platinum]").forEach(b=>b.classList.toggle("on",b.dataset.platinum===profile));
+  const status=$("#platinumStatus"); if(!status)return;
+  const active=(S.chain||[]).filter(e=>e.on&&configured(e.p)), local=active.filter(e=>PROVIDERS[e.p]?.tier==="local");
+  status.innerHTML=profile==="private"
+    ? `<b>Private profile active.</b> ${local.length} local provider${local.length===1?"":"s"} ready. ${local.length?"Only these providers can receive your chat.":"Add and enable a local provider in Manage models before sending."}`
+    : `<b>${p.label} profile active.</b> ${active.length} configured model${active.length===1?"":"s"} can be considered; the router uses your existing reliability and speed history.`;
+}
+function openPlatinum(){ renderPlatinum(); openSheet("#platinum"); closeSide(); }
+function setSpeed(v){ S.speed=v; if(S.platinum?.profile!=="private") S.platinum=Object.assign({},S.platinum||{}, {profile:v==="instant"?"fast":v==="deep"?"expert":"balanced"}); save(); renderRouting(); renderMode(); renderPlatinum(); }
 function setPerf(b){ S.battery=b; save(); window.KC_BATTERY=b; document.querySelectorAll("#perfSeg button").forEach(x=>x.classList.toggle("on",(x.dataset.perf==="battery")===b)); }
 function renderRouting(){
   document.querySelectorAll("#speedSeg button").forEach(b=>b.classList.toggle("on",b.dataset.speed===S.speed));
@@ -1827,6 +1871,11 @@ $("#provQ").oninput=renderSettings;
 function openSheet(id){ $(id).classList.add("show"); }
 document.querySelectorAll(".sheet").forEach(s=>s.addEventListener("click",e=>{ if(e.target===s||e.target.closest("[data-close]")){ s.classList.remove("show"); if(s.id==="preview") $("#previewFrame").srcdoc=""; else renderAll(); } }));
 $("#openSettings").onclick=()=>{ renderSettings(); openSheet("#settings"); closeSide(); };
+$("#platinumBtn").onclick=openPlatinum;
+$("#platinumNav").onclick=openPlatinum;
+$("#platinumProfiles").onclick=e=>{ const b=e.target.closest("[data-platinum]"); if(b) setPlatinumProfile(b.dataset.platinum); };
+$("#platinumRouting").onclick=()=>{ $("#platinum").classList.remove("show"); renderRouting(); openSheet("#routing"); };
+$("#platinumHealth").onclick=()=>{ $("#platinum").classList.remove("show"); renderRouting(); openSheet("#routing"); setTimeout(()=>document.querySelector("#kcNativeHealth")?.scrollIntoView({behavior:"smooth",block:"center"}),0); };
 $("#routeBtn").onclick=()=>popMenu([...["instant","balanced","deep"].map(k=>({label:SPEED[k].label,sub:SPEED_HINT[k],on:(S.speed||"balanced")===k,fn:()=>{ setSpeed(k); toast("Speed: "+SPEED[k].label); }})),{label:"Choose model…",sub:"Auto, Priority, or one fixed model",fn:()=>{ renderRouting(); openSheet("#routing"); }}],true);
 $("#sysPrompt").onchange=e=>{ S.system=e.target.value; save(); };
 $("#voiceSel").onchange=e=>{ S.voice=e.target.value; save(); };
@@ -2536,12 +2585,6 @@ var homeGoal=false;
   $("#aOptCheck").onchange=e=>{ S.aCheck=e.target.checked; save(); };
   $("#aOptSteps").onclick=()=>popMenu([15,30,50].map(n=>({label:n+" steps",on:(S.goalSteps||30)===n,fn:()=>{ S.goalSteps=n; save(); sync(); }})));
   new MutationObserver(()=>{ if($("#aSet").classList.contains("show")) sync(); }).observe($("#aSet"),{attributes:true,attributeFilter:["class"]}); sync();
-})();
-</script>
-<script>
-(() => {
-  const byId = id => document.getElementById(id);
-  byId("quickModels").addEventListener("click", () => { byId("closeSide").click(); byId("routeBtn").click(); });
 })();
 </script>
 <script>
