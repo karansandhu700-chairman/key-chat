@@ -840,7 +840,7 @@ html[data-light] #agent #aFSeg button.on{background:#fff}
     </div>
     <div class="spage" data-page="storage">
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn ghost" id="copyExport">Copy backup of chats</button>
+      <button class="btn ghost" id="copyExport">Copy backup of chats</button><button class="btn ghost" id="transferExport" type="button">Download chat transfer</button><button class="btn ghost" id="transferImport" type="button">Import chat transfer</button><input type="file" id="transferFile" accept=".json,application/json" hidden><div class="hint">Manual transfer between devices. Files contain chat content and attachments; API keys are not included. Existing chats are kept.</div>
       <button class="btn ghost" id="importBtn">Restore from backup</button>
       <button class="btn danger" id="wipe">Delete everything</button>
     </div>
@@ -2369,6 +2369,48 @@ var homeGoal=false;
 </script>
 <script>
 (() => { const frame=document.getElementById("previewFrame"); document.querySelectorAll("[data-preview-size]").forEach(button => button.addEventListener("click",()=>{frame.style.width=button.dataset.previewSize;document.querySelectorAll("[data-preview-size]").forEach(b=>b.setAttribute("aria-pressed",String(b===button)));})); document.getElementById("previewReload").addEventListener("click",()=>{frame.srcdoc=frame.srcdoc;}); })();
+</script>
+<script>
+(() => {
+  const nav=document.querySelector(".snav"), filesBtn=document.createElement("button");
+  filesBtn.className="navitem"; filesBtn.type="button"; filesBtn.textContent="Files & artifacts"; nav.appendChild(filesBtn);
+  const overlay=document.createElement("div"); overlay.className="sheet"; overlay.id="fileLibrary";
+  overlay.innerHTML='<div class="card"><div class="hd"><b>Files & artifacts</b><button class="iconbtn" data-close aria-label="Close">×</button></div><div class="bd"><p class="hint">Items retained in this device’s chat history. Open a chat to see its attachments and generated HTML.</p><button class="btn ghost" id="libraryAttach" type="button">Attach files to current chat</button><div id="libraryItems"></div></div></div>';
+  document.body.appendChild(overlay);
+  overlay.addEventListener("click",e=>{if(e.target===overlay||e.target.closest("[data-close]"))overlay.classList.remove("show");});
+  filesBtn.addEventListener("click",()=>{
+    const list=document.getElementById("libraryItems");list.replaceChildren();let count=0;
+    for(const chat of S.chats){(chat.msgs||[]).forEach((m,i)=>{
+      for(const a of (m.att||[])){count++;let row=document.createElement("div");row.className="srow";let label=document.createElement("span");label.textContent=(a.name||"Attachment")+" · "+(chat.title||"Chat");row.append(label);list.append(row);}
+      if(m.role==="assistant")artifactsOf(m.content).forEach((a,k)=>{count++;let row=document.createElement("button");row.className="srow";row.type="button";row.textContent=a.title+" · "+(chat.title||"Chat");row.addEventListener("click",()=>{S.cur=chat.id;save();renderAll();overlay.classList.remove("show");openArtifact(i,k);});list.append(row);});
+    });}
+    if(!count){let p=document.createElement("p");p.className="hint";p.textContent="No saved attachments or HTML artifacts yet.";list.append(p);}
+    closeSide();overlay.classList.add("show");
+  });
+  document.getElementById("libraryAttach").addEventListener("click",()=>{overlay.classList.remove("show");document.getElementById("file").click();});
+})();
+</script>
+<script>
+(() => {
+ const file=document.getElementById("transferFile");
+ document.getElementById("transferExport").addEventListener("click",()=>{
+   const payload={format:"key-chat-transfer",version:1,chats:S.chats};
+   const url=URL.createObjectURL(new Blob([JSON.stringify(payload)],{type:"application/json"}));
+   const a=document.createElement("a");a.href=url;a.download="key-chat-transfer.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);
+ });
+ document.getElementById("transferImport").addEventListener("click",()=>file.click());
+ file.addEventListener("change",async()=>{
+   const f=file.files[0];file.value="";if(!f)return;
+   try{
+     if(f.size>50000000)throw Error("File exceeds 50 MB");
+     const data=JSON.parse(await f.text());
+     if(data.format!=="key-chat-transfer"||data.version!==1||!Array.isArray(data.chats))throw Error("Not a Key Chat transfer file");
+     if(!data.chats.every(c=>c && typeof c.id==="string" && typeof c.title==="string" && Array.isArray(c.msgs)))throw Error("Invalid chat data");
+     const known=new Set(S.chats.map(c=>c.id));const incoming=data.chats.filter(c=>{if(known.has(c.id))return false;known.add(c.id);return true;});
+     S.chats.push(...incoming);save();renderAll();toast("Imported "+incoming.length+" chats; existing chats kept");
+   }catch(e){toast("Transfer failed: "+e.message);}
+ });
+})();
 </script>
 </body>
 </html>
