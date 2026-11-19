@@ -735,6 +735,7 @@ html[data-light] #agent #aFSeg button.on{background:#fff}
 #aCSub{cursor:pointer}
 </style>
 <link rel="stylesheet" href="keychat-premium.css">
+<style>.preview-controls{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.preview-controls button{padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text)}.preview-controls button[aria-pressed=true]{outline:2px solid var(--accent)}.preview-stage{width:100%;overflow:auto;display:flex;justify-content:center;background:var(--bg2);border-radius:14px}.preview-stage #previewFrame{max-width:100%;min-height:60vh;transition:width .2s} @media(prefers-reduced-motion:reduce){.preview-stage #previewFrame{transition:none}}</style>
 </head>
 <body>
 <div id="vfull" data-st="listening"><div class="orb"></div><p id="vfullTxt">Listening…</p><button class="end" id="vfullEnd">End</button></div>
@@ -812,7 +813,7 @@ html[data-light] #agent #aFSeg button.on{background:#fff}
       <label class="search" style="margin:0 0 6px"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="plugQ" placeholder="Search plugins" autocomplete="off"></label>
       <div class="sec">Added</div>
       <ul id="plugList"></ul>
-    <div class="hint">Each plugin adds its instructions and reference files to every chat it is on. Import a .zip that contains a SKILL.md file.</div>
+    <div class="hint">Import a ZIP containing SKILL.md and optional reference files. Imported instructions are sent to the selected model when enabled; they do not automatically connect external services.</div>
     <div class="lockrow"><button class="btn" id="chImport">Import plugin (.zip)</button></div><input type="file" id="chFile" accept=".zip,application/zip" hidden>
     </div>
     <div class="spage" data-page="memory">
@@ -973,7 +974,7 @@ html[data-light] #agent #aFSeg button.on{background:#fff}
 
 <div class="sheet" id="preview"><div class="card wide">
   <div class="hd"><b>Preview</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
-  <div class="bd"><iframe id="previewFrame" sandbox="allow-scripts allow-forms allow-modals" title="Code preview"></iframe></div>
+  <div class="bd"><div class="preview-controls" role="group" aria-label="Preview size"><button type="button" data-preview-size="100%">Fit</button><button type="button" data-preview-size="390px">Phone</button><button type="button" data-preview-size="768px">Tablet</button><button type="button" data-preview-size="1200px">Desktop</button><button type="button" id="previewReload">Reload</button></div><p class="hint">Preview sizes are limited by the available screen width.</p><div class="preview-stage"><iframe id="previewFrame" sandbox="allow-scripts allow-forms allow-modals" title="Code preview"></iframe></div></div>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -2104,13 +2105,13 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
       out[name]= meth===0? td.decode(raw) : meth===8? await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text() : ""; }
     return out; }
   function render(){ const P=plugs(), on=P.filter(p=>p.on);
-    $("#plugList").innerHTML=P.map(p=>`<li><span>${esc(p.name)} <small style="color:var(--muted)">· ${Object.keys(p.files).length} files</small></span><span style="display:flex;gap:6px;flex:none"><button class="btn ghost" data-plon="${esc(p.id)}" style="padding:6px 10px;width:auto;margin:0">${p.on?"Switch off":"Switch on"}</button><button data-pldel="${esc(p.id)}" aria-label="Remove ${esc(p.name)}">✕</button></span></li>`).join("")||`<li style="color:var(--muted)">No plugins yet. Import a .zip to add one.</li>`;
+    $("#plugList").innerHTML=P.map(p=>`<li><span>${esc(p.name)} <small style="color:var(--muted)">· ${Object.keys(p.files).length} files</small></span><span style="display:flex;gap:6px;flex:none"><button class="btn ghost" data-plon="${esc(p.id)}" style="padding:6px 10px;width:auto;margin:0">${p.on?"Switch off":"Switch on"}</button><button data-pldel="${esc(p.id)}" aria-label="Remove ${esc(p.name)}">✕</button></span></li>`).join("")||`<li style="color:var(--muted)">No plugins installed on this device. Import a skill ZIP to get started.</li>`;
     $("#routeBtn").firstChild.textContent=on.length?`${on[0].name} `:"Key Chat "; }
   $("#chImport").onclick=()=>$("#chFile").click();
   $("#chFile").onchange=async()=>{ const f=$("#chFile").files[0]; $("#chFile").value=""; if(!f) return;
     try{ const files=await unzip(await f.arrayBuffer()), skills=Object.keys(files).filter(k=>/(^|\/)SKILL\.md$/.test(k)); if(!skills.length) throw new Error("no SKILL.md inside");
-      const pick=skills.sort((a,b)=>files[b].length-files[a].length)[0], pkg=pick.replace(/\/?SKILL\.md$/,""), keep={}; for(const k in files) if(k.startsWith(pkg+"/")) keep[k]=files[k];
-      const P=plugs(), name=pkg.split("/").pop()||pkg, id=name.toLowerCase().replace(/[^a-z0-9]+/g,"-")+"-"+uid().slice(0,4);
+      const pick=skills.sort((a,b)=>files[b].length-files[a].length)[0], sourcePkg=pick.replace(/\/?SKILL\.md$/,""), pkg=sourcePkg||"imported-skill", keep={}; for(const k in files) if(sourcePkg ? k.startsWith(sourcePkg+"/") : true) keep[sourcePkg ? k : pkg+"/"+k]=files[k];
+      const P=plugs(), name=sourcePkg ? sourcePkg.split("/").pop() : (f.name.replace(/\.zip$/i,"")||"Imported skill"), id=name.toLowerCase().replace(/[^a-z0-9]+/g,"-")+"-"+uid().slice(0,4);
       const j=P.findIndex(p=>p.name===name); if(j>=0) P.splice(j,1); P.unshift({id,pkg,name,files:keep,on:true}); save(); render(); toast(`${name} is on`); }catch(e){ toast("Couldn't read that zip: "+e.message); } };
   $("#plugList").onclick=async e=>{ const P=plugs(), tg=e.target.closest("[data-plon]"), dl=e.target.closest("[data-pldel]");
     if(tg){ const p=P.find(x=>x.id===tg.dataset.plon); if(p){ p.on=!p.on; save(); render(); toast(`${p.name} is ${p.on?"on":"off"}`); } }
@@ -2353,6 +2354,10 @@ var homeGoal=false;
   }
 })();
 </script>
+<script>
+(() => { const frame=document.getElementById("previewFrame"); document.querySelectorAll("[data-preview-size]").forEach(button => button.addEventListener("click",()=>{frame.style.width=button.dataset.previewSize;document.querySelectorAll("[data-preview-size]").forEach(b=>b.setAttribute("aria-pressed",String(b===button)));})); document.getElementById("previewReload").addEventListener("click",()=>{frame.srcdoc=frame.srcdoc;}); })();
+</script>
 </body>
 </html>
+
 
