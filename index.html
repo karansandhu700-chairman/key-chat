@@ -736,7 +736,25 @@ html[data-light] #agent #aFSeg button.on{background:#fff}
 </style>
 <link rel="stylesheet" href="keychat-premium.css">
 <style>.preview-controls{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.preview-controls button{padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text)}.preview-controls button[aria-pressed=true]{outline:2px solid var(--accent)}.preview-stage{width:100%;overflow:auto;display:flex;justify-content:center;background:var(--bg2);border-radius:14px}.preview-stage #previewFrame{max-width:100%;min-height:60vh;transition:width .2s} @media(prefers-reduced-motion:reduce){.preview-stage #previewFrame{transition:none}}</style>
-<link rel="stylesheet" href="premium-features.css?v=33"></head>
+<link rel="stylesheet" href="premium-features.css?v=33"><style>
+#settings [data-page="plugins"]{max-width:36rem;margin:auto}
+#settings [data-page="plugins"] .search{border-radius:14px;background:var(--bg2);border:0;padding:10px 14px}
+#settings #plugList{border:0;background:transparent;padding:0}
+#settings #plugList li{padding:12px 0;background:transparent;border:0}
+#settings #chImport,.kc-create-shell #kcExportFile{background:#e6ecee;color:#122127;border:0;box-shadow:none;border-radius:24px;padding:12px 20px}
+#kcCreateHub .kc-create-shell{background:#101922;border-color:#36414b;box-shadow:0 16px 50px #0003}
+#kcCreateHub .kc-create-grid aside{flex:none}
+#kcCreateHub .kc-create-fields input,#kcCreateHub .kc-create-fields textarea{background:transparent;border:0;border-radius:0;border-bottom:1px solid #39434c}
+@media(max-width:760px){
+#kcCreateHub .kc-create-grid{display:block;overflow:auto;min-height:0}
+#kcCreateHub #kcTypeList{display:grid;width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px}
+#kcCreateHub #kcTypeList button{min-width:0;width:100%;padding:6px 8px;min-height:44px}
+#kcCreateHub #kcTypeList small{display:none}
+#kcCreateHub #kcTypeList i{width:24px;height:24px;border:0;background:none}
+#kcCreateHub .kc-create-grid main{overflow:visible}
+#kcCreateHub .kc-create-shell>footer{flex:none;justify-content:flex-end}
+}
+</style></head>
 <body>
 <div id="vfull" data-st="listening"><div class="orb"></div><p id="vfullTxt">Listening…</p><button class="end" id="vfullEnd">End</button></div>
 <div class="app" id="app">
@@ -793,7 +811,7 @@ html[data-light] #agent #aFSeg button.on{background:#fff}
   <div class="hd"><button class="iconbtn" id="setBack" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b id="setTitle">Settings</b><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="bd">
     <div class="spage on" data-page="home">
-      <div class="sgrp"><button class="srow" data-go="plugins"><i class="sic" style="--c:#19c3a3"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9 12a3 3 0 1 0 3-3"/></svg></i><span>Plugins</span><em id="sumPlug"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="memory"><i class="sic" style="--c:#f0a03c"><svg viewBox="0 0 24 24"><path d="M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3zM21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z"/></svg></i><span>Memory</span><em id="sumMem"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="personality"><i class="sic" style="--c:#4cc3f0"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 8v4l3 2"/></svg></i><span>Personality</span><em id="sumPers"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
+      <div class="sgrp"><button class="srow" data-go="plugins"><i class="sic" style="--c:#19c3a3"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9 12a3 3 0 1 0 3-3"/></svg></i><span>Skills</span><em id="sumPlug"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="memory"><i class="sic" style="--c:#f0a03c"><svg viewBox="0 0 24 24"><path d="M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3zM21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z"/></svg></i><span>Memory</span><em id="sumMem"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="personality"><i class="sic" style="--c:#4cc3f0"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 8v4l3 2"/></svg></i><span>Personality</span><em id="sumPers"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
       <div class="sgrp"><button class="srow" data-go="general"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></i><span>General</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="voice"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg></i><span>Voice</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="security"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></i><span>Security and login</span><em id="sumLock"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="codex"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></svg></i><span>Studio</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button><button class="srow" data-go="storage"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 13h18M7 16h2"/></svg></i><span>Storage</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
       <div class="sgrp"><button class="srow" data-go="providers"><i class="sic" style="--c:var(--text)"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="18" r="2.5"/></svg></i><span>AI providers</span><em id="sumProv"></em><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>
       <div class="sfootnote" id="kcVer"></div>
@@ -810,11 +828,11 @@ html[data-light] #agent #aFSeg button.on{background:#fff}
     <div class="hint" style="margin-bottom:12px">Your photo stays on this device. It is never uploaded.</div>
     </div>
     <div class="spage" data-page="plugins">
-      <label class="search" style="margin:0 0 6px"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="plugQ" placeholder="Search plugins" autocomplete="off"></label>
-      <div class="sec">Added</div>
+      <label class="search" style="margin:0 0 6px"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="plugQ" placeholder="Search skills" autocomplete="off"></label>
+      <div class="sec">Your skills</div>
       <ul id="plugList"></ul>
-    <div class="hint">Import a ZIP containing SKILL.md and optional reference files. Imported instructions are sent to the selected model when enabled; they do not automatically connect external services.</div>
-    <div class="lockrow"><button class="btn" id="chImport">Import plugin (.zip)</button></div><input type="file" id="chFile" accept=".zip,application/zip" hidden>
+    <div class="hint">Choose a ZIP containing SKILL.md. Enabled skills share their instructions with your selected model.</div>
+    <div class="lockrow"><button class="btn" id="chImport">Import skill ZIP</button></div><input type="file" id="chFile" accept=".zip,application/zip" hidden>
     </div>
     <div class="spage" data-page="memory">
     <div class="hint">Lasting facts the app remembers about you and uses in every chat. Stored on this phone only.</div>
@@ -2095,7 +2113,7 @@ const memStrip=t=>(t||"").replace(/\n?\[\[remember:[^\]]*\]\]?/gi,"").replace(/\
 function memAdd(f){ f=(f||"").trim().replace(/\s+/g," ").slice(0,300); if(f.length<4) return false; S.memory=S.memory||[]; if(S.memory.some(x=>x.toLowerCase()===f.toLowerCase())) return false; S.memory.push(f); if(S.memory.length>200) S.memory.shift(); return true; }
 function memCapture(t){ let n=0; (t||"").replace(/\[\[remember:([^\]]*)\]\]/gi,(_,f)=>{ if(memAdd(f)) n++; return ""; }); if(n){ save(); toast(n>1?`Saved ${n} memories`:"Saved to memory"); if(window.__chief) __chief.render(); } return memStrip(t).trim(); }
 function plugs(){ if(!S.plugins){ S.plugins=[]; if(S.chief?.files) S.plugins.push({id:"karan-chief",pkg:S.chief.pkg,name:S.chief.pkg,files:S.chief.files,on:!!S.chief.on}); delete S.chief; } return S.plugins; }
-function plugItems(){ const P=plugs(); if(!P.length) return [{label:"Plugins",sub:"None yet. Tap to import one in Settings",fn:()=>openSheet("#settings")}];
+function plugItems(){ const P=plugs(); if(!P.length) return [{label:"Skills",sub:"None yet. Tap to import one in Settings",fn:()=>openSheet("#settings")}];
   const off=curChat()?.plugOff||[];
   return P.map(p=>({label:p.name,sub:!p.on?"Switched off in Settings":off.includes(p.id)?"Off for this chat, tap to turn on":"On for this chat, tap to turn off",on:p.on&&!off.includes(p.id),fn:()=>{
     if(!p.on){ toast("Turn it on in Settings first"); return; }
@@ -2118,7 +2136,7 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
       out[name]= meth===0? td.decode(raw) : meth===8? await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text() : ""; }
     return out; }
   function render(){ const P=plugs(), on=P.filter(p=>p.on);
-    $("#plugList").innerHTML=P.map(p=>`<li><span>${esc(p.name)} <small style="color:var(--muted)">· ${Object.keys(p.files).length} files</small></span><span style="display:flex;gap:6px;flex:none"><button class="btn ghost" data-plon="${esc(p.id)}" style="padding:6px 10px;width:auto;margin:0">${p.on?"Switch off":"Switch on"}</button><button data-pldel="${esc(p.id)}" aria-label="Remove ${esc(p.name)}">✕</button></span></li>`).join("")||`<li style="color:var(--muted)">No plugins installed on this device. Import a skill ZIP to get started.</li>`;
+    $("#plugList").innerHTML=P.map(p=>`<li><span>${esc(p.name)} <small style="color:var(--muted)">· ${Object.keys(p.files).length} files</small></span><span style="display:flex;gap:6px;flex:none"><button class="btn ghost" data-plon="${esc(p.id)}" style="padding:6px 10px;width:auto;margin:0">${p.on?"Switch off":"Switch on"}</button><button data-pldel="${esc(p.id)}" aria-label="Remove ${esc(p.name)}">✕</button></span></li>`).join("")||`<li style="color:var(--muted)">Your imported skills will appear here.</li>`;
     $("#routeBtn").firstChild.textContent=on.length?`${on[0].name} `:"Key Chat "; }
   $("#chImport").onclick=()=>$("#chFile").click();
   $("#chFile").onchange=async()=>{ const f=$("#chFile").files[0]; $("#chFile").value=""; if(!f) return;
@@ -2147,7 +2165,7 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
 
 <script>
 /* ===== v25 settings navigation and header model button ===== */
-(function(){ const KC_V="27", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Plugins",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
+(function(){ const KC_V="27", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Skills",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
   const back={background:"general"};
   function go(p){ sh.dataset.page=p; sh.querySelectorAll(".spage").forEach(x=>x.classList.toggle("on",x.dataset.page===p)); $("#setTitle").textContent=T[p]||"Settings"; sh.querySelector(".bd").scrollTop=0; if(p==="home") sums(); }
   window.kcSettingsGo=go;
