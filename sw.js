@@ -1,6 +1,6 @@
 // Caches the Key Chat app shell and injected premium workspace features.
 // AI/provider requests are not cached or intercepted.
-const C="keychat-v32";
+const C="keychat-v33";
 const SHELL=["./","index.html","keychat-premium.css","premium-features.css","premium-features.js","studio-live.html","studio-preview.html","studio-polish.css","studio-polish.js","manifest.webmanifest","icon-192.png","icon-512.png","apple-touch-icon.png","key.webp","fx.js"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(SHELL)));self.skipWaiting()});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim()});
