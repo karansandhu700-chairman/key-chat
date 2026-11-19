@@ -16,6 +16,7 @@ const assert = require("node:assert/strict");
   await page.locator('[data-chatmenu="test-a"]').click();await page.getByRole("button",{name:"Archive chat",exact:true}).click();await page.locator("#archiveView").click();
   assert.ok(await page.getByText("Existing chat",{exact:true}).isVisible());
   await page.locator('[data-chatmenu="test-a"]').click();await page.getByRole("button",{name:"Restore chat",exact:true}).click();await page.locator("#archiveView").click();
+  if(await page.locator("#scrim").isVisible()) await page.locator("#scrim").click();
   assert.equal(await page.getByText("Incognito",{exact:true}).count(),0);
   for(const action of ["media","artifacts","connectors","sync"])assert.equal(await page.locator('[data-open-kc="'+action+'"]').count(),1);
   await page.locator('[data-open-kc="artifacts"]').click();await page.waitForTimeout(150);assert.ok(await page.getByText("Launch board",{exact:false}).isVisible());
