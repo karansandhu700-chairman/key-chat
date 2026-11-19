@@ -1,7 +1,7 @@
 // Caches the Key Chat app shell and injected premium workspace features.
 // AI/provider requests are not cached or intercepted.
-const C="keychat-v30";
-const SHELL=["./","index.html","premium-features.css","premium-features.js","studio-live.html","studio-preview.html","studio-polish.css","studio-polish.js","manifest.webmanifest","icon-192.png","icon-512.png","apple-touch-icon.png","key.webp","fx.js"];
+const C="keychat-v31";
+const SHELL=["./","index.html","keychat-premium.css","premium-features.css","premium-features.js","studio-live.html","studio-preview.html","studio-polish.css","studio-polish.js","manifest.webmanifest","icon-192.png","icon-512.png","apple-touch-icon.png","key.webp","fx.js"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(SHELL)));self.skipWaiting()});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim()});
 self.addEventListener("fetch",e=>{const u=new URL(e.request.url);if(e.request.method!=="GET"||u.origin!==location.origin)return;const index=u.pathname.endsWith("/")||u.pathname.endsWith("index.html");e.respondWith(fetch(e.request).then(async r=>{const copy=r.clone();caches.open(C).then(c=>c.put(e.request,copy));if(!index||r.headers.get("content-type")?.includes("text/html"))return r;if(index&&r.headers.get("content-type")?.includes("text/html")){let h=await r.text();h=h.replace("</head>",'  <link rel="stylesheet" href="premium-features.css"><script defer src="premium-features.js"></script></head>');return new Response(h,{status:r.status,statusText:r.statusText,headers:r.headers})}return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match("index.html")))})});
