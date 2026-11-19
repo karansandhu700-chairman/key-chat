@@ -840,7 +840,7 @@ html[data-light] #agent #aFSeg button.on{background:#fff}
     </div>
     <div class="spage" data-page="storage">
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn ghost" id="copyExport">Copy backup of chats</button>
+      <button class="btn ghost" id="copyExport">Copy backup of chats</button><button class="btn ghost" id="transferExport" type="button">Download chat transfer</button><button class="btn ghost" id="transferImport" type="button">Import chat transfer</button><input type="file" id="transferFile" accept=".json,application/json" hidden><div class="hint">Manual transfer between devices. Files contain chat content and attachments; API keys are not included. Existing chats are kept.</div>
       <button class="btn ghost" id="importBtn">Restore from backup</button>
       <button class="btn danger" id="wipe">Delete everything</button>
     </div>
@@ -1290,14 +1290,16 @@ const I = { // icons
   edit:'<svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
   file:'<svg viewBox="0 0 24 24"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/></svg>',
 };
+let showArchivedChats=false;
 function renderList(){
-  const q=$("#q").value.toLowerCase().trim();
-  const items=S.chats.filter(c=>!q||c.title.toLowerCase().includes(q)||c.msgs.some(m=>(m.content||"").toLowerCase().includes(q)));
-  const day=864e5, now=Date.now(), g={Pinned:[],Today:[],"Previous 7 days":[],Older:[]};
-  items.forEach(c=>{ const a=now-c.updated; (c.pinned?g.Pinned:a<day?g.Today:a<7*day?g["Previous 7 days"]:g.Older).push(c); });
-  let h=""; for(const [n,arr] of Object.entries(g)) if(arr.length) h+=`<h6>${n}</h6>`+arr.map(c=>`<div class="chatrow ${c.id===S.cur?"active":""}"><button class="t" data-open="${c.id}">${esc(c.title)}</button><button class="d pin ${c.pinned?"on":""}" data-pin="${c.id}" aria-label="${c.pinned?"Unpin chat":"Pin chat"}"><svg viewBox="0 0 24 24"><path d="M9 3h6l-1 6 3 3v2H7v-2l3-3zM12 14v7"/></svg></button><button class="d" data-del="${c.id}" aria-label="Delete chat"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div>`).join("");
-  $("#chats").innerHTML = h || `<div class="hint" style="padding:10px">${q?"No chats match.":"Your chats will appear here."}</div>`;
+ const q=$("#q").value.toLowerCase().trim();
+ const items=S.chats.filter(c=>!!c.archived===showArchivedChats && (!q||(c.title||"").toLowerCase().includes(q)||(c.project||"").toLowerCase().includes(q)||(c.msgs||[]).some(m=>(m.content||"").toLowerCase().includes(q))));
+ const groups=new Map(); for(const c of items){const name=(c.project||"").trim()||"Unfiled";if(!groups.has(name))groups.set(name,[]);groups.get(name).push(c)}
+ let h='<button class="navitem" id="archiveView" type="button">'+(showArchivedChats?'Show active chats':'Show archived chats')+'</button>';
+ for(const [name,chats] of groups){h+='<h6>'+esc(name)+'</h6>';for(const c of chats){h+=`<div class="chatrow ${c.id===S.cur?"active":""}"><button class="t" data-open="${esc(c.id)}">${esc(c.title||"New chat")}</button><button class="d" data-chatmenu="${esc(c.id)}" aria-label="Chat options">⋯</button></div>`}}
+ $("#chats").innerHTML=h+(items.length?"":'<div class="hint" style="padding:10px">No chats in this view.</div>');
 }
+
 function metaHtml(m){
   if(!m.meta) return ""; const x=m.meta, t=x.trail||[], shown=t.slice(-10), more=t.length-shown.length;
   const tried = x.failovers ? `<span class="tag">tried ${x.failovers+1} models</span>` : "";
@@ -1696,6 +1698,17 @@ let wipeArmed=0; $("#wipe").onclick=()=>{ if(Date.now()-wipeArmed>4000){ wipeArm
   S=blank(); S.chain=defaultChain(); save(); renderSettings(); renderAll(); toast("Everything deleted"); $("#wipe").textContent="Delete everything"; };
 document.addEventListener("click",async e=>{
   const t=e.target;
+  if(t.closest("#archiveView")){showArchivedChats=!showArchivedChats;renderList();return;}
+  const cm=t.closest("[data-chatmenu]");if(cm){const c=S.chats.find(x=>x.id===cm.dataset.chatmenu);if(!c)return;
+    popMenu([
+      {label:c.pinned?"Unpin chat":"Pin chat",fn:()=>{c.pinned=!c.pinned;save();renderList();}},
+      {label:"Rename chat",fn:()=>{const v=prompt("Chat name",c.title||"");if(v&&v.trim()){c.title=v.trim().slice(0,100);save();renderList();}}},
+      {label:"Move to project",sub:"Leave blank for Unfiled",fn:()=>{const v=prompt("Project name (leave blank for Unfiled)",c.project||"");if(v!==null){c.project=v.trim().slice(0,80);save();renderList();}}},
+      {label:c.archived?"Restore chat":"Archive chat",fn:()=>{c.archived=!c.archived;save();renderList();toast(c.archived?"Chat archived":"Chat restored");}},
+      {label:"Delete chat",sub:"Permanently delete this chat",fn:()=>{if(confirm("Delete this chat permanently?")){S.chats=S.chats.filter(x=>x.id!==c.id);if(S.cur===c.id)S.cur=null;save();renderAll();}}},
+      {label:"Export chat",sub:"Download as JSON",fn:()=>{const blob=new Blob([JSON.stringify({format:"key-chat-export",version:1,chat:c},null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="key-chat-"+(c.title||"chat").replace(/[^a-z0-9]+/gi,"-").slice(0,60)+".json";a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);}}
+    ],true);return;}
+
   const o=t.closest("[data-open]"); if(o){ S.cur=o.dataset.open; cancelEdit(); save(); renderAll(); closeSide(); return; }
   const pn=t.closest("[data-pin]"); if(pn){ const c=S.chats.find(x=>x.id===pn.dataset.pin); if(c){ c.pinned=!c.pinned; save(); renderList(); toast(c.pinned?"Pinned":"Unpinned"); } return; }
   const dl=t.closest("[data-del]"); if(dl){ S.chats=S.chats.filter(c=>c.id!==dl.dataset.del); if(S.cur===dl.dataset.del) S.cur=null; save(); renderAll(); return; }
@@ -2356,6 +2369,48 @@ var homeGoal=false;
 </script>
 <script>
 (() => { const frame=document.getElementById("previewFrame"); document.querySelectorAll("[data-preview-size]").forEach(button => button.addEventListener("click",()=>{frame.style.width=button.dataset.previewSize;document.querySelectorAll("[data-preview-size]").forEach(b=>b.setAttribute("aria-pressed",String(b===button)));})); document.getElementById("previewReload").addEventListener("click",()=>{frame.srcdoc=frame.srcdoc;}); })();
+</script>
+<script>
+(() => {
+  const nav=document.querySelector(".snav"), filesBtn=document.createElement("button");
+  filesBtn.className="navitem"; filesBtn.type="button"; filesBtn.textContent="Files & artifacts"; nav.appendChild(filesBtn);
+  const overlay=document.createElement("div"); overlay.className="sheet"; overlay.id="fileLibrary";
+  overlay.innerHTML='<div class="card"><div class="hd"><b>Files & artifacts</b><button class="iconbtn" data-close aria-label="Close">×</button></div><div class="bd"><p class="hint">Items retained in this device’s chat history. Open a chat to see its attachments and generated HTML.</p><button class="btn ghost" id="libraryAttach" type="button">Attach files to current chat</button><div id="libraryItems"></div></div></div>';
+  document.body.appendChild(overlay);
+  overlay.addEventListener("click",e=>{if(e.target===overlay||e.target.closest("[data-close]"))overlay.classList.remove("show");});
+  filesBtn.addEventListener("click",()=>{
+    const list=document.getElementById("libraryItems");list.replaceChildren();let count=0;
+    for(const chat of S.chats){(chat.msgs||[]).forEach((m,i)=>{
+      for(const a of (m.att||[])){count++;let row=document.createElement("div");row.className="srow";let label=document.createElement("span");label.textContent=(a.name||"Attachment")+" · "+(chat.title||"Chat");row.append(label);list.append(row);}
+      if(m.role==="assistant")artifactsOf(m.content).forEach((a,k)=>{count++;let row=document.createElement("button");row.className="srow";row.type="button";row.textContent=a.title+" · "+(chat.title||"Chat");row.addEventListener("click",()=>{S.cur=chat.id;save();renderAll();overlay.classList.remove("show");openArtifact(i,k);});list.append(row);});
+    });}
+    if(!count){let p=document.createElement("p");p.className="hint";p.textContent="No saved attachments or HTML artifacts yet.";list.append(p);}
+    closeSide();overlay.classList.add("show");
+  });
+  document.getElementById("libraryAttach").addEventListener("click",()=>{overlay.classList.remove("show");document.getElementById("file").click();});
+})();
+</script>
+<script>
+(() => {
+ const file=document.getElementById("transferFile");
+ document.getElementById("transferExport").addEventListener("click",()=>{
+   const payload={format:"key-chat-transfer",version:1,chats:S.chats};
+   const url=URL.createObjectURL(new Blob([JSON.stringify(payload)],{type:"application/json"}));
+   const a=document.createElement("a");a.href=url;a.download="key-chat-transfer.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);
+ });
+ document.getElementById("transferImport").addEventListener("click",()=>file.click());
+ file.addEventListener("change",async()=>{
+   const f=file.files[0];file.value="";if(!f)return;
+   try{
+     if(f.size>50000000)throw Error("File exceeds 50 MB");
+     const data=JSON.parse(await f.text());
+     if(data.format!=="key-chat-transfer"||data.version!==1||!Array.isArray(data.chats))throw Error("Not a Key Chat transfer file");
+     if(!data.chats.every(c=>c && typeof c.id==="string" && typeof c.title==="string" && Array.isArray(c.msgs)))throw Error("Invalid chat data");
+     const known=new Set(S.chats.map(c=>c.id));const incoming=data.chats.filter(c=>{if(known.has(c.id))return false;known.add(c.id);return true;});
+     S.chats.push(...incoming);save();renderAll();toast("Imported "+incoming.length+" chats; existing chats kept");
+   }catch(e){toast("Transfer failed: "+e.message);}
+ });
+})();
 </script>
 </body>
 </html>
