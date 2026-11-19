@@ -12,7 +12,7 @@ const assert = require("node:assert/strict");
   await page.evaluate(()=>{let x=window.__keychat.S;x.chats=[{id:"test-a",title:"Existing chat",msgs:[{role:"user",content:"hello"},{role:"assistant",content:"\`\`\`html\n<!doctype html><title>Launch board</title><h1>Ready</h1>\n\`\`\`"}],updated:Date.now()},{id:"test-b",title:"Archived chat",msgs:[],archived:true,updated:Date.now()}];x.cur="test-a";renderAll();});
   if(viewport.width<820)await page.locator("#menu").click();
   await page.locator('[data-chatmenu="test-a"]').click();page.once("dialog",d=>d.accept("Work"));await page.getByRole("button",{name:"Move to project"}).click();
-  assert.ok(await page.getByText("Work",{exact:true}).isVisible());
+  assert.ok(await page.getByRole("heading",{name:"Work",exact:true,level:6}).isVisible());
   await page.locator('[data-chatmenu="test-a"]').click();await page.getByRole("button",{name:"Archive chat",exact:true}).click();await page.locator("#archiveView").click();
   assert.ok(await page.getByText("Existing chat",{exact:true}).isVisible());
   await page.locator('[data-chatmenu="test-a"]').click();await page.getByRole("button",{name:"Restore chat",exact:true}).click();await page.locator("#archiveView").click();
