@@ -1,0 +1,12 @@
+/* Key Chat premium local workspace features */
+:root{--kc-panel:#222;--kc-line:rgba(255,255,255,.11);--kc-muted:#aaa}
+html[data-light]{--kc-panel:#fff;--kc-line:#e5e5e5;--kc-muted:#666}
+.kc-premium-tools{display:flex;gap:7px;margin:8px 12px 0;overflow-x:auto;padding:2px 0;scrollbar-width:none}.kc-premium-tools::-webkit-scrollbar{display:none}
+.kc-tool{min-height:38px;padding:8px 11px;border:1px solid var(--kc-line);border-radius:999px;color:var(--text);background:var(--kc-panel);white-space:nowrap;font-size:13px}
+.kc-tool.on{border-color:var(--accent);color:var(--accent)}
+.kc-project-bar{display:flex;align-items:center;gap:8px;margin:7px 12px 0;padding:7px 8px;border:1px solid var(--kc-line);border-radius:14px;background:var(--kc-panel)}
+.kc-project-bar b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:13px}.kc-project-bar button{min-height:34px;padding:6px 9px;border:1px solid var(--kc-line);border-radius:10px;font-size:12px}
+.kc-drop{position:fixed;inset:12px;z-index:95;display:none;place-items:center;border:2px dashed var(--accent);border-radius:24px;background:rgba(20,20,20,.82);color:#fff;font-size:18px;font-weight:600;pointer-events:none}.kc-drop.on{display:grid}
+.kc-artifacts{margin:8px 12px 0;border:1px solid var(--kc-line);border-radius:14px;background:var(--kc-panel);overflow:hidden}.kc-artifacts summary{min-height:44px;padding:10px 12px;list-style:none;cursor:pointer;font-size:13px}.kc-artifacts[open] summary{border-bottom:1px solid var(--kc-line)}.kc-artifacts ul{list-style:none;margin:0;padding:6px}.kc-artifacts button{width:100%;text-align:left;padding:9px 10px;border-radius:10px;font-size:13px}.kc-artifacts button:active{background:var(--hover)}
+.kc-incognito{display:inline-flex!important;align-items:center!important;gap:6px!important;color:var(--kc-muted)!important}.kc-incognito.on{color:var(--danger)!important;border-color:var(--danger)!important}
+@media(max-width:820px){.kc-premium-tools{margin-left:8px;margin-right:8px}.kc-project-bar{margin-left:8px;margin-right:8px}.kc-artifacts{margin-left:8px;margin-right:8px}.kc-tool{min-height:42px}}
