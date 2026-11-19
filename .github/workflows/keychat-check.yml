@@ -1,7 +1,7 @@
 name: Key Chat browser checks
 on:
   push:
-    branches: [complete-continuity-tools, main]
+    branches: [complete-continuity-tools, premium-file-studio, main]
   workflow_dispatch:
 permissions:
   contents: read
