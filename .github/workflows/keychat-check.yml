@@ -17,7 +17,7 @@ jobs:
       - name: Install browser test tools
         run: |
           npm install --no-save playwright@1.51.1
-          npx playwright install --with-deps chromium
+          npx playwright install chromium
       - name: Exercise app in desktop and mobile viewports
         run: |
           python3 -m http.server 8765 > /tmp/keychat-server.log 2>&1 &
