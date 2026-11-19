@@ -1,0 +1,18 @@
+/* Midnight visual refresh; keep the user's chosen light appearance intact. */
+html:not([data-light]) {
+  --bg:#050c17; --bg2:#07111c; --raise:#0d1a27; --raise2:#132432;
+  --panel:#101e2b; --bubble:#102a40; --text:#eef3f5; --muted:#a8b8c5;
+  --line:rgba(181,210,225,.17); --hover:rgba(128,208,200,.09);
+  --accent:#b4e6df; --accentText:#031411; --code:#07121d;
+  --gl:rgba(14,30,42,.88); --glB:rgba(171,218,225,.22);
+  --glS:0 10px 30px rgba(0,0,0,.24); --shadow:0 12px 30px rgba(0,0,0,.2);
+}
+html:not([data-light]) body { background:radial-gradient(ellipse at 75% 15%,#0d2534 0,transparent 38%),#050c17; }
+html:not([data-light]) .side { background:#08121e; }
+html:not([data-light]) .seg2 button.on { background:#18333c; color:#eafbf8; }
+html:not([data-light]) .composer .box { border-color:rgba(151,213,213,.3); box-shadow:0 10px 35px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.08); }
+html:not([data-light]) .msg.user .b { border:1px solid rgba(86,163,191,.28); background:#102a40; }
+html:not([data-light]) .send { background:#b9e7e0; color:#05211d; }
+.premium-logo { width:48px; height:48px; object-fit:cover; border-radius:12px; flex:none; }
+html[data-light] .premium-logo { border:1px solid rgba(40,55,100,.16); }
+@media(max-width:480px) { .premium-logo { width:38px; height:38px; border-radius:10px; } }
