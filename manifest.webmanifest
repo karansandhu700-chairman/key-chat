@@ -1,7 +1,7 @@
 {
-  "name": "Key Chat Platinum v31 Test",
-  "short_name": "Key Chat Test",
-  "description": "Key Chat \u2014 personal multi-model AI workspace.",
+  "name": "KeyChat",
+  "short_name": "KeyChat",
+  "description": "KeyChat — personal multi-model AI workspace.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

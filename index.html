@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<title>Key Chat</title>
+<title>KeyChat</title>
 <meta name="description" content="Free multi-AI chat. Routes every message to the best free model you have, with automatic failover.">
 <meta name="theme-color" content="#0a0907">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Key Chat">
+<meta name="apple-mobile-web-app-title" content="KeyChat">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
@@ -924,7 +924,7 @@ html[data-light] #kcCreateHub .kc-create-shell {
 <div id="vfull" data-st="listening"><div class="orb"></div><p id="vfullTxt">Listening…</p><button class="end" id="vfullEnd">End</button></div>
 <div class="app" id="app">
   <aside class="side" id="side">
-    <div class="top"><span class="brand brandmark" aria-label="Key Chat"></span><b class="sidetitle">Key Chat</b><button class="gbtn" id="searchToggle" aria-label="Search chats"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button><button class="iconbtn" id="closeSide" aria-label="Close sidebar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button></div>
+    <div class="top"><span class="brand brandmark" aria-label="KeyChat"></span><b class="sidetitle">KeyChat</b><button class="gbtn" id="searchToggle" aria-label="Search chats"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button><button class="iconbtn" id="closeSide" aria-label="Close sidebar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button></div>
     <label class="search hidden" id="searchBox"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Search chats" autocomplete="off"></label>
     <nav class="snav">
       <button class="navitem" id="platinumNav" type="button">✦ Platinum Intelligence</button>
@@ -933,24 +933,24 @@ html[data-light] #kcCreateHub .kc-create-shell {
     </nav>
     <div class="sdiv"></div>
     <div class="chats" id="chats"></div>
-    <div class="sfoot"><button class="newpill" id="newChat2"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Chat</button><button class="avatar" id="openSettings" aria-label="Settings and AI providers">KS</button></div>
+    <div class="sfoot"><button class="newpill" id="newChat2"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Chat</button><button class="avatar keychat-avatar" id="openSettings" aria-label="KeyChat settings and AI providers"><img src="monogram.png" alt="KeyChat logo"></button></div>
   </aside>
   <div class="scrim" id="scrim"></div>
   <main class="main">
     <header>
-      <img class="premium-logo" src="icon-512.png" alt="Key Chat" width="48" height="48">
+      <img class="premium-logo" src="icon-512.png" alt="KeyChat" width="48" height="48">
       <button class="gbtn" id="menu" aria-label="Open sidebar"><svg viewBox="0 0 24 24"><path d="M5 9h14M5 15h9"/></svg></button>
       <div class="seg2"><button class="on" id="segChat" type="button">Chat</button><button id="agentBtn" type="button">Workspace</button><button id="platinumBtn" type="button">Intelligence</button></div>
       <button class="gbtn" id="newChat" aria-label="New chat"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
     </header>
-    <div class="banner hidden" id="installBanner"><span>Install: tap <b>Share</b> then <b>Add to Home Screen</b> to use Key Chat like an app.</span><button id="dismissInstall" aria-label="Dismiss">✕</button></div>
+    <div class="banner hidden" id="installBanner"><span>Install: tap <b>Share</b> then <b>Add to Home Screen</b> to use KeyChat like an app.</span><button id="dismissInstall" aria-label="Dismiss">✕</button></div>
     <div class="thread" id="thread"></div>
     <div class="composer">
       <div class="box">
         <div id="vbar" class="hidden"><span class="dot"></span><span id="vtxt">Listening…</span><button class="go hidden" id="vsend">Send</button><button id="vend">End voice</button></div>
         <div class="editing hidden" id="editing">Editing a message: sending replaces it and everything after it. <button id="cancelEdit">Cancel</button></div>
         <div class="pending hidden" id="pending"></div>
-        <textarea id="input" rows="1" placeholder="Message Key Chat" enterkeyhint="send"></textarea>
+        <textarea id="input" rows="1" placeholder="Message KeyChat" enterkeyhint="send"></textarea>
         <div class="row">
           <button class="round" id="attachBtn" aria-label="Attach photo or file"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
           
@@ -958,7 +958,7 @@ html[data-light] #kcCreateHub .kc-create-shell {
           <button class="pill" id="imageBtn" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>Image</button>
           <button class="mlabel" id="routeBtn" aria-label="Model and speed"><b id="modeLabel">Auto</b> <span id="speedChip">Balanced</span></button>
           <button class="round" id="micBtn" aria-label="Voice input"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
-          <button class="round" id="voiceBtn" aria-label="Talk with Key Chat"><svg viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg></button>
+          <button class="round" id="voiceBtn" aria-label="Talk with KeyChat"><svg viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg></button>
           <button class="send" id="sendBtn" aria-label="Send" disabled><svg viewBox="0 0 24 24" id="sendIco"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
         </div>
       </div>
@@ -1004,7 +1004,7 @@ html[data-light] #kcCreateHub .kc-create-shell {
     <div class="spage" data-page="personality">
       <div class="sec" style="margin-top:0">Instructions for every chat</div>
     <textarea class="field" id="sysPrompt" rows="3" placeholder="e.g. Answer briefly. I'm based in India."></textarea>
-      <div class="hint">Key Chat follows these in every new reply.</div>
+      <div class="hint">KeyChat follows these in every new reply.</div>
     </div>
     <div class="spage" data-page="voice">
       <div class="sec" style="margin-top:0">Read aloud voice</div>
@@ -1039,7 +1039,7 @@ html[data-light] #kcCreateHub .kc-create-shell {
   </div>
 </div></div>
 
-<div class="ov" id="welcome"><div class="wcard"><img class="wlogo" src="monogram.png" alt="Key Chat logo" width="120" height="120"><h2>Welcome</h2><p style="margin:0 auto 8px">Your private AI workspace. Everything stays on this phone.</p><button class="btn" id="wGo">Get started</button><button class="btn ghost" id="wPin">Set a PIN first</button></div></div>
+<div class="ov" id="welcome"><div class="wcard"><img class="wlogo" src="monogram.png" alt="KeyChat logo" width="120" height="120"><h2>Welcome</h2><p style="margin:0 auto 8px">Your private AI workspace. Everything stays on this phone.</p><button class="btn" id="wGo">Get started</button><button class="btn ghost" id="wPin">Set a PIN first</button></div></div>
 <div class="ov" id="lock"><h2 id="lkTitle">Enter your PIN</h2><p id="lkMsg"></p><div class="dots" id="lkDots"></div>
   <div class="pad" id="lkPad"><button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button class="sm" data-k="x" id="lkCancel">Cancel</button><button data-k="0">0</button><button class="sm" data-k="del" aria-label="Delete">Delete</button></div>
   <button class="lnk" id="lkFace">Use Face ID</button><button class="lnk" id="lkForgot">Forgot PIN</button></div>
@@ -1070,7 +1070,7 @@ html[data-light] #kcCreateHub .kc-create-shell {
     <div class="acts"><button class="no" id="apNo">Reject</button><button class="ok" id="apOk">Approve</button></div></div></div>
 </div></div>
 <div class="sheet" id="routing"><div class="card">
-  <div class="hd routehd"><div><b>Model routing</b><small>Control how Key Chat prepares, selects and fails over between models.</small></div><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="hd routehd"><div><b>Model routing</b><small>Control how KeyChat prepares, selects and fails over between models.</small></div><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="bd routebd">
     <div id="routeSummary" class="routeSummary" aria-live="polite"></div>
     <div class="routeGrid">
@@ -1110,7 +1110,7 @@ html[data-light] #kcCreateHub .kc-create-shell {
 <div class="sheet" id="platinum"><div class="card">
   <div class="hd"><div><b>Platinum Intelligence</b><small style="display:block;color:var(--muted);font-size:12px;margin-top:2px">Private on this device</small></div><button class="iconbtn" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="bd">
-    <p class="platinum-intro">Your private control layer for choosing how Key Chat thinks and routes. It uses your existing connections only—no account, billing, or telemetry is added.</p>
+    <p class="platinum-intro">Your private control layer for choosing how KeyChat thinks and routes. It uses your existing connections only—no account, billing, or telemetry is added.</p>
     <div class="sec" style="margin-top:0">Choose a response profile</div>
     <div class="platinum-grid" id="platinumProfiles">
       <button class="platinum-profile" data-platinum="fast"><b>Fast</b><small>Shortest wait, direct answers, rapid failover.</small></button>
@@ -1127,7 +1127,7 @@ html[data-light] #kcCreateHub .kc-create-shell {
 
 <div class="sheet" id="agent"><div class="card home">
   <div id="aHomeV">
-    <div class="ahd"><button class="gbtn" id="aMenuBtn" aria-label="Back to Key Chat"><svg viewBox="0 0 24 24"><path d="M5 9h14M5 15h9"/></svg></button><button class="atitle" id="aTitleBtn">Studio <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><button class="gbtn" id="aSearchBtn" aria-label="Search Studio chats"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button></div>
+    <div class="ahd"><button class="gbtn" id="aMenuBtn" aria-label="Back to KeyChat"><svg viewBox="0 0 24 24"><path d="M5 9h14M5 15h9"/></svg></button><button class="atitle" id="aTitleBtn">Studio <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><button class="gbtn" id="aSearchBtn" aria-label="Search Studio chats"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button></div>
     <label class="search hidden" id="aSearchBox"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="aQ" placeholder="Search Studio chats" autocomplete="off"></label>
     <div id="aHist"></div>
     <div class="apill"><button class="round" id="aHPlus" aria-label="Choose mode"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><textarea id="aHIn" rows="1" placeholder="What should we build?"></textarea><button class="round amic" data-for="aHIn" aria-label="Dictate"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><button class="asend" id="aHGo" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div>
@@ -1410,7 +1410,7 @@ async function routeChat(messages, opts, onToken, signal){
     signal.addEventListener("abort",onAbort); let to=setTimeout(()=>ctl.abort("timeout"),sp.timeout);
     let got="", model=e.m;
     try{
-      const headers=authHeaders(e.p); if(e.p==="openrouter") headers["X-Title"]="Key Chat";
+      const headers=authHeaders(e.p); if(e.p==="openrouter") headers["X-Title"]="KeyChat";
       const resp=await fetch(endpoint(e.p,"/chat/completions"),{method:"POST",headers,body:JSON.stringify({model:e.m,messages,stream:true}),signal:ctl.signal});
       if(!resp.ok){
         const err=new Error(`${resp.status} ${await errText(resp)}`.trim()); err.status=resp.status;
@@ -1703,7 +1703,7 @@ async function shareMsg(i){
   const m=curChat()?.msgs[i]; if(!m) return;
   try{
     if(m.image){ const blob=await (await fetch(m.image)).blob(); const file=new File([blob],"key-chat-image.jpg",{type:blob.type||"image/jpeg"});
-      if(navigator.canShare?.({files:[file]})){ await navigator.share({files:[file],title:"Image from Key Chat"}); return; } }
+      if(navigator.canShare?.({files:[file]})){ await navigator.share({files:[file],title:"Image from KeyChat"}); return; } }
     const text=m.content||m.prompt||m.error||"";
     if(navigator.share){ await navigator.share({text}); return; }
     await navigator.clipboard.writeText(text); toast("Copied (sharing isn't available here)");
@@ -1855,7 +1855,7 @@ $("#attachBtn").onclick=()=>popMenu([
 $("#file").onchange=e=>{ addFiles([...e.target.files]); e.target.value=""; };
 function setToggle(which,on){
   if(which==="search"){ searchOn=on; if(on) setToggle("image",false); $("#searchBtn").classList.toggle("on",on); $("#searchBtn").setAttribute("aria-pressed",on); if(on&&!configured("groq")) toast("Search runs on Groq's free web-search model. Add a free Groq key in Settings."); }
-  else { imageOn=on; if(on) setToggle("search",false); $("#imageBtn").classList.toggle("on",on); $("#imageBtn").setAttribute("aria-pressed",on); input.placeholder=on?"Describe the image to create":"Message Key Chat"; }
+  else { imageOn=on; if(on) setToggle("search",false); $("#imageBtn").classList.toggle("on",on); $("#imageBtn").setAttribute("aria-pressed",on); input.placeholder=on?"Describe the image to create":"Message KeyChat"; }
 }
 $("#searchBtn").onclick=()=>setToggle("search",!searchOn);
 $("#imageBtn").onclick=()=>setToggle("image",!imageOn);
@@ -1922,7 +1922,7 @@ $("#copyExport").onclick=async()=>{ const data=JSON.stringify({chats:S.chats,cha
 $("#importBtn").onclick=()=>{ const box=$("#importBox"); if(box.classList.contains("hidden")){ box.classList.remove("hidden"); box.focus(); return; }
   try{ const j=JSON.parse(box.value); if(!Array.isArray(j.chats)) throw 0; const have=new Set(S.chats.map(c=>c.id));
     S.chats=[...S.chats,...j.chats.filter(c=>!have.has(c.id))]; if(j.chain) S.chain=j.chain; if(j.system!=null) S.system=j.system; save(); box.value=""; box.classList.add("hidden"); renderAll(); renderSettings(); toast("Chats restored"); }
-  catch{ toast("That doesn't look like a Key Chat backup"); } };
+  catch{ toast("That doesn't look like a KeyChat backup"); } };
 let wipeArmed=0; $("#wipe").onclick=()=>{ if(Date.now()-wipeArmed>4000){ wipeArmed=Date.now(); $("#wipe").textContent="Tap again to delete everything"; setTimeout(()=>$("#wipe").textContent="Delete everything",4000); return; }
   S=blank(); S.chain=defaultChain(); save(); renderSettings(); renderAll(); toast("Everything deleted"); $("#wipe").textContent="Delete everything"; };
 document.addEventListener("click",async e=>{
@@ -2124,7 +2124,7 @@ async function deployGH(){
     o.textContent="Uploading files…"; const tree=[];
     for(const n of names){ const b=await gh(`/repos/${repo}/git/blobs`,{method:"POST",body:JSON.stringify({content:F[n],encoding:"utf-8"})},tok); tree.push({path:n,mode:"100644",type:"blob",sha:b.j.sha}); }
     const t=await gh(`/repos/${repo}/git/trees`,{method:"POST",body:JSON.stringify({base_tree:base,tree})},tok);
-    const c=await gh(`/repos/${repo}/git/commits`,{method:"POST",body:JSON.stringify({message:"Update from Key Chat agent",tree:t.j.sha,parents:[head]})},tok);
+    const c=await gh(`/repos/${repo}/git/commits`,{method:"POST",body:JSON.stringify({message:"Update from KeyChat agent",tree:t.j.sha,parents:[head]})},tok);
     await gh(`/repos/${repo}/git/refs/heads/${br}`,{method:"PATCH",body:JSON.stringify({sha:c.j.sha})},tok);
     o.textContent="Turning on Pages…"; const pg=await gh(`/repos/${repo}/pages`,{method:"POST",soft:true,body:JSON.stringify({source:{branch:br,path:"/"}})},tok);
     const [ow,rn]=repo.split("/"), url=rn.toLowerCase()===`${ow.toLowerCase()}.github.io`?`https://${ow}.github.io/`:`https://${ow}.github.io/${rn}/`;
@@ -2348,7 +2348,7 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
     return out; }
   function render(){ const P=plugs(), on=P.filter(p=>p.on);
     $("#plugList").innerHTML=P.map(p=>`<li><span>${esc(p.name)} <small style="color:var(--muted)">· ${Object.keys(p.files).length} files</small></span><span style="display:flex;gap:6px;flex:none"><button class="btn ghost" data-plon="${esc(p.id)}" style="padding:6px 10px;width:auto;margin:0">${p.on?"Switch off":"Switch on"}</button><button data-pldel="${esc(p.id)}" aria-label="Remove ${esc(p.name)}">✕</button></span></li>`).join("")||`<li style="color:var(--muted)">Your imported skills will appear here.</li>`;
-    $("#routeBtn").firstChild.textContent=on.length?`${on[0].name} `:"Key Chat "; }
+    $("#routeBtn").firstChild.textContent=on.length?`${on[0].name} `:"KeyChat "; }
   $("#chImport").onclick=()=>$("#chFile").click();
   $("#chFile").onchange=async()=>{ const f=$("#chFile").files[0]; $("#chFile").value=""; if(!f) return;
     try{ const files=await unzip(await f.arrayBuffer()), skills=Object.keys(files).filter(k=>/(^|\/)SKILL\.md$/.test(k)); if(!skills.length) throw new Error("no SKILL.md inside");
@@ -2388,7 +2388,7 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
     const ready=Object.keys(PROVIDERS).filter(configured).length; $("#sumProv").textContent=ready+" ready";
     const tz=getComputedStyle(document.documentElement).getPropertyValue("--tz").trim()||"1"; $("#sumTs").textContent=Math.round(parseFloat(tz)*100)+"%";
     const bgb=document.querySelector("#bgList button.on span"); $("#sumBg").textContent=bgb?bgb.textContent:"";
-    $("#kcVer").textContent="Key Chat v"+KC_V;
+    $("#kcVer").textContent="KeyChat v"+KC_V;
   }catch(e){} }
   sh.querySelector(".bd").addEventListener("click",e=>{ const r=e.target.closest("[data-go]"); if(!r) return; const p=r.dataset.go;
     if(p==="codex"){ sh.classList.remove("show"); if(typeof openAgent==="function") openAgent(); return; } go(p); });
@@ -2563,7 +2563,7 @@ var homeGoal=false;
   // model per chat
   function modelMenu(){ const a=A(), L=S.chain.filter(e=>e.on&&configured(e.p)&&!NONCHAT.test(e.m)).slice(0,40);
     L.sort((x,y)=>CODE_RE.test(y.m)-CODE_RE.test(x.m));
-    popMenu([{label:"Automatic",sub:"Key Chat picks the best working model",on:!a.model,fn:()=>{ a.model=null; save(); renderAgent(); }},
+    popMenu([{label:"Automatic",sub:"KeyChat picks the best working model",on:!a.model,fn:()=>{ a.model=null; save(); renderAgent(); }},
       ...L.map(e=>({label:short(e.m),sub:PROVIDERS[e.p].name+(CODE_RE.test(e.m)?" · good for coding":""),on:!!a.model&&a.model.p===e.p&&a.model.m===e.m,fn:()=>{ a.model={p:e.p,m:e.m}; save(); renderAgent(); toast("This chat now uses "+short(e.m)); }}))]); }
   $("#aCSub").onclick=modelMenu;
   // + menus with goal mode and model
