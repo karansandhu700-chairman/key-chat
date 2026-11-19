@@ -1,0 +1,12 @@
+
+html[data-native-theme="light"]{color-scheme:light}
+html[data-native-theme="light"] body,html[data-native-theme="light"] header{background:#fafafa;color:#16171a}
+html[data-native-theme="light"] header,html[data-native-theme="light"] .tabs,html[data-native-theme="light"] .source,html[data-native-theme="light"] .model,html[data-native-theme="light"] .version{border-color:#dedee4}
+html[data-native-theme="light"] :is(.hero p,.muted,label,.heading small,.eyebrow,header small,.formats button small,.version small,footer){color:#676a73}
+html[data-native-theme="light"] :is(button,input,textarea,dialog,.evidence,#status,.editor aside){background:#fff;color:#16171a;border-color:#dedee4}
+html[data-native-theme="light"] :is(button:hover,.formats button[aria-pressed=true],.editor aside button[aria-pressed=true]){background:#e9ecf9;border-color:#a8b5e7}
+html[data-native-theme="light"] button.primary{background:#3458d4;color:#fff;border-color:transparent}
+html[data-native-theme="light"] .tabs button{background:none;color:#686a73}
+html[data-native-theme="light"] .tabs button[aria-pressed=true]{color:#3458d4;border-color:#3458d4}
+html[data-native-theme="light"] .source a{color:#2545bb}
+html[data-native-theme="light"] .paper{border:1px solid #dedee4}

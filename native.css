@@ -1,0 +1,72 @@
+
+/* Platinum Native: original app logic is kept; normalize flat light/dark surfaces. */
+html[data-light][data-bg="platinum"]{
+ color-scheme:light;--bg:#fafafa;--bg2:#f3f3f5;--panel:#fff;--raise:#fff;--raise2:#e9e9ed;--bubble:#ececf1;
+ --text:#16171a;--muted:#686a73;--line:#dedee4;--hover:#e9e9ee;--accent:#3458d4;--accentText:#fff;--code:#f0f0f4;--sidebg:#f5f5f7;
+ --gl:var(--panel);--glB:var(--line);--glS:none;--glF:none;--shadow:none;
+}
+html[data-bg="platinum"] body,html[data-bg="platinum"] .main,html[data-bg="platinum"] .main>header{background:var(--bg)!important;color:var(--text)}
+html[data-bg="platinum"] .app::before,html[data-bg="platinum"] .app::after,html[data-bg="platinum"] .main::before,html[data-bg="platinum"] .main::after{display:none!important}
+html[data-bg="platinum"] .side{background:var(--sidebg)!important}
+html[data-bg="platinum"] .seg2{background:#eeeef1;border-color:#e3e3e7}
+html[data-bg="platinum"] .seg2 button.on{background:white;color:#17171a;box-shadow:0 1px 4px #0001!important}
+html[data-bg="platinum"] .composer .box{background:#fff!important;border-color:#dddde3!important}
+html[data-bg="platinum"] .send,html[data-bg="platinum"] #voiceBtn{background:#3458d4!important;color:#fff!important}
+html[data-bg="platinum"] .sheet .card{background:var(--bg)!important;color:var(--text)}
+html[data-bg="platinum"] #settings .sgrp{background:#fff;border:1px solid #e7e7ec;border-radius:16px;padding:0 12px}
+html[data-bg="platinum"] #settings .field,html[data-bg="platinum"] #settings .search{background:#fff}
+html[data-bg="platinum"] .popm{background:#fff!important;color:var(--text);border:1px solid var(--line);box-shadow:0 8px 32px #0002!important}
+html[data-bg="platinum"] #lock{background:#fafafa!important;color:#16171a}
+html[data-bg="platinum"] #lock .pad button{background:#fff;color:#16171a;border:1px solid #dedee4}
+.main>header{display:grid!important;grid-template-columns:auto auto minmax(0,1fr) auto;align-items:center;gap:8px!important}
+.main>header .seg2{justify-self:center;max-width:100%}
+.main>header .premium-logo{width:32px!important;height:32px!important}
+.main>header #newChat{justify-self:end}
+.snav .navitem{font-weight:500;text-align:left;display:flex;align-items:center;gap:10px}
+.snav .navitem::before{flex:none}
+.snav #quickTools{display:flex!important}
+.snav #quickMemory{display:none!important}
+.snav [data-sc="settings"]{display:none!important}
+.snav [data-sc="models"]{display:none!important}
+.snav #kc29StudioNav,.snav #kcIntelNav{padding-left:10px}
+.snav #quickModels{order:5}
+.snav #quickTools{order:4}
+.snav #kcIntelNav{order:3}
+.snav #kc29StudioNav{order:2}
+.snav #agentNav{order:1}
+.snav [data-sc="image"]{order:6}
+#kcNativeHealth{border:1px solid var(--line);padding:12px;border-radius:12px;margin:12px 0;min-width:0}
+#kcNativeHealth p{color:var(--muted);font-size:13px;margin:6px 0;overflow-wrap:anywhere}
+#kcNativeHealth button,.kc-native-action{border:1px solid var(--line);border-radius:10px;padding:9px 12px;min-height:44px;background:var(--panel);color:var(--text);font-size:14px}
+#kcNativeHealth .kc-health-actions{display:flex;flex-wrap:wrap;gap:8px}
+#kcNativeHealth output{display:block;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;margin-top:10px}
+.kc-native-heading{font-size:20px;font-weight:650;letter-spacing:-.03em}
+.kc-native-directory{display:grid;gap:8px;margin:12px 0}
+.kc-native-directory button{display:grid;grid-template-columns:40px minmax(0,1fr) auto;align-items:center;gap:12px;text-align:left;border-bottom:1px solid var(--line);padding:12px 0;min-height:60px}
+.kc-native-directory button .mark{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--raise2);font-size:19px}
+.kc-native-directory small{display:block;font-size:12px;color:var(--muted);line-height:1.45}
+.kc-native-directory b{font-size:15px}
+#kcNativeDiscover .card{width:min(100%,640px);background:var(--bg)}
+#kcNativeDiscover .bd{overflow:auto;min-height:0;padding:16px}
+#kcNativeDiscover input{width:100%;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:12px;font-size:16px}
+#kcNativeDiscover .seg{display:flex;gap:5px;flex-wrap:wrap;margin:12px 0}
+#kcNativeDiscover .seg button{min-height:44px;padding:8px 12px;flex:1 1 auto}
+#kcNativeDiscover .seg button[aria-pressed=true]{background:var(--raise2);font-weight:600}
+.popm{max-width:calc(100vw - 24px)!important;max-height: min(55dvh,480px);overflow:auto}
+.popm button{min-height:44px}
+@media(max-width:820px){
+ .main>header{grid-template-columns:auto auto minmax(0,1fr) auto;gap:4px!important}
+ #routing .routeGrid,#routing .routePanel,#routing .routebd,#routing .card{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+ #routing .seg{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ #routing .seg button{font-size:13px!important}
+ #routing .routehd{display:flex!important;flex-wrap:wrap}
+ #routing .routehd>div{min-width:0;max-width:100%}
+ #kcNativeDiscover .card{max-height:calc(100dvh - var(--safeT));height:calc(100dvh - var(--safeT));border-radius:18px 18px 0 0}
+ .composer .box>.row{min-width:0}
+ .composer #routeBtn{min-width:0;max-width:48%;overflow:hidden}
+}
+@media(max-width:360px){.main>header .premium-logo{display:none}.main>header{grid-template-columns:auto minmax(0,1fr) auto}}
+
+#routing.sheet.show .card,#routing.sheet.show .bd{background:var(--bg)!important;opacity:1!important}
+#routing .routePanel,#routing .routeStat{background:var(--panel)!important}
+#kcSessionCredentials{width:18px;height:18px;vertical-align:middle;accent-color:var(--accent)}

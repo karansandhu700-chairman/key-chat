@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Key Chat</title>
 <meta name="description" content="Free multi-AI chat. Routes every message to the best free model you have, with automatic failover.">
 <meta name="theme-color" content="#0a0907">
@@ -904,6 +904,8 @@ html[data-light] #kcCreateHub .kc-create-shell {
 }
 
 </style>
+<link rel="stylesheet" href="keychat-v28.css?v=1">
+<link rel="stylesheet" href="native.css?v=31">
 </head>
 <body>
 <div id="vfull" data-st="listening"><div class="orb"></div><p id="vfullTxt">Listening…</p><button class="end" id="vfullEnd">End</button></div>
@@ -915,7 +917,9 @@ html[data-light] #kcCreateHub .kc-create-shell {
       <button class="navitem" id="quickModels" type="button">Models &amp; routing</button>
       <button class="navitem" id="quickMemory" type="button">Memory &amp; privacy</button>
       <button class="navitem" id="quickTools" type="button">Tools &amp; plugins</button>
-      <button class="navitem" id="agentNav"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>Studio</button>
+      <button class="navitem" id="agentNav"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>Work</button>
+<a class="navitem" id="kcIntelNav" href="kc-intelligence.html" style="text-decoration:none;color:inherit;min-height:44px">Research &amp; intelligence</a>
+<a class="navitem" id="kc29StudioNav" href="kc29-studio.html" style="text-decoration:none;color:inherit;min-height:44px">File Studio</a>
       <button class="navitem" data-sc="image"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>Images</button>
       <button class="navitem" data-sc="models"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="18" r="2.5"/></svg>Models</button>
       <button class="navitem" data-sc="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Customize</button>
@@ -929,7 +933,7 @@ html[data-light] #kcCreateHub .kc-create-shell {
     <header>
       <img class="premium-logo" src="icon-512.png" alt="Key Chat" width="48" height="48">
       <button class="gbtn" id="menu" aria-label="Open sidebar"><svg viewBox="0 0 24 24"><path d="M5 9h14M5 15h9"/></svg></button>
-      <div class="seg2" role="tablist"><button class="on" id="segChat" role="tab" aria-selected="true">Chat</button><button id="agentBtn" role="tab" aria-selected="false">Studio</button></div>
+      <div class="seg2" role="tablist"><button class="on" id="segChat" role="tab" aria-selected="true">Chat</button><button id="agentBtn" role="tab" aria-selected="false">Work</button></div>
       <button class="gbtn" id="newChat" aria-label="New chat"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
     </header>
     <div class="banner hidden" id="installBanner"><span>Install: tap <b>Share</b> then <b>Add to Home Screen</b> to use Key Chat like an app.</span><button id="dismissInstall" aria-label="Dismiss">✕</button></div>
@@ -1246,8 +1250,14 @@ const idb = {
 let saveT=null, useIDB=false;
 function save(){ clearTimeout(saveT); saveT=setTimeout(flush,250); }
 async function flush(){
-  try{ if(useIDB){ await idb.set("state", JSON.parse(JSON.stringify(S))); return; } }catch(e){ useIDB=false; }
-  try{ localStorage.setItem(LSKEY, JSON.stringify(S)); }
+  const snapshot=JSON.parse(JSON.stringify(S));
+  if(S.sessionCredentials){
+    for(const entry of Object.values(snapshot.keys||{}))if(entry&&typeof entry==="object")entry.key="";
+    if(snapshot.relay)snapshot.relay.token="";
+    if(snapshot.agent?.gh)snapshot.agent.gh.token="";
+  }
+  try{ if(useIDB){ await idb.set("state", snapshot); return; } }catch(e){ useIDB=false; }
+  try{ localStorage.setItem(LSKEY, JSON.stringify(snapshot)); }
   catch(e){ toast("Couldn't save: storage is full. Delete some old chats."); }
 }
 async function load(){
@@ -1348,7 +1358,7 @@ function candidates({vision, search}){
   const now=Date.now();
   let ready=list.filter(e=>st(e.p,e.m).cool<now); const cooling=list.filter(e=>st(e.p,e.m).cool>=now);
   if(S.mode==="auto") ready=ready.map((e,i)=>({e,s:S.speed==="instant"?(st(e.p,e.m).lat||2500)+i:score(e,i)})).sort((a,b)=>a.s-b.s).map(x=>x.e);
-  return [...ready,...cooling];
+  return ready; // do not retry a model before its cooldown expires
 }
 const retryable = s => s===408||s===409||s===425||s===429||s>=500;
 async function* sse(resp){
@@ -1363,14 +1373,14 @@ async function routeChat(messages, opts, onToken, signal){
   const cl=candidates(opts), list=opts.pin&&configured(opts.pin.p)?[opts.pin,...cl.filter(e=>!(e.p===opts.pin.p&&e.m===opts.pin.m))]:cl, trail=[], t0=performance.now();
   if(!list.length) throw Object.assign(new Error(opts.search ? "Search needs a free Groq key. Add one in Settings." :
     opts.vision ? "None of your active models can read photos. Switch on OVH's Qwen2.5-VL model, or add a free Google Gemini key." :
-    "No models are switched on. Open the model menu at the top."),{trail});
+    "No eligible models are available. Check configured models or wait for cooldowns to expire."),{trail});
   S.pcool ||= {}; const pfail={}; let tries=0; const sp=spd();
   for(const e of list){
     if(signal.aborted) break;
-    if((S.pcool[e.p]||0)>Date.now() || (pfail[e.p]||0)>=2) continue;   /* provider is resting: don't walk its whole list */
+    if(st(e.p,e.m).cool>Date.now() || (S.pcool[e.p]||0)>Date.now() || (pfail[e.p]||0)>=2) continue;   /* provider is resting: don't walk its whole list */
     if(tries>=sp.tries) break; tries++;
     const s=st(e.p,e.m), tStart=performance.now(), ctl=new AbortController(), onAbort=()=>ctl.abort();
-    signal.addEventListener("abort",onAbort); const to=setTimeout(()=>ctl.abort("timeout"),sp.timeout);
+    signal.addEventListener("abort",onAbort); let to=setTimeout(()=>ctl.abort("timeout"),sp.timeout);
     let got="", model=e.m;
     try{
       const headers=authHeaders(e.p); if(e.p==="openrouter") headers["X-Title"]="Key Chat";
@@ -1386,7 +1396,7 @@ async function routeChat(messages, opts, onToken, signal){
       }
       let first=true, inThink=false;
       for await (const ch of sse(resp)){
-        if(first){ clearTimeout(to); first=false; }
+        if(first) first=false; clearTimeout(to); to=setTimeout(()=>ctl.abort("timeout"),sp.timeout);
         if(ch.model) model=ch.model;
         if(ch.error) throw new Error(ch.error.message||"stream error");
         let d=ch.choices?.[0]?.delta?.content;
@@ -1760,9 +1770,9 @@ function renderRouting(){
   const sum=$("#routeSummary"); if(sum) sum.innerHTML=
     `<div class="routeStat"><small>Strategy</small><b>${modeName}</b><em>${S.mode==="auto"?"Ranks + failover":S.mode==="priority"?"Top-to-bottom failover":"Pinned model"}</em></div>
      <div class="routeStat"><small>Speed profile</small><b>${speedName}</b><em>${S.speed==="deep"?"Longest timeout / most attempts":S.speed==="instant"?"Shortest timeout / fewer attempts":"Balanced timeout / attempts"}</em></div>
-     <div class="routeStat"><small>Prepared models</small><b>${ready.length} ready</b><em>${active.length} active in chain</em></div>
-     <div class="routeStat"><small>Providers</small><b>${providers.size} available</b><em>Existing connections only</em></div>`;
-  const cm=$("#routeChainMeta"); if(cm) cm.textContent=`${ready.length}/${active.length} active models ready`;
+     <div class="routeStat"><small>Prepared models</small><b>${ready.length} configured</b><em>${active.length} active in chain</em></div>
+     <div class="routeStat"><small>Providers</small><b>${providers.size} configured</b><em>Existing connections only</em></div>`;
+  const cm=$("#routeChainMeta"); if(cm) cm.textContent=`${ready.length}/${active.length} active models configured`;
   $("#chain").innerHTML=S.chain.map((e,i)=>{ const s=st(e.p,e.m), avail=configured(e.p), cool=s.cool>Date.now(), fixed=S.mode==="fixed"&&S.fixed?.p===e.p&&S.fixed?.m===e.m;
     return `<li class="${e.on&&avail?"":"off"}"><button class="tog ${e.on?"on":""}" data-tog="${i}" aria-label="Switch on or off"></button>
     <div class="nm" ${S.mode==="fixed"?`data-fix="${i}" style="cursor:pointer"`:""}><div>${fixed?"● ":""}${esc(e.m)}${isVision(e.m)?" vision":""}</div><small>${esc(PROVIDERS[e.p]?.name||e.p)}${!avail?(PROVIDERS[e.p]?.relay&&!S.relay.url?" · needs relay":" · not connected"):""}${s.lat?" · ~"+fmtMs(s.lat):""}${s.ok+s.fail?` · ${s.ok}/${s.ok+s.fail} ok`:""}${cool?" · resting":""}</small></div>
@@ -1787,8 +1797,11 @@ function popMenu(items,right){
   const d=document.createElement("div"); d.className="popm"+(right?" right":"");
   d.innerHTML=items.map((it,i)=>`<button data-i="${i}" class="${it.on?"on":""}"><b>${esc(it.label)}</b>${it.sub?`<small>${esc(it.sub)}</small>`:""}</button>`).join("");
   document.body.appendChild(d);
-  const off=e=>{ if(!d.contains(e.target)||e.target.closest("button")){ d.remove(); document.removeEventListener("pointerdown",off,true); const b=e.target.closest(".popm button"); if(b&&d.contains(b)) items[+b.dataset.i].fn(); } };
-  setTimeout(()=>document.addEventListener("pointerdown",off,true),0);
+  const close=()=>{ d.remove(); document.removeEventListener("pointerdown",outside,true); document.removeEventListener("keydown",escape,true); };
+  const outside=e=>{if(!d.contains(e.target))close();};
+  const escape=e=>{if(e.key==="Escape")close();};
+  d.addEventListener("click",e=>{const b=e.target.closest("button[data-i]");if(!b||!d.contains(b))return;const i=+b.dataset.i;close();items[i]?.fn();});
+  setTimeout(()=>{if(d.isConnected){document.addEventListener("pointerdown",outside,true);document.addEventListener("keydown",escape,true)}},0);
 }
 $("#attachBtn").onclick=()=>popMenu([
   {label:"Add photo or file",sub:"Photos, PDF, text, code",fn:()=>$("#file").click()},
@@ -2147,10 +2160,10 @@ function approve(o){ return new Promise(res=>{
   addEventListener("touchend",reset,{passive:true}); document.addEventListener("pointerleave",reset); })();
 
 /* ---- Background options (saved on this device only) ---- */
-(function(){ const BG=[["black","Black","#0a0907"],["glow","Gold glow","radial-gradient(circle at 50% 40%,rgba(214,172,84,.55),#0a0907 75%)"],["aurora","Aurora","radial-gradient(circle at 25% 30%,rgba(90,120,255,.7),transparent 60%),radial-gradient(circle at 75% 60%,rgba(190,90,255,.6),#0a0907 70%)"],["midnight","Midnight","linear-gradient(#0b1430,#04060c)"],["ember","Ember","linear-gradient(#2a0f0a,#0a0605)"],["forest","Forest","linear-gradient(#0c2018,#040806)"],["frost","Frost glass","radial-gradient(circle at 25% 25%,#c9b5ff,transparent 60%),radial-gradient(circle at 80% 75%,#a9c4ee,#e6e9f2 75%)"],["pearl","Pearl","linear-gradient(135deg,#ffffff,#e6e3dc)"],["sky","Sky","linear-gradient(135deg,#bfe0ff,#e8f3fc)"],["mint","Mint","linear-gradient(135deg,#b4ecd0,#eaf7ef)"],["peach","Peach","linear-gradient(135deg,#ffc9a8,#fcefe6)"],["rose","Rose","linear-gradient(135deg,#ffb9d2,#fbeef3)"],["sand","Sand","linear-gradient(135deg,#ead3a4,#f7f1e4)"],["fx-grain-l","Silk gradient","linear-gradient(135deg,#ffd9e3,#d6e6ff 55%,#e9ddff)"],["fx-silk-l","Satin","linear-gradient(135deg,#f3e8dc,#d9c7b6 55%,#f6efe8)"],["fx-iri-l","Pearl shift","linear-gradient(135deg,#ffd0f0,#c9e9ff 50%,#fff1c4)"],["fx-soft-l","Soft aurora","linear-gradient(135deg,#f4f2f8,#b9ccff 55%,#e9c4ff)"],["fx-aur-l","Northern light","linear-gradient(135deg,#f4f2f8,#bff0dc 50%,#cbbfff)"],["fx-chr-l","Liquid chrome","linear-gradient(135deg,#ffffff,#c9ced8 50%,#f3f4f7)"],["fx-grain-d","Deep silk","linear-gradient(135deg,#1a1f5c,#5b2a9a 60%,#0f6f86)"],["fx-silk-d","Bronze satin","linear-gradient(135deg,#3a2616,#8a6038 55%,#241608)"],["fx-iri-d","Night shift","linear-gradient(135deg,#102a5c,#5a2a8a 55%,#0c4a5a)"],["fx-soft-d","Night aurora","linear-gradient(135deg,#0a0907,#5a2a8a 60%,#1b2b5a)"],["fx-aur-d","Aurora curtain","linear-gradient(180deg,#0a0907,#134e4a 60%,#4c1d95)"],["fx-chr-d","Black chrome","linear-gradient(135deg,#050506,#6b7080 55%,#0a0a0c)"],["photo","My photo","#16130d"]], LIGHT=["frost","pearl","sky","mint","peach","rose","sand","fx-grain-l","fx-silk-l","fx-iri-l","fx-soft-l","fx-aur-l","fx-chr-l"];
+(function(){ const BG=[["platinum","Platinum Light","#fafafa"],["black","Obsidian Dark","#101112"],["glow","Gold glow","radial-gradient(circle at 50% 40%,rgba(214,172,84,.55),#0a0907 75%)"],["aurora","Aurora","radial-gradient(circle at 25% 30%,rgba(90,120,255,.7),transparent 60%),radial-gradient(circle at 75% 60%,rgba(190,90,255,.6),#0a0907 70%)"],["midnight","Midnight","linear-gradient(#0b1430,#04060c)"],["ember","Ember","linear-gradient(#2a0f0a,#0a0605)"],["forest","Forest","linear-gradient(#0c2018,#040806)"],["frost","Frost glass","radial-gradient(circle at 25% 25%,#c9b5ff,transparent 60%),radial-gradient(circle at 80% 75%,#a9c4ee,#e6e9f2 75%)"],["pearl","Pearl","linear-gradient(135deg,#ffffff,#e6e3dc)"],["sky","Sky","linear-gradient(135deg,#bfe0ff,#e8f3fc)"],["mint","Mint","linear-gradient(135deg,#b4ecd0,#eaf7ef)"],["peach","Peach","linear-gradient(135deg,#ffc9a8,#fcefe6)"],["rose","Rose","linear-gradient(135deg,#ffb9d2,#fbeef3)"],["sand","Sand","linear-gradient(135deg,#ead3a4,#f7f1e4)"],["fx-grain-l","Silk gradient","linear-gradient(135deg,#ffd9e3,#d6e6ff 55%,#e9ddff)"],["fx-silk-l","Satin","linear-gradient(135deg,#f3e8dc,#d9c7b6 55%,#f6efe8)"],["fx-iri-l","Pearl shift","linear-gradient(135deg,#ffd0f0,#c9e9ff 50%,#fff1c4)"],["fx-soft-l","Soft aurora","linear-gradient(135deg,#f4f2f8,#b9ccff 55%,#e9c4ff)"],["fx-aur-l","Northern light","linear-gradient(135deg,#f4f2f8,#bff0dc 50%,#cbbfff)"],["fx-chr-l","Liquid chrome","linear-gradient(135deg,#ffffff,#c9ced8 50%,#f3f4f7)"],["fx-grain-d","Deep silk","linear-gradient(135deg,#1a1f5c,#5b2a9a 60%,#0f6f86)"],["fx-silk-d","Bronze satin","linear-gradient(135deg,#3a2616,#8a6038 55%,#241608)"],["fx-iri-d","Night shift","linear-gradient(135deg,#102a5c,#5a2a8a 55%,#0c4a5a)"],["fx-soft-d","Night aurora","linear-gradient(135deg,#0a0907,#5a2a8a 60%,#1b2b5a)"],["fx-aur-d","Aurora curtain","linear-gradient(180deg,#0a0907,#134e4a 60%,#4c1d95)"],["fx-chr-d","Black chrome","linear-gradient(135deg,#050506,#6b7080 55%,#0a0a0c)"],["photo","My photo","#16130d"]], LIGHT=["platinum","frost","pearl","sky","mint","peach","rose","sand","fx-grain-l","fx-silk-l","fx-iri-l","fx-soft-l","fx-aur-l","fx-chr-l"];
   const get=k=>{ try{ return localStorage.getItem(k); }catch(e){ return null; } }, set=(k,v)=>{ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } };
   const R=document.documentElement, box=$("#bgList"), file=$("#bgFile");
-  function apply(){ let cur=get("kc-bg")||"black"; const ph=get("kc-bg-photo"); if(cur==="photo"&&!ph) cur="black";
+  function apply(){ let cur=get("kc-bg")||"platinum"; const ph=get("kc-bg-photo"); if(cur==="photo"&&!ph) cur="black";
     if(ph) R.style.setProperty("--bgphoto",`url("${ph}")`); R.dataset.bg=cur; R.toggleAttribute("data-light",LIGHT.includes(cur)); const tc=document.querySelector('meta[name="theme-color"]'); if(tc) tc.content=LIGHT.includes(cur)?getComputedStyle(R).getPropertyValue("--bg").trim()||"#dfe4ee":"#0a0907";
     box.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.bg===cur)); fxApply(cur); }
   let fxLoading=false;
@@ -2315,7 +2328,7 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
 
 <script>
 /* ===== v25 settings navigation and header model button ===== */
-(function(){ const KC_V="27", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Skills",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
+(function(){ const KC_V="31", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Skills",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
   const back={background:"general"};
   function go(p){ sh.dataset.page=p; sh.querySelectorAll(".spage").forEach(x=>x.classList.toggle("on",x.dataset.page===p)); $("#setTitle").textContent=T[p]||"Settings"; sh.querySelector(".bd").scrollTop=0; if(p==="home") sums(); }
   window.kcSettingsGo=go;
@@ -2580,7 +2593,9 @@ var homeGoal=false;
  });
 })();
 </script>
-<script src="premium-features.js?v=34-ui-fix"></script></body>
+<script src="premium-features.js?v=34-ui-fix"></script><script src="keychat-v28.js?v=1"></script>
+<script src="native.js?v=31"></script>
+</body>
 </html>
 
 

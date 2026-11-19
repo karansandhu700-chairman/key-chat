@@ -1,0 +1,1 @@
+(()=>{try{document.documentElement.dataset.nativeTheme=localStorage.getItem("kc-native-workspace-theme")||"light"}catch(_){document.documentElement.dataset.nativeTheme="light"}})();
