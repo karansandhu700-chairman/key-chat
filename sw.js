@@ -1,7 +1,21 @@
-// Caches the Key Chat app shell and injected premium workspace features.
-// AI/provider requests are not cached or intercepted.
-const C="keychat-v33";
+// Key Chat app shell: network-first, cached offline fallback.
+const C="keychat-v34-ui-fix";
 const SHELL=["./","index.html","keychat-premium.css","premium-features.css","premium-features.js","studio-live.html","studio-preview.html","studio-polish.css","studio-polish.js","manifest.webmanifest","icon-192.png","icon-512.png","apple-touch-icon.png","key.webp","fx.js"];
-self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(SHELL)));self.skipWaiting()});
-self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim()});
-self.addEventListener("fetch",e=>{const u=new URL(e.request.url);if(e.request.method!=="GET"||u.origin!==location.origin)return;const index=u.pathname.endsWith("/")||u.pathname.endsWith("index.html");e.respondWith(fetch(e.request).then(async r=>{const copy=r.clone();caches.open(C).then(c=>c.put(e.request,copy));if(!index||r.headers.get("content-type")?.includes("text/html"))return r;if(index&&r.headers.get("content-type")?.includes("text/html")){let h=await r.text();h=h.replace("</head>",'  <link rel="stylesheet" href="premium-features.css"><script defer src="premium-features.js"></script></head>');return new Response(h,{status:r.status,statusText:r.statusText,headers:r.headers})}return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match("index.html")))})});
+self.addEventListener("install",e=>e.waitUntil((async()=>{const c=await caches.open(C);await c.addAll(SHELL);await self.skipWaiting()})()));
+self.addEventListener("activate",e=>e.waitUntil((async()=>{for(const k of await caches.keys())if(k!==C&&k.startsWith("keychat-"))await caches.delete(k);await self.clients.claim()})()));
+self.addEventListener("fetch",e=>{
+ const u=new URL(e.request.url),scope=new URL(self.registration.scope);
+ if(e.request.method!=="GET"||u.origin!==scope.origin||!u.pathname.startsWith(scope.pathname))return;
+ const nav=e.request.mode==="navigate";
+ const shell=SHELL.some(s=>new URL(s,scope).pathname===u.pathname);
+ if(!nav&&!shell)return;
+ e.respondWith((async()=>{
+   const c=await caches.open(C);
+   try{const r=await fetch(e.request);if(r.ok)try{await c.put(e.request,r.clone())}catch{}return r}
+   catch{const exact=await c.match(e.request);if(exact)return exact;
+     if(!nav){const base=await c.match(e.request,{ignoreSearch:true});if(base)return base}
+     if(nav&&(u.pathname===scope.pathname||u.pathname===new URL("index.html",scope).pathname)){const home=await c.match(new URL("index.html",scope));if(home)return home}
+     return new Response("Unavailable offline",{status:503,headers:{"Content-Type":"text/plain"}});
+   }
+ })());
+});

@@ -25,7 +25,7 @@ const assert = require("node:assert/strict");
   await page.locator("#kcClose").click();
   assert.equal(await page.locator("[data-open-create]").count(),1);
   await page.locator("[data-open-create]").click();
-  assert.ok(await page.getByText("Create a real file",{exact:true}).isVisible());
+  assert.ok(await page.getByText("Create a file",{exact:true}).isVisible());
   assert.equal(await page.locator("#kcTypeList [data-type]").count(),7);
   const signatures=await page.evaluate(async()=>{
     const out={};

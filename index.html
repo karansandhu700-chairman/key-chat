@@ -736,7 +736,7 @@ html[data-light] #agent #aFSeg button.on{background:#fff}
 </style>
 <link rel="stylesheet" href="keychat-premium.css">
 <style>.preview-controls{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.preview-controls button{padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text)}.preview-controls button[aria-pressed=true]{outline:2px solid var(--accent)}.preview-stage{width:100%;overflow:auto;display:flex;justify-content:center;background:var(--bg2);border-radius:14px}.preview-stage #previewFrame{max-width:100%;min-height:60vh;transition:width .2s} @media(prefers-reduced-motion:reduce){.preview-stage #previewFrame{transition:none}}</style>
-<link rel="stylesheet" href="premium-features.css?v=33"><style>
+<link rel="stylesheet" href="premium-features.css?v=34-ui-fix"><style>
 #settings [data-page="plugins"]{max-width:36rem;margin:auto}
 #settings [data-page="plugins"] .search{border-radius:14px;background:var(--bg2);border:0;padding:10px 14px}
 #settings #plugList{border:0;background:transparent;padding:0}
@@ -754,7 +754,157 @@ html[data-light] #agent #aFSeg button.on{background:#fff}
 #kcCreateHub .kc-create-grid main{overflow:visible}
 #kcCreateHub .kc-create-shell>footer{flex:none;justify-content:flex-end}
 }
-</style></head>
+</style><!-- key-chat-ui-fix --><style>
+/* Key Chat: mobile-first Studio and Skills refresh.
+   Load AFTER the existing inline styles in index.html. */
+#kcCreateHub {
+  background: rgba(0,0,0,.58);
+  backdrop-filter: none;
+}
+#kcCreateHub .kc-create-shell {
+  --studio-bg: #111318;
+  --studio-surface: #191c22;
+  --studio-line: #30343d;
+  --studio-text: #f2f3f5;
+  --studio-muted: #a5abb6;
+  --studio-accent: #a8e0d1;
+  background: var(--studio-bg);
+  color: var(--studio-text);
+  border: 1px solid var(--studio-line);
+  border-radius: 18px;
+  box-shadow: 0 18px 56px #0005;
+  animation: none;
+  line-height: 1.45;
+}
+html[data-light] #kcCreateHub .kc-create-shell {
+  --studio-bg: #f8f9fa; --studio-surface: #fff;
+  --studio-line: #d9dde3; --studio-text: #1d232c;
+  --studio-muted: #59616d; --studio-accent: #b9e7d9;
+}
+#kcCreateHub .kc-create-shell > header {
+  flex: 0 0 auto; padding: 16px 20px;
+  border-color: var(--studio-line);
+}
+#kcCreateHub .kc-create-shell > header small {
+  font-size: 11px; letter-spacing: .08em; color: var(--studio-muted);
+}
+#kcCreateHub .kc-create-shell > header b {font-size: 20px; font-weight: 650}
+#kcCreateHub #kcCreateClose {
+  width: 44px; height: 44px; color: var(--studio-text);
+  border-radius: 10px; font-size: 25px;
+}
+#kcCreateHub .kc-create-grid {
+  flex: 1 1 auto; min-height: 0; min-width: 0; overflow: auto;
+}
+#kcCreateHub .kc-create-grid aside {
+  min-width: 0; border-color: var(--studio-line); padding: 16px;
+}
+#kcCreateHub .kc-create-grid aside > p {
+  text-transform: none; letter-spacing: 0; font-size: 13px;
+  color: var(--studio-muted); font-weight: 600;
+}
+#kcCreateHub #kcTypeList button {
+  min-width: 0; min-height: 46px; border-radius: 9px;
+  gap: 8px; padding: 8px; color: var(--studio-text); transform: none;
+}
+#kcCreateHub #kcTypeList button.on {
+  background: var(--studio-surface); border: 1px solid var(--studio-accent);
+}
+#kcCreateHub #kcTypeList button:not(.on):hover {background: var(--studio-surface)}
+#kcCreateHub #kcTypeList i {
+  width: 28px; height: 28px; flex: 0 0 28px; color: var(--studio-text);
+  background: transparent; border: 1px solid var(--studio-line);
+  border-radius: 6px; font-size: 12px;
+}
+#kcCreateHub #kcTypeList span {
+  min-width: 0; font-size: 13px; line-height: 1.25; overflow-wrap: anywhere;
+}
+#kcCreateHub #kcTypeList small {font-size: 11px; color: var(--studio-muted)}
+#kcCreateHub .kc-create-grid main {
+  min-width: 0; min-height: 0; padding: 16px; gap: 14px;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+}
+#kcCreateHub .kc-create-fields {min-width: 0; min-height: 0}
+#kcCreateHub .kc-create-fields input,
+#kcCreateHub .kc-create-fields textarea {
+  color: var(--studio-text); background: var(--studio-surface);
+  border: 1px solid var(--studio-line); border-radius: 10px;
+  padding: 12px; font-size: 16px;
+}
+#kcCreateHub .kc-create-fields textarea {min-height: 160px; line-height: 1.55}
+#kcCreateHub .kc-create-preview {
+  border-radius: 10px; border: 1px solid var(--studio-line);
+  background: #e3e5e8; min-width: 0;
+}
+#kcCreateHub .kc-preview-bar {
+  background: var(--studio-surface); color: var(--studio-muted);
+  font-size: 11px; letter-spacing: .04em; gap: 8px; flex-wrap: wrap;
+}
+#kcCreateHub .kc-create-preview article {
+  margin: 12px; padding: 24px; min-width: 0; overflow-wrap: anywhere;
+  box-shadow: none;
+}
+#kcCreateHub .kc-create-preview article h1 {
+  font-size: clamp(22px, 4vw, 32px); margin: 14px 0;
+}
+#kcCreateHub .kc-create-shell > footer {
+  flex: 0 0 auto; background: var(--studio-bg);
+  border-color: var(--studio-line); padding: 12px 16px;
+}
+#kcCreateHub #kcExportFile {
+  min-height: 46px; border-radius: 10px; background: var(--studio-accent);
+  color: #132620; font-size: 15px; font-weight: 650; box-shadow: none;
+}
+#kcCreateHub #kcExportFile:disabled {opacity: .65; cursor: wait}
+#kcCreateHub button:focus-visible, #kcCreateHub input:focus-visible,
+#kcCreateHub textarea:focus-visible {
+  outline: 2px solid var(--studio-accent); outline-offset: 2px;
+}
+#settings [data-page="plugins"] .search {
+  min-height: 46px; border: 1px solid var(--line); border-radius: 10px;
+}
+#settings #plugList {border-radius: 10px}
+#settings #plugList li {min-height: 48px; font-size: 14px; overflow-wrap: anywhere}
+#settings #plugList li > span:first-child {min-width: 0}
+#settings [data-page="plugins"] .hint {font-size: 14px; line-height: 1.5}
+#settings #chImport {min-height: 44px; border-radius: 10px}
+@media (max-width: 760px) {
+  #kcCreateHub {padding: 0; place-items: end stretch}
+  #kcCreateHub .kc-create-shell {
+    height: 100%; max-height: 100%; width: 100%;
+    border: 0; border-radius: 0;
+  }
+  #kcCreateHub .kc-create-shell > header {
+    padding: calc(8px + env(safe-area-inset-top, 0px)) 16px 8px;
+  }
+  #kcCreateHub .kc-create-grid {
+    display: block; overflow-y: auto; overflow-x: hidden;
+    overscroll-behavior: contain;
+  }
+  #kcCreateHub .kc-create-grid aside {
+    padding: 12px 16px; overflow: visible; border-right: 0;
+  }
+  #kcCreateHub #kcTypeList {
+    display: grid; width: 100%; grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 6px;
+  }
+  #kcCreateHub #kcTypeList button {width: 100%; min-width: 0; white-space: normal}
+  #kcCreateHub #kcTypeList small {display: block}
+  #kcCreateHub .kc-create-grid main {
+    display: flex; flex-direction: column; padding: 12px 16px 20px; overflow: visible;
+  }
+  #kcCreateHub .kc-create-fields {min-height: 0}
+  #kcCreateHub .kc-create-fields textarea {height: 176px; flex: none; resize: vertical}
+  #kcCreateHub .kc-create-preview {min-height: 0; flex: none}
+  #kcCreateHub .kc-create-preview article {min-height: 180px; max-height: none; overflow: visible}
+  #kcCreateHub .kc-create-shell > footer {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+  #kcCreateHub #kcExportFile {width: 100%}
+}
+
+</style>
+</head>
 <body>
 <div id="vfull" data-st="listening"><div class="orb"></div><p id="vfullTxt">Listening…</p><button class="end" id="vfullEnd">End</button></div>
 <div class="app" id="app">
@@ -2430,7 +2580,7 @@ var homeGoal=false;
  });
 })();
 </script>
-<script src="premium-features.js?v=33"></script></body>
+<script src="premium-features.js?v=34-ui-fix"></script></body>
 </html>
 
 
