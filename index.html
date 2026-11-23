@@ -1193,7 +1193,7 @@ const PROVIDERS = Object.fromEntries([
   P("pollinationsnk","Pollinations (no key)","https://text.pollinations.ai/v1","nokey","https://pollinations.ai","No key. One free model (GPT-OSS 20B), small hourly allowance. Checked 2026-11-23.",
     {keyless:true, defaults:["openai-fast"]}),
   P("llm7","LLM7","https://api.llm7.io/v1","nokey","https://llm7.io","No key for basic models (rate-limited). A free key unlocks more.",
-    {keyless:true, defaults:["mistral-Nemo-Instruct-2407","codestral-latest"]}),
+    {keyless:true, defaults:["mistral-Nemo-Instruct-2407","codestral-latest","gpt-oss:20b"]}),
   P("kilo","Kilo Gateway","https://api.kilo.ai/api/gateway/v1","nokey","https://app.kilo.ai","No key for :free models (200 requests/hour). Needs your relay.",
     {keyless:true, relay:true, defaults:["kilo-auto/free"], freeFilter:/:free$|\/free$/}),
   // Free keys, work directly
@@ -1265,7 +1265,7 @@ const standalone = matchMedia("(display-mode: standalone)").matches || navigator
 
 /* ============ Storage (IndexedDB, falls back to localStorage) ============ */
 const LSKEY="keychat.v1";
-const blank = () => ({v:2, chats:[], cur:null, keys:{}, chain:null, mode:"auto", fixed:null, system:"", stats:{}, relay:{url:"",token:""}, voice:"", noInstall:false, speed:"balanced", battery:false, pcool:{}, platinum:{profile:"balanced"}});
+const blank = () => ({v:4, chats:[], cur:null, keys:{}, chain:null, mode:"auto", fixed:null, system:"", stats:{}, relay:{url:"",token:""}, voice:"", noInstall:false, speed:"balanced", battery:false, pcool:{}, platinum:{profile:"balanced"}});
 let S = blank();
 const idb = {
   db:null,
@@ -1300,10 +1300,13 @@ async function load(){
     const at=S.chain.findIndex(e=>e.p==="llm7"); S.chain.splice(at<0?S.chain.length:at,0,...add); S.v=2;
   }
   S.pcool={}; for(const k in (S.stats||{})) S.stats[k].cool=0;   /* rests never carry over between app launches */
-  for(const p in (S.keys||{})){ const k=S.keys[p]; if(k && k.ok===false && /^(408|429|5\d\d)\b|busy|rate.?limit|timed out|overloaded/i.test(k.err||"")){ k.ok=true; k.err=null; } }
+  for(const p in (S.keys||{})){ const k=S.keys[p]; if(k && k.ok===false && /^(408|429|5\d\d)\b|busy|rate.?limit|timed out|overloaded|JSON|Unexpected token|not valid/i.test(k.err||"")){ k.ok=true; k.err=null; } }
   if((S.v||1) < 3){
     const addM=(p,ms,before)=>{ const add=ms.filter(m=>!S.chain.some(e=>e.p===p&&e.m===m)).map(m=>({p,m,on:true})); const at=S.chain.findIndex(e=>e.p===before); S.chain.splice(at<0?S.chain.length:at,0,...add); };
     addM("ovh",["DeepSeek-V4.1-Flash-1017","Qwen3.8-27B","gemma-4-26b-a4b"],"llm7"); addM("pollinationsnk",["openai-fast"],"kilo"); S.v=3;
+  }
+  if((S.v||1) < 4){ /* v33: LLM7's free GPT-OSS 20B (checked 2026-11-23) */
+    const at=S.chain.map(e=>e.p).lastIndexOf("llm7"); if(!S.chain.some(e=>e.p==="llm7"&&e.m==="gpt-oss:20b")) S.chain.splice(at<0?S.chain.length:at+1,0,{p:"llm7",m:"gpt-oss:20b",on:true}); S.v=4;
   }
   try{ if(navigator.storage?.persist) navigator.storage.persist(); }catch{}
   if(useIDB) try{ localStorage.removeItem(LSKEY); }catch{}
@@ -1387,11 +1390,17 @@ function candidates({vision, search}){
   if(search) return S.platinum?.profile==="private" ? [] : configured("groq") ? [{...SEARCH_MODEL,on:true}] : [];
   let list=S.chain.filter(e=>e.on && configured(e.p) && !NONCHAT.test(e.m));
   if(S.platinum?.profile==="private") list=list.filter(e=>PROVIDERS[e.p]?.tier==="local");
-  if(S.mode==="fixed" && S.fixed) list=list.filter(e=>e.p===S.fixed.p && e.m===S.fixed.m);
   if(vision) list=list.filter(e=>isVision(e.m));
+  if(S.mode==="fixed" && S.fixed){ /* your pick goes first; if it is busy the other models answer instead of failing */
+    const isF=e=>e.p===S.fixed.p && e.m===S.fixed.m, f=list.filter(isF);
+    return [...f, ...candidatesRest(list.filter(e=>!isF(e)))];
+  }
+  return candidatesRest(list);
+}
+function candidatesRest(list){
   const now=Date.now();
   let ready=list.filter(e=>st(e.p,e.m).cool<now); const cooling=list.filter(e=>st(e.p,e.m).cool>=now);
-  if(S.mode==="auto") ready=ready.map((e,i)=>({e,s:S.speed==="instant"?(st(e.p,e.m).lat||2500)+i:score(e,i)})).sort((a,b)=>a.s-b.s).map(x=>x.e);
+  if(S.mode!=="priority") ready=ready.map((e,i)=>({e,s:S.speed==="instant"?(st(e.p,e.m).lat||2500)+i:score(e,i)})).sort((a,b)=>a.s-b.s).map(x=>x.e);
   cooling.sort((a,b)=>st(a.p,a.m).cool-st(b.p,b.m).cool);
   return [...ready,...cooling]; // resting models are tried last, never dropped
 }
@@ -1412,7 +1421,8 @@ async function routeChat(messages, opts, onToken, signal){
   S.pcool ||= {}; let pfail={}, tries=0; const sp=spd();
   for(let pass=0; pass<2 && !signal.aborted; pass++){
   if(pass===1){
-    const soon=Math.min(...list.map(e=>Math.max(st(e.p,e.m).cool,S.pcool[e.p]||0)));
+    const left=list.filter(e=>(S.pcool[e.p]||0)<=Date.now()+60_000); if(!left.length) break;
+    const soon=Math.min(...left.map(e=>Math.max(st(e.p,e.m).cool,S.pcool[e.p]||0)));
     let wait=Math.max(3000,Math.min(20_000,soon-Date.now()));
     while(wait>0 && !signal.aborted){ onToken(`_Every free model is busy. Trying again in ${Math.ceil(wait/1000)} s…_`); await new Promise(r=>setTimeout(r,1000)); wait-=1000; }
     onToken(""); if(signal.aborted) break; pfail={}; tries=0;
@@ -1420,6 +1430,7 @@ async function routeChat(messages, opts, onToken, signal){
   for(const e of list){
     if(signal.aborted) break;
     if(pass===0 && (st(e.p,e.m).cool>Date.now() || (S.pcool[e.p]||0)>Date.now())) continue;
+    if((S.pcool[e.p]||0)>Date.now()+60_000) continue;   /* provider is out for a long while (used up, or needs a key) */
     if((pfail[e.p]||0)>=2) continue;   /* provider failed twice in this pass: skip its other models */
     if(tries>=sp.tries) break; tries++;
     const s=st(e.p,e.m), tStart=performance.now(), ctl=new AbortController(), onAbort=()=>ctl.abort();
@@ -1431,7 +1442,11 @@ async function routeChat(messages, opts, onToken, signal){
       if(!resp.ok){
         const err=new Error(`${resp.status} ${await errText(resp)}`.trim()); err.status=resp.status;
         if(resp.status===401||resp.status===403) S.pcool[e.p]=Date.now()+10*60_000;   /* needs consent or a key: stop asking for a while */
-        if(resp.status===429){ const ra=+resp.headers.get("retry-after"); s.cool=Date.now()+Math.min(120_000,ra>0?ra*1000:20_000); }
+        if(resp.status===429){
+          let ra=+resp.headers.get("retry-after"); if(!(ra>0)){ const mm=/retry in (\d+) ?s/i.exec(err.message); ra=mm?+mm[1]:0; }
+          s.cool=Date.now()+Math.min(120_000,ra>0?ra*1000:20_000);
+          if(ra>300) S.pcool[e.p]=Date.now()+Math.min(ra,86_400)*1000;   /* daily allowance used up: skip this provider until it resets */
+        }
         else if(retryable(resp.status)) s.cool=Date.now()+COOLDOWN_MS;
         else if(resp.status===401||resp.status===403) s.cool=Date.now()+10*60_000;
         else s.cool=Date.now()+5*60_000;
@@ -1444,8 +1459,12 @@ async function routeChat(messages, opts, onToken, signal){
         if(ch.error) throw new Error(ch.error.message||"stream error");
         let d=ch.choices?.[0]?.delta?.content;
         if(d){ // hide <think>…</think> reasoning some open models print
-          if(d.includes("<think>")){ inThink=true; d=d.split("<think>")[0]; }
-          if(inThink){ if(d.includes("</think>")){ inThink=false; d=d.split("</think>").pop(); } else d=""; }
+          let shown="";
+          while(d){
+            if(inThink){ const j=d.indexOf("</think>"); if(j<0){ d=""; break; } inThink=false; d=d.slice(j+8); }
+            else { const i=d.indexOf("<think>"); if(i<0){ shown+=d; d=""; break; } shown+=d.slice(0,i); inThink=true; d=d.slice(i+7); }
+          }
+          d=shown;
           if(d){ got+=d; if(got.trim()) onToken(got.replace(/^\s+/,"")); }
         }
       }
@@ -1453,7 +1472,8 @@ async function routeChat(messages, opts, onToken, signal){
       got=got.trim(); if(!got){ s.cool=Date.now()+COOLDOWN_MS; throw new Error("empty answer"); }
       const ms=Math.round(performance.now()-tStart); s.ok++; s.lat=s.lat?Math.round(s.lat*.7+ms*.3):ms; s.last="ok";
       trail.push({p:e.p,m:e.m,ok:true,ms});
-      return {text:got, meta:{p:e.p,provider:PROVIDERS[e.p].name,model,ms:Math.round(performance.now()-t0),failovers:trail.length-1,trail}};
+      const fallback = S.mode==="fixed" && S.fixed && !(e.p===S.fixed.p && e.m===S.fixed.m) && !pinAllowed ? S.fixed.m : null;
+      return {text:got, meta:{p:e.p,provider:PROVIDERS[e.p].name,model,ms:Math.round(performance.now()-t0),failovers:trail.length-1,trail,fallback}};
     }catch(err){
       clearTimeout(to); signal.removeEventListener("abort",onAbort);
       if(signal.aborted){ if(got) return {text:got,meta:{p:e.p,provider:PROVIDERS[e.p].name,model,ms:Math.round(performance.now()-t0),failovers:trail.length,trail,stopped:true}}; break; }
@@ -1526,7 +1546,7 @@ function metaHtml(m){
   if(!m.meta) return ""; const x=m.meta, t=x.trail||[], shown=t.slice(-10), more=t.length-shown.length;
   const tried = x.failovers ? `<span class="tag">tried ${x.failovers+1} models</span>` : "";
   const tr = x.failovers ? `<details class="trail"><summary>Details</summary>${more>0?`<div>…${more} earlier attempts</div>`:""}${shown.map(r=>`<div>${r.ok?"✓":"✗"} ${esc(PROVIDERS[r.p]?.name||r.p)} · ${esc(r.m)}${r.ok?" · "+fmtMs(r.ms):" · "+esc(r.why)}</div>`).join("")}</details>`:"";
-  return `<div class="meta"><span class="tag">${esc(x.model)}</span><span class="tag">${fmtMs(x.ms)}</span>${tried}${x.partial?'<span class="tag">cut off</span>':""}${x.stopped?'<span class="tag">stopped</span>':""}</div>${tr}`;
+  return `<div class="meta"><span class="tag">${esc(x.model)}</span><span class="tag">${fmtMs(x.ms)}</span>${tried}${x.fallback?`<span class="tag" title="Your chosen model was busy, so another model answered">${esc(String(x.fallback).split("/").pop())} was busy</span>`:""}${x.partial?'<span class="tag">cut off</span>':""}${x.stopped?'<span class="tag">stopped</span>':""}</div>${tr}`;
 }
 function msgHtml(m,i,last){
   if(m.role==="user"){
@@ -1768,7 +1788,7 @@ async function testProvider(p, card){
   try{
     const r=await fetch(endpoint(p,"/models"),{headers:authHeaders(p,false)});
     let ids=[];
-    if(r.ok){ const j=await r.json(); ids=(Array.isArray(j)?j:(j.data||j.models||[])).map(x=>(x.id||x.name||x.model||"").replace(/^models\//,"")).filter(Boolean); }
+    if(r.ok){ let j=[]; try{ j=await r.json(); }catch{ j=[]; } /* some free providers answer /models with plain text: no list, still fine */ ids=(Array.isArray(j)?j:(j.data||j.models||[])).map(x=>(x.id||x.name||x.model||"").replace(/^models\//,"")).filter(Boolean); }
     else if(r.status===404||r.status===405||r.status===429||r.status===408||r.status>=500){ ids=[]; if(r.status!==404&&r.status!==405) toast("The provider is busy right now. Your key is saved."); } // busy or no model list: key kept
     else throw new Error(`${r.status}: ${await errText(r)}`);
     if(d.freeFilter && !S.keys[p]?.key) ids=ids.filter(i=>d.freeFilter.test(i));
@@ -2381,7 +2401,7 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
 
 <script>
 /* ===== v25 settings navigation and header model button ===== */
-(function(){ const KC_V="32", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Skills",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
+(function(){ const KC_V="33", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Skills",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
   const back={background:"general"};
   function go(p){ sh.dataset.page=p; sh.querySelectorAll(".spage").forEach(x=>x.classList.toggle("on",x.dataset.page===p)); $("#setTitle").textContent=T[p]||"Settings"; sh.querySelector(".bd").scrollTop=0; if(p==="home") sums(); }
   window.kcSettingsGo=go;
