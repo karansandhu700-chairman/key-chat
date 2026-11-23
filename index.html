@@ -1189,7 +1189,9 @@ const PROVIDERS = Object.fromEntries([
   // No key needed
   P("ovh","OVH AI Endpoints","https://oai.endpoints.kepler.ai.cloud.ovh.net/v1","nokey","https://endpoints.ai.cloud.ovh.net",
     "No key. Llama 3.3 70B, GPT-OSS 120B, Mistral Small, a photo-reading Qwen model, voice-to-text and image generation.",
-    {keyless:true, defaults:["Meta-Llama-3_3-70B-Instruct","gpt-oss-120b","Mistral-Small-3.2-24B-Instruct-2506","Qwen2.5-VL-72B-Instruct"]}),
+    {keyless:true, defaults:["Meta-Llama-3_3-70B-Instruct","gpt-oss-120b","DeepSeek-V4.1-Flash-1017","Qwen3.8-27B","Mistral-Small-3.2-24B-Instruct-2506","gemma-4-26b-a4b","Qwen2.5-VL-72B-Instruct"]}),
+  P("pollinationsnk","Pollinations (no key)","https://text.pollinations.ai/v1","nokey","https://pollinations.ai","No key. One free model (GPT-OSS 20B), small hourly allowance. Checked 2026-11-23.",
+    {keyless:true, defaults:["openai-fast"]}),
   P("llm7","LLM7","https://api.llm7.io/v1","nokey","https://llm7.io","No key for basic models (rate-limited). A free key unlocks more.",
     {keyless:true, defaults:["mistral-Nemo-Instruct-2407","codestral-latest"]}),
   P("kilo","Kilo Gateway","https://api.kilo.ai/api/gateway/v1","nokey","https://app.kilo.ai","No key for :free models (200 requests/hour). Needs your relay.",
@@ -1297,6 +1299,12 @@ async function load(){
     const add=PROVIDERS.ovh.defaults.filter(m=>!S.chain.some(e=>e.p==="ovh"&&e.m===m)).map(m=>({p:"ovh",m,on:true}));
     const at=S.chain.findIndex(e=>e.p==="llm7"); S.chain.splice(at<0?S.chain.length:at,0,...add); S.v=2;
   }
+  S.pcool={}; for(const k in (S.stats||{})) S.stats[k].cool=0;   /* rests never carry over between app launches */
+  for(const p in (S.keys||{})){ const k=S.keys[p]; if(k && k.ok===false && /^(408|429|5\d\d)\b|busy|rate.?limit|timed out|overloaded/i.test(k.err||"")){ k.ok=true; k.err=null; } }
+  if((S.v||1) < 3){
+    const addM=(p,ms,before)=>{ const add=ms.filter(m=>!S.chain.some(e=>e.p===p&&e.m===m)).map(m=>({p,m,on:true})); const at=S.chain.findIndex(e=>e.p===before); S.chain.splice(at<0?S.chain.length:at,0,...add); };
+    addM("ovh",["DeepSeek-V4.1-Flash-1017","Qwen3.8-27B","gemma-4-26b-a4b"],"llm7"); addM("pollinationsnk",["openai-fast"],"kilo"); S.v=3;
+  }
   try{ if(navigator.storage?.persist) navigator.storage.persist(); }catch{}
   if(useIDB) try{ localStorage.removeItem(LSKEY); }catch{}
   save();
@@ -1308,7 +1316,7 @@ function defaultChain(){
     const k=S.keys[p]; if(!configured(p)) continue;
     (k?.picked?.length ? k.picked : d.defaults).forEach(m=>out.push({p,m,on:true}));
   }
-  for(const p of ["ovh","llm7","kilo"]) PROVIDERS[p].defaults.forEach(m=>out.push({p,m,on:true}));
+  for(const p of ["ovh","llm7","pollinationsnk","kilo"]) PROVIDERS[p].defaults.forEach(m=>out.push({p,m,on:true}));
   return out;
 }
 
@@ -1384,7 +1392,8 @@ function candidates({vision, search}){
   const now=Date.now();
   let ready=list.filter(e=>st(e.p,e.m).cool<now); const cooling=list.filter(e=>st(e.p,e.m).cool>=now);
   if(S.mode==="auto") ready=ready.map((e,i)=>({e,s:S.speed==="instant"?(st(e.p,e.m).lat||2500)+i:score(e,i)})).sort((a,b)=>a.s-b.s).map(x=>x.e);
-  return ready; // do not retry a model before its cooldown expires
+  cooling.sort((a,b)=>st(a.p,a.m).cool-st(b.p,b.m).cool);
+  return [...ready,...cooling]; // resting models are tried last, never dropped
 }
 const retryable = s => s===408||s===409||s===425||s===429||s>=500;
 async function* sse(resp){
@@ -1400,10 +1409,18 @@ async function routeChat(messages, opts, onToken, signal){
   if(!list.length) throw Object.assign(new Error(S.platinum?.profile==="private" ? "Private profile needs an active local provider. Open Platinum Intelligence → Manage models." : opts.search ? "Search needs a free Groq key. Add one in Settings." :
     opts.vision ? "None of your active models can read photos. Switch on OVH's Qwen2.5-VL model, or add a free Google Gemini key." :
     "No eligible models are available. Check configured models or wait for cooldowns to expire."),{trail});
-  S.pcool ||= {}; const pfail={}; let tries=0; const sp=spd();
+  S.pcool ||= {}; let pfail={}, tries=0; const sp=spd();
+  for(let pass=0; pass<2 && !signal.aborted; pass++){
+  if(pass===1){
+    const soon=Math.min(...list.map(e=>Math.max(st(e.p,e.m).cool,S.pcool[e.p]||0)));
+    let wait=Math.max(3000,Math.min(20_000,soon-Date.now()));
+    while(wait>0 && !signal.aborted){ onToken(`_Every free model is busy. Trying again in ${Math.ceil(wait/1000)} s…_`); await new Promise(r=>setTimeout(r,1000)); wait-=1000; }
+    onToken(""); if(signal.aborted) break; pfail={}; tries=0;
+  }
   for(const e of list){
     if(signal.aborted) break;
-    if(st(e.p,e.m).cool>Date.now() || (S.pcool[e.p]||0)>Date.now() || (pfail[e.p]||0)>=2) continue;   /* provider is resting: don't walk its whole list */
+    if(pass===0 && (st(e.p,e.m).cool>Date.now() || (S.pcool[e.p]||0)>Date.now())) continue;
+    if((pfail[e.p]||0)>=2) continue;   /* provider failed twice in this pass: skip its other models */
     if(tries>=sp.tries) break; tries++;
     const s=st(e.p,e.m), tStart=performance.now(), ctl=new AbortController(), onAbort=()=>ctl.abort();
     signal.addEventListener("abort",onAbort); let to=setTimeout(()=>ctl.abort("timeout"),sp.timeout);
@@ -1414,7 +1431,7 @@ async function routeChat(messages, opts, onToken, signal){
       if(!resp.ok){
         const err=new Error(`${resp.status} ${await errText(resp)}`.trim()); err.status=resp.status;
         if(resp.status===401||resp.status===403) S.pcool[e.p]=Date.now()+10*60_000;   /* needs consent or a key: stop asking for a while */
-        if(resp.status===429){ const ra=+resp.headers.get("retry-after"); s.cool=Date.now()+(ra>0?ra*1000:COOLDOWN_MS); }
+        if(resp.status===429){ const ra=+resp.headers.get("retry-after"); s.cool=Date.now()+Math.min(120_000,ra>0?ra*1000:20_000); }
         else if(retryable(resp.status)) s.cool=Date.now()+COOLDOWN_MS;
         else if(resp.status===401||resp.status===403) s.cool=Date.now()+10*60_000;
         else s.cool=Date.now()+5*60_000;
@@ -1442,14 +1459,15 @@ async function routeChat(messages, opts, onToken, signal){
       if(signal.aborted){ if(got) return {text:got,meta:{p:e.p,provider:PROVIDERS[e.p].name,model,ms:Math.round(performance.now()-t0),failovers:trail.length,trail,stopped:true}}; break; }
       const why = ctl.signal.reason==="timeout" ? "timed out" : (err instanceof TypeError ? netWhy(err) : err.message);
       s.fail++; s.last=why; if(!s.cool||s.cool<Date.now()) s.cool=Date.now()+COOLDOWN_MS;
-      pfail[e.p]=(pfail[e.p]||0)+1; if(pfail[e.p]>=2 && !S.pcool[e.p]) S.pcool[e.p]=Date.now()+90_000;
+      pfail[e.p]=(pfail[e.p]||0)+1; if(pfail[e.p]>=2 && !((S.pcool[e.p]||0)>Date.now())) S.pcool[e.p]=Date.now()+30_000;
       trail.push({p:e.p,m:e.m,ok:false,why});
       if(got) return {text:got+"\n\n_(answer was cut off by the provider)_",meta:{p:e.p,provider:PROVIDERS[e.p].name,model,ms:Math.round(performance.now()-t0),failovers:trail.length-1,trail,partial:true}};
       onToken("");
     }
   }
+  }
   if(signal.aborted) throw Object.assign(new Error("Stopped."),{trail,stopped:true});
-  throw Object.assign(new Error("Every model I tried is busy or rate-limited right now. Wait a minute, switch Speed to Deep to try more, or add another free provider in Settings."),{trail});
+  throw Object.assign(new Error("Every model I tried is busy or rate-limited right now, even after waiting. Try again in a minute, or check your keys in Settings › AI providers."),{trail});
 }
 async function generateImage(prompt, signal){
   const trail=[], t0=performance.now();
@@ -1751,7 +1769,7 @@ async function testProvider(p, card){
     const r=await fetch(endpoint(p,"/models"),{headers:authHeaders(p,false)});
     let ids=[];
     if(r.ok){ const j=await r.json(); ids=(Array.isArray(j)?j:(j.data||j.models||[])).map(x=>(x.id||x.name||x.model||"").replace(/^models\//,"")).filter(Boolean); }
-    else if(r.status===404||r.status===405){ ids=[]; } // no model list on this API: key kept, add model ids by hand
+    else if(r.status===404||r.status===405||r.status===429||r.status===408||r.status>=500){ ids=[]; if(r.status!==404&&r.status!==405) toast("The provider is busy right now. Your key is saved."); } // busy or no model list: key kept
     else throw new Error(`${r.status}: ${await errText(r)}`);
     if(d.freeFilter && !S.keys[p]?.key) ids=ids.filter(i=>d.freeFilter.test(i));
     else if(d.freeFilter && p==="openrouter") ids=ids.filter(i=>d.freeFilter.test(i));
@@ -2363,7 +2381,7 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
 
 <script>
 /* ===== v25 settings navigation and header model button ===== */
-(function(){ const KC_V="31", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Skills",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
+(function(){ const KC_V="32", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Skills",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
   const back={background:"general"};
   function go(p){ sh.dataset.page=p; sh.querySelectorAll(".spage").forEach(x=>x.classList.toggle("on",x.dataset.page===p)); $("#setTitle").textContent=T[p]||"Settings"; sh.querySelector(".bd").scrollTop=0; if(p==="home") sums(); }
   window.kcSettingsGo=go;
