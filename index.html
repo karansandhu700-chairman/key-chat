@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>KeyChat</title>
-<meta name="description" content="Free multi-AI chat. Routes every message to the best free model you have, with automatic failover.">
+<meta name="description" content="Chat and build from your phone with your own API keys. No credits, no markup, no subscription for the models — you pay the provider directly, or use the free ones.">
 <meta name="theme-color" content="#0a0907">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -120,6 +120,10 @@ header{display:flex;align-items:center;justify-content:space-between;padding:cal
 .acts button:hover,.acts button.on{background:var(--hover);color:var(--text)}
 .acts svg{width:17px;height:17px}
 .err{color:var(--danger);font-size:14px;border:1px solid var(--danger);border-radius:12px;padding:10px 12px;margin-top:4px}
+.fixit{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:8px;background:var(--hover)}
+.fixit p{margin:0 0 8px;font-size:13.5px;line-height:1.5;color:var(--muted)}
+.fixit .fixit-h{color:var(--text)}
+.fixit .btn{margin-top:2px}
 .trail{font-size:12px;color:var(--muted);margin-top:4px}
 .trail div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .composer{padding:6px 12px calc(var(--safeB) + 10px)}
@@ -1417,7 +1421,7 @@ async function routeChat(messages, opts, onToken, signal){
   const cl=candidates(opts), privateMode=S.platinum?.profile==="private", pinAllowed=opts.pin&&configured(opts.pin.p)&&(!privateMode||PROVIDERS[opts.pin.p]?.tier==="local"), list=pinAllowed?[opts.pin,...cl.filter(e=>!(e.p===opts.pin.p&&e.m===opts.pin.m))]:cl, trail=[], t0=performance.now();
   if(!list.length) throw Object.assign(new Error(S.platinum?.profile==="private" ? "Private profile needs an active local provider. Open Platinum Intelligence → Manage models." : opts.search ? "Search needs a free Groq key. Add one in Settings." :
     opts.vision ? "None of your active models can read photos. Switch on OVH's Qwen2.5-VL model, or add a free Google Gemini key." :
-    "No eligible models are available. Check configured models or wait for cooldowns to expire."),{trail});
+    "No model is free to take this right now. The no-key models are shared by everyone, so they run out."),{trail,fix:"key"});
   S.pcool ||= {}; let pfail={}, tries=0; const sp=spd();
   for(let pass=0; pass<2 && !signal.aborted; pass++){
   if(pass===1){
@@ -1487,7 +1491,7 @@ async function routeChat(messages, opts, onToken, signal){
   }
   }
   if(signal.aborted) throw Object.assign(new Error("Stopped."),{trail,stopped:true});
-  throw Object.assign(new Error("Every model I tried is busy or rate-limited right now, even after waiting. Try again in a minute, or check your keys in Settings › AI providers."),{trail});
+  throw Object.assign(new Error("Every free model I tried is busy, even after waiting. The no-key models are shared by everyone, so this happens most at peak times."),{trail,fix:"key"});
 }
 async function generateImage(prompt, signal){
   const trail=[], t0=performance.now();
@@ -1554,7 +1558,7 @@ function msgHtml(m,i,last){
     return `<div class="msg user">${att?`<div class="atts">${att}</div>`:""}${m.content?`<div class="b">${esc(m.content)}</div>`:""}<div class="acts"><button data-copy="${i}" aria-label="Copy">${I.copy}</button><button data-edit="${i}" aria-label="Edit">${I.edit}</button></div></div>`;
   }
   let body;
-  if(m.error) body=`<div class="err">${esc(m.error)}</div>${m.trail&&m.trail.length?`<details class="trail" open><summary>What was tried</summary>${m.trail.map(t=>`<div>✗ ${esc(PROVIDERS[t.p]?.name||t.p)} · ${esc(t.m)} · ${esc(t.why||"")}</div>`).join("")}</details>`:""}`;
+  if(m.error) body=`<div class="err">${esc(m.error)}</div>${m.fix==="key"?`<div class="fixit"><p>A free key of your own fixes this for good: it is yours alone, so nobody else can use it up. Key Chat never adds a charge on top of it &mdash; you pay the provider directly, or nothing at all on their free tier.</p><p class="fixit-h">Free, no card needed: <b>Groq</b>, <b>Google Gemini</b>, <b>Cerebras</b>.</p><button class="btn" data-settings type="button">Add a free key</button> <button class="btn ghost" data-regen type="button">Try again</button></div>`:""}${m.trail&&m.trail.length?`<details class="trail" open><summary>What was tried</summary>${m.trail.map(t=>`<div>✗ ${esc(PROVIDERS[t.p]?.name||t.p)} · ${esc(t.m)} · ${esc(t.why||"")}</div>`).join("")}</details>`:""}`;
   else if(m.image) body=`<img class="genimg" src="${m.image}" alt="${esc(m.prompt||"Generated image")}">${metaHtml(m)}`;
   else body=`<div class="b">${md(m.content)}</div>${metaHtml(m)}`;
   const acts=`<div class="acts"><button data-copy="${i}" aria-label="Copy">${I.copy}</button>${m.content?`<button data-speak="${i}" aria-label="Read aloud">${I.speak}</button>`:""}<button data-share="${i}" aria-label="Share">${I.share}</button>${last?`<button data-regen aria-label="Try again">${I.regen}</button>`:""}</div>`;
@@ -1613,7 +1617,7 @@ async function answer(c, imagePrompt){
           if(thread.scrollHeight-thread.scrollTop-thread.clientHeight<160) thread.scrollTop=thread.scrollHeight; }); }, ctl.signal);
       cancelAnimationFrame(raf); ai.content=memCapture(r.text); ai.meta=r.meta;
     }
-  }catch(err){ cancelAnimationFrame(raf); if(err.stopped) c.msgs.pop(); else { ai.error=err.message; ai.trail=err.trail; } }
+  }catch(err){ cancelAnimationFrame(raf); if(err.stopped) c.msgs.pop(); else { ai.error=err.message; ai.trail=err.trail; ai.fix=err.fix; } }
   setBusy(null); c.updated=Date.now(); save(); renderAll();
 }
 
