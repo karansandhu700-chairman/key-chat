@@ -1,7 +1,7 @@
 /* Key Chat v28 — scope-limited, network-first shell caching. */
-const CACHE="keychat-v34-earn-1";
+const CACHE="keychat-v35-plans-1";
 const BASE=new URL(self.registration.scope);
-const FILES=["index.html","keychat-premium.css","premium-features.css","premium-features.js","studio-live.html","studio-preview.html","studio-polish.css","studio-polish.js","manifest.webmanifest","icon-192.png","icon-512.png","apple-touch-icon.png","monogram.png","key.webp","fx.js","keychat-v28.css","keychat-v28.js","kc29-studio.html","kc29-studio.css","kc29-studio.js","kc29-core.js","kc29-templates.js","kc29-logo.png","kc-intelligence.html","kc-intelligence.css","kc-intelligence.js","kc-intelligence-core.js","native.css","native.js","earn.js","workspace-theme.js","workspace-native.css"];
+const FILES=["index.html","keychat-premium.css","premium-features.css","premium-features.js","studio-live.html","studio-preview.html","studio-polish.css","studio-polish.js","manifest.webmanifest","icon-192.png","icon-512.png","apple-touch-icon.png","monogram.png","key.webp","fx.js","keychat-v28.css","keychat-v28.js","kc29-studio.html","kc29-studio.css","kc29-studio.js","kc29-core.js","kc29-templates.js","kc29-logo.png","kc-intelligence.html","kc-intelligence.css","kc-intelligence.js","kc-intelligence-core.js","native.css","native.js","earn.js","plans.js","workspace-theme.js","workspace-native.css"];
 const PATHS=new Set(FILES.map(f=>new URL(f,BASE).pathname));
 self.addEventListener("install",event=>{
   event.waitUntil((async()=>{
