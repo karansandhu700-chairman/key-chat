@@ -1491,7 +1491,33 @@ async function routeChat(messages, opts, onToken, signal){
   }
   }
   if(signal.aborted) throw Object.assign(new Error("Stopped."),{trail,stopped:true});
-  throw Object.assign(new Error("Every free model I tried is busy, even after waiting. The no-key models are shared by everyone, so this happens most at peak times."),{trail,fix:"key"});
+  /* say what actually went wrong: an exhausted allowance is not a busy server, and waiting will not fix it */
+  {
+    const nm = p => PROVIDERS[p]?.name || p;
+    const isShared = p => !!PROVIDERS[p]?.keyless;
+    const joinList = a => a.length < 2 ? (a[0] || "") : a.slice(0,-1).join(", ") + " and " + a[a.length-1];
+    const bad = trail.filter(t => !t.ok);
+    const code = t => { const m = /^(\d{3})\b/.exec(t.why || ""); return m ? +m[1] : 0; };
+    const ids = f => [...new Set(bad.filter(f).map(t => t.p))];
+    const noCredit = ids(t => code(t) === 402);
+    const rejected = ids(t => code(t) === 401 || code(t) === 403);
+    const wasBusy = bad.some(t => { const c = code(t); return c === 429 || c === 408 || c >= 500 || /timed out/i.test(t.why || ""); });
+    const ownKey = noCredit.filter(p => !isShared(p)).map(nm);
+    const sharedPool = noCredit.filter(isShared).map(nm);
+    const parts = [];
+    if (ownKey.length) parts.push(`${joinList(ownKey)} ${ownKey.length > 1 ? "have" : "has"} no credit left on the key you saved, so waiting will not help`);
+    if (sharedPool.length) parts.push(`the free shared allowance on ${joinList(sharedPool)} is used up for now`);
+    const rejMine = rejected.filter(p => !isShared(p)).map(nm);
+    const rejFree = rejected.filter(isShared).map(nm);
+    if (rejMine.length) parts.push(`${joinList(rejMine)} refused the key you saved`);
+    if (rejFree.length) parts.push(`${joinList(rejFree)} turned the request away, which usually means it now wants a key`);
+    if (wasBusy) parts.push("some models were busy");
+    let msg;
+    if (!parts.length) msg = "No model answered. Open What was tried below to see what each one said.";
+    else if (parts.length === 1 && wasBusy) msg = "Every free model I tried is busy, even after waiting. The no-key models are shared by everyone, so this happens most at peak times.";
+    else msg = joinList(parts).replace(/^./, c => c.toUpperCase()) + ".";
+    throw Object.assign(new Error(msg),{trail,fix:"key"});
+  }
 }
 async function generateImage(prompt, signal){
   const trail=[], t0=performance.now();
@@ -2405,7 +2431,7 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
 
 <script>
 /* ===== v25 settings navigation and header model button ===== */
-(function(){ const KC_V="33", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Skills",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
+(function(){ const KC_V="34", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Skills",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
   const back={background:"general"};
   function go(p){ sh.dataset.page=p; sh.querySelectorAll(".spage").forEach(x=>x.classList.toggle("on",x.dataset.page===p)); $("#setTitle").textContent=T[p]||"Settings"; sh.querySelector(".bd").scrollTop=0; if(p==="home") sums(); }
   window.kcSettingsGo=go;
