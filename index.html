@@ -1182,6 +1182,7 @@ html[data-light] #kcCreateHub .kc-create-shell {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="kc-tools.js?v=1"></script>
 <script>
 "use strict";
 /* ============ Provider catalogue ============
@@ -1586,6 +1587,7 @@ function msgHtml(m,i,last){
   let body;
   if(m.error) body=`<div class="err">${esc(m.error)}</div>${m.fix==="key"?`<div class="fixit"><p>A free key of your own fixes this for good: it is yours alone, so nobody else can use it up. Key Chat never adds a charge on top of it &mdash; you pay the provider directly, or nothing at all on their free tier.</p><p class="fixit-h">Free, no card needed: <b>Groq</b>, <b>Google Gemini</b>, <b>Cerebras</b>.</p><button class="btn" data-settings type="button">Add a free key</button> <button class="btn ghost" data-regen type="button">Try again</button></div>`:""}${m.trail&&m.trail.length?`<details class="trail" open><summary>What was tried</summary>${m.trail.map(t=>`<div>✗ ${esc(PROVIDERS[t.p]?.name||t.p)} · ${esc(t.m)} · ${esc(t.why||"")}</div>`).join("")}</details>`:""}`;
   else if(m.image) body=`<img class="genimg" src="${m.image}" alt="${esc(m.prompt||"Generated image")}">${metaHtml(m)}`;
+  else if(m.file) body=`<div class="b">${md(m.content)}</div><a class="btn filedl" href="${esc(m.file.url)}" download="${esc(m.file.name)}">Download ${esc(m.file.name)}</a>${metaHtml(m)}`;
   else body=`<div class="b">${md(m.content)}</div>${metaHtml(m)}`;
   const acts=`<div class="acts"><button data-copy="${i}" aria-label="Copy">${I.copy}</button>${m.content?`<button data-speak="${i}" aria-label="Read aloud">${I.speak}</button>`:""}<button data-share="${i}" aria-label="Share">${I.share}</button>${last?`<button data-regen aria-label="Try again">${I.regen}</button>`:""}</div>`;
   return `<div class="msg ai" data-i="${i}">${body}${m.error?"":artCards(m,i)}${acts}</div>`;
@@ -1627,15 +1629,70 @@ async function send(override){
   cancelEdit();
   c.msgs.push({role:"user",content:text,att:pendingAtt}); pendingAtt=[]; renderPending();
   $("#input").value=""; autosize();
-  await answer(c, imageOn && text);
+  const last=c.msgs[c.msgs.length-1];
+  const hasImage=(last.att||[]).some(a=>a.kind==="img"&&a.data);
+  const want = (imageOn && text) ? {tool:"image",prompt:text}
+             : (window.KCTools ? KCTools.intent(text,{hasImage}) : {tool:"chat"});
+  await answer(c, want);
 }
-async function answer(c, imagePrompt){
+/* Build a file in the browser and hand it back as a download. Models cannot emit
+   bytes, so the model writes the content and Key Chat makes the actual file. */
+async function makeFile(kind, userText, c, signal, onStage){
+  const topic = KCTools.topicOf(userText);
+  const ask = kind === "pdf"
+    ? `Write the full contents of a document about: ${topic}\n\nUse markdown: one # title, ## sections, short paragraphs, - bullets where they fit. Write the document itself and nothing else: no preamble, no "here is", no closing remark.`
+    : `Produce the files for: ${topic}\n\nGive every file as a fenced code block. On the line directly above each block write only the file name, like path/name.ext. No preamble and no explanation between blocks.`;
+  const msgs = toApi(c.msgs.slice(0,-1)).concat([{role:"user",content:ask}]);
+  onStage(kind === "pdf" ? "Writing the document…" : "Writing the files…");
+  const r = await routeChat(msgs, {vision:false, search:false}, ()=>{}, signal);
+  const text = (r.text||"").trim();
+  if(!text) throw new Error("The model returned nothing to put in the file.");
+  onStage(kind === "pdf" ? "Building the PDF…" : "Building the zip…");
+  const safe = (topic||"document").replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase().slice(0,50) || "document";
+  let bytes, name, mime;
+  if(kind === "pdf"){
+    const title = (/^#\s+(.+)$/m.exec(text)||[])[1] || topic.slice(0,80) || "Document";
+    bytes = KCTools.pdf({title, subtitle:new Date().toISOString().slice(0,10), text});
+    name = safe + ".pdf"; mime = "application/pdf";
+  } else {
+    const files = [];
+    const re = /(?:^|\n)[ \t]*(?:[#/*\-\s]*)([\w./-]+\.[A-Za-z0-9]{1,8})[ \t]*\n+```[\w.+-]*\n([\s\S]*?)```/g;
+    let m; while((m = re.exec(text))) files.push({name:m[1], data:m[2]});
+    if(!files.length){
+      const re2 = /```([\w.+-]*)\n([\s\S]*?)```/g; let k=1, g;
+      while((g = re2.exec(text))) files.push({name:`file${k++}.${(g[1]||"txt").toLowerCase()}`, data:g[2]});
+    }
+    if(!files.length) files.push({name:"notes.md", data:text});
+    bytes = KCTools.zip(files); name = safe + ".zip"; mime = "application/zip";
+  }
+  const blob = new Blob([bytes], {type:mime});
+  return {name, mime, size:blob.size, url:URL.createObjectURL(blob), meta:r.meta};
+}
+
+async function answer(c, want){
+  const W = (want && typeof want === "object") ? want
+          : (want ? {tool:"image", prompt:want} : {tool:"chat"});
+  const imagePrompt = W.tool === "image" ? (W.prompt || "") : "";
+  const LABELS = {image:"Creating image…", pdf:"Writing the document…", zip:"Writing the files…"};
   const ai={role:"assistant",content:""}; c.msgs.push(ai); c.updated=Date.now(); renderAll();
   const node=thread.querySelector(".msg.ai:last-child"); const THINK='<span class="thinking" role="status">Thinking</span>';
-  node.innerHTML=`<div class="b">${imagePrompt?'<span style="color:var(--muted)">Creating image…</span>':THINK}</div>`;
+  const stage = t => { const e=node.querySelector(".b"); if(e) e.innerHTML=`<span style="color:var(--muted)">${esc(t)}</span>`; };
+  node.innerHTML=`<div class="b">${LABELS[W.tool]?`<span style="color:var(--muted)">${LABELS[W.tool]}</span>`:THINK}</div>`;
   const bEl=node.querySelector(".b"); const ctl=new AbortController(); setBusy(ctl); let raf=0;
   try{
-    if(imagePrompt){ const r=await generateImage(imagePrompt, ctl.signal); ai.image=r.data; ai.prompt=imagePrompt; ai.meta=r.meta; }
+    if(W.tool === "edit-image"){
+      /* Be straight about it: there is no image-editing model wired in, so say so
+         rather than let a chat model write a tutorial nobody asked for. */
+      ai.content = "I can't edit a picture you send me yet \u2014 Key Chat can only create new images from a description. Nothing here can change the background of that photo.\n\nWhat I can do: describe the picture you want and I'll make a new one. Image editing needs a provider that offers it, which isn't set up on this app.";
+      ai.noEdit = true;
+    }
+    else if(W.tool === "pdf" || W.tool === "zip"){
+      const f = await makeFile(W.tool, W.prompt || "", c, ctl.signal, stage);
+      ai.file = {name:f.name, url:f.url, size:f.size, mime:f.mime};
+      ai.content = `Made **${f.name}** (${Math.max(1,Math.round(f.size/1024))} KB).`;
+      ai.meta = f.meta;
+    }
+    else if(imagePrompt){ const r=await generateImage(imagePrompt, ctl.signal); ai.image=r.data; ai.prompt=imagePrompt; ai.meta=r.meta; }
     else{
       const vision=c.msgs.some(m=>(m.att||[]).some(a=>a.kind==="img"&&a.data));
       const r=await routeChat(toApi(c.msgs.slice(0,-1)),{vision,search:searchOn},txt=>{
@@ -2431,7 +2488,7 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
 
 <script>
 /* ===== v25 settings navigation and header model button ===== */
-(function(){ const KC_V="34", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Skills",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
+(function(){ const KC_V="35", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Skills",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
   const back={background:"general"};
   function go(p){ sh.dataset.page=p; sh.querySelectorAll(".spage").forEach(x=>x.classList.toggle("on",x.dataset.page===p)); $("#setTitle").textContent=T[p]||"Settings"; sh.querySelector(".bd").scrollTop=0; if(p==="home") sums(); }
   window.kcSettingsGo=go;
