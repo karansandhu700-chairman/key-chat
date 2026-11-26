@@ -83,7 +83,48 @@ That check was ten greps, not an audit. Before planning a roadmap from that
 table, verify each row against a function and a line number. Treat the research
 file's "Key Chat today" column as unreliable.
 
-## 6. Non-code decisions still open
+## 6. Revenue: what is ready and what is yours
+
+`offers.html` is live and self-contained — no CDN, no external request, clean at
+390 and 1440. Three offers with price, scope, exclusions, timeline and terms:
+$750 audit (credited into the build), $2,500 pilot, $1,200/month care plan.
+Prices are anchored to live competitor pages that were opened and read; the
+comparables are in `docs/research/capability-map-2026-11-25.md`.
+
+**One thing is missing from that page: a contact address.** The footer has a
+TODO. Nothing will come of it until that is filled in.
+
+Five things only you can do, in order:
+
+1. Open Payoneer — Aadhaar plus a **physical** PAN card, not an e-PAN. It gives
+   a free automatic FIRA, which matters for the export-of-services question
+   below. Stripe will not open an account for an individual in India.
+2. Send ten short notes to people who already know you. Every solo consultancy's
+   first client comes from here; cold outreach before this is the expensive
+   mistake.
+3. List on Contra using the text from `offers.html`. Its service pages are
+   public, indexed and carry the price — effectively a free hosted offer page
+   with payment attached.
+4. Run the Gemini test in Settings (section 1 above).
+5. Run the phone tests in section 7.
+
+## 7. Phone tests to run after each deploy
+
+Nothing here has met a live provider or WebKit. These six take two minutes:
+
+| Type this | Should give you |
+| --- | --- |
+| `make a pdf about my services` | a PDF download |
+| `make an excel of my pricing` | an .xlsx with numbers you can sum |
+| `summarise this pdf` + attach one | a summary, **not** a new PDF |
+| screenshot + `fix this error` | real help, **not** a refusal |
+| photo + `change background` | honest "can't edit images yet" |
+| `pdf bana do` | a PDF, from Hinglish |
+
+If the router picks wrong, every reply has **Answer in chat instead**, and
+`/pdf`, `/xlsx`, `/docx`, `/csv`, `/zip`, `/image`, `/chat` force a tool.
+
+## 8. Non-code decisions still open
 
 - **A CA on export of services.** Whether AED/SGD receipts qualify as zero-rated
   exports turns on the IGST Act's convertible-foreign-exchange condition, which

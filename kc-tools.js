@@ -257,17 +257,45 @@
     new RegExp(`\\b(?:export|save|download|output)\\s+(?:this|it|that)?\\s*(?:as|to|in)\\s+${LEAD}${noun}\\b${TAIL}`).test(low) ||
     new RegExp(`\\bconvert\\s+(?:this|it|that)\\s+(?:in)?to\\s+${LEAD}${noun}\\b`).test(low);
 
+  // A slash prefix is an override: no rule reads every sentence, so let the user
+  // say it outright. Also the only way to steer a bare follow-up like "Create".
+  const SLASH = { pdf:"pdf", xlsx:"xlsx", excel:"xlsx", sheet:"xlsx", csv:"csv",
+                  docx:"docx", word:"docx", doc:"docx", zip:"zip",
+                  image:"image", img:"image", pic:"image", draw:"image", chat:"chat" };
+  // Hindi and Hinglish put the verb last: "pdf bana do", "iska excel banao".
+  const HI_MAKE = /(?:banao|bana\s*do|bana\s*de|banado|chahiye|chaahiye|बनाओ|बना\s*दो|बना\s*दे|चाहिए|बनाइए)/;
+  const HI_NOUN = [[/(?:पीडीएफ|\bpdf\b)/, "pdf"],
+                   [/(?:एक्सेल|स्प्रेडशीट|\bexcel\b|\bxlsx\b)/, "xlsx"],
+                   [/(?:\bcsv\b|सीएसवी)/, "csv"],
+                   [/(?:वर्ड|\bdocx\b|\bword\b)/, "docx"],
+                   [/(?:तस्वीर|इमेज|चित्र|फोटो|\bimage\b|\bphoto\b)/, "image"]];
+  // A picture word inside a web-page instruction is CSS, not a photograph.
+  const CODE_CTX = /\b(?:html|css|js|javascript|react|vue|svelte|button|header|footer|navbar|div|span|class|classname|style|stylesheet|selector|tailwind|bootstrap|component|element|page|website|site|landing|hero|section)\b/;
+
   function intent(text, opts) {
     const t = String(text || "").trim();
     const o = opts || {};
+
+    const sl = /^\s*\/([a-z]+)\b\s*([\s\S]*)$/i.exec(t);
+    if (sl && SLASH[sl[1].toLowerCase()]) {
+      const tool = SLASH[sl[1].toLowerCase()];
+      return tool === "chat" ? { tool: "chat" } : { tool, prompt: sl[2].trim() || t, forced: true };
+    }
+
+    const hiLow = t.toLowerCase();
+    if (HI_MAKE.test(hiLow)) for (const [re, tool] of HI_NOUN)
+      if (re.test(hiLow)) return { tool, prompt: t };
+
     const low = t.toLowerCase().replace(/^\s*(?:please|pls|hey|hi|ok|okay|now)[,\s]+/, "").replace(/^\s*(?:can|could|would)\s+you\s+(?:please\s+)?/, "");
     if (!t) return { tool: "chat" };
 
-    // An edit verb counts only when it acts on a picture.
-    if (o.hasImage && new RegExp(`\\b${EDIT_VERB}\\b(?:\\s+\\w+){0,3}\\s+(?:\\w+\\s+){0,2}?${PIC_OBJ}\\b`).test(low))
-      return { tool: "edit-image", reason: "editing an attached picture" };
-    if (o.hasImage && new RegExp(`^\\s*${EDIT_VERB}\\s+${PIC_OBJ}\\b`).test(low))
-      return { tool: "edit-image", reason: "editing an attached picture" };
+    // An edit verb counts only when it acts on a picture, is not describing a web
+    // page, and is not asking for something new to be made instead.
+    const wantsNew = objectOf(low, IMAGE_NOUN);
+    const editsPic = !CODE_CTX.test(low) && !wantsNew && (
+      new RegExp(`\\b${EDIT_VERB}\\b(?:\\s+\\w+){0,3}\\s+(?:\\w+\\s+){0,2}?${PIC_OBJ}\\b`).test(low) ||
+      new RegExp(`^\\s*${EDIT_VERB}\\s+${PIC_OBJ}\\b`).test(low));
+    if (o.hasImage && editsPic) return { tool: "edit-image", reason: "editing an attached picture" };
 
     // A question about a format, or an instruction to act on a file that already
     // exists, is never a request to build a new one.

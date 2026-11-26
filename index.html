@@ -1182,7 +1182,7 @@ html[data-light] #kcCreateHub .kc-create-shell {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
-<script src="kc-tools.js?v=2"></script>
+<script src="kc-tools.js?v=3"></script>
 <script>
 "use strict";
 /* ============ Provider catalogue ============
@@ -1589,8 +1589,9 @@ function msgHtml(m,i,last){
   else if(m.image) body=`<img class="genimg" src="${m.image}" alt="${esc(m.prompt||"Generated image")}">${metaHtml(m)}`;
   else if(m.file) body=`<div class="b">${md(m.content)}</div>${m.file.b64?`<button class="btn filedl" data-dl="${i}" type="button">Download ${esc(m.file.name)}</button>`:`<div class="muted">${esc(m.file.name)} was saved to your downloads.</div>`}${metaHtml(m)}`;
   else body=`<div class="b">${md(m.content)}</div>${metaHtml(m)}`;
+  const asChat = (m.tool && m.tool!=="chat" && !m.error) ? `<button class="lnk aschat" data-aschat="${i}" type="button">Answer in chat instead</button>` : "";
   const acts=`<div class="acts"><button data-copy="${i}" aria-label="Copy">${I.copy}</button>${m.content?`<button data-speak="${i}" aria-label="Read aloud">${I.speak}</button>`:""}<button data-share="${i}" aria-label="Share">${I.share}</button>${last?`<button data-regen aria-label="Try again">${I.regen}</button>`:""}</div>`;
-  return `<div class="msg ai" data-i="${i}">${body}${m.error?"":artCards(m,i)}${acts}</div>`;
+  return `<div class="msg ai" data-i="${i}">${body}${asChat}${m.error?"":artCards(m,i)}${acts}</div>`;
 }
 const SUGG=[["Explain a topic simply",'<svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></svg>'],
  ["Draft a professional email",'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>'],
@@ -1641,8 +1642,14 @@ async function send(override){
 }
 /* Build a file in the browser and hand it back as a download. Models cannot emit
    bytes, so the model writes the content and Key Chat makes the actual file. */
-function saveBlob(bytes, name, mime){
-  const u=URL.createObjectURL(new Blob([bytes],{type:mime}));
+async function saveBlob(bytes, name, mime){
+  const blob=new Blob([bytes],{type:mime});
+  /* on an iPhone home-screen PWA a[download] often does nothing; share sheet works */
+  try{
+    const f=new File([blob],name,{type:mime});
+    if(navigator.canShare && navigator.canShare({files:[f]})){ await navigator.share({files:[f],title:name}); return; }
+  }catch(e){ if(e && e.name==="AbortError") return; }
+  const u=URL.createObjectURL(blob);
   const a=document.createElement("a"); a.href=u; a.download=name; a.click();
   setTimeout(()=>URL.revokeObjectURL(u), 10000);
 }
@@ -1702,7 +1709,7 @@ async function makeFile(kind, userText, c, signal, onStage){
     bytes = KCTools.zip(files); name = safe + ".zip"; mime = "application/zip";
   }
   let bin=""; for(let i=0;i<bytes.length;i+=0x8000) bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));
-  const b64 = bytes.length <= 1_500_000 ? btoa(bin) : null;   /* bigger than this is not worth persisting */
+  const b64 = bytes.length <= 300_000 ? btoa(bin) : null;   /* keep well clear of the localStorage quota */
   return {name, mime, size:bytes.length, b64, bytes, meta:r.meta, swapped};
 }
 
@@ -2124,6 +2131,9 @@ document.addEventListener("click",async e=>{
     const bin=atob(m.file.b64), u8=new Uint8Array(bin.length);
     for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
     saveBlob(u8, m.file.name, m.file.mime); return; }
+  const ac=t.closest("[data-aschat]");
+  if(ac){ if(busy) return; const c=curChat(); if(!c) return;
+    const i=+ac.dataset.aschat; c.msgs.splice(i); answer(c,{tool:"chat"}); return; }
   if(t.closest("[data-regen]")){ if(busy) return; const c=curChat(); if(!c) return; const last=c.msgs.at(-1); if(last?.role==="assistant") c.msgs.pop();
     const lastUser=[...c.msgs].reverse().find(m=>m.role==="user");
     /* regenerate with the tool that produced it, or the essay comes back */
@@ -2538,7 +2548,7 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
 
 <script>
 /* ===== v25 settings navigation and header model button ===== */
-(function(){ const KC_V="37", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Skills",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
+(function(){ const KC_V="38", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Skills",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
   const back={background:"general"};
   function go(p){ sh.dataset.page=p; sh.querySelectorAll(".spage").forEach(x=>x.classList.toggle("on",x.dataset.page===p)); $("#setTitle").textContent=T[p]||"Settings"; sh.querySelector(".bd").scrollTop=0; if(p==="home") sums(); }
   window.kcSettingsGo=go;

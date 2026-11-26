@@ -71,6 +71,25 @@ const CASES = [
   ["why is excel so slow", 0, 0, "chat"],
   // a picture in the chat must not block making a new one
   ["create an image of a dog", 0, 1, "image"],
+  // a slash prefix overrides everything, including a bare follow-up
+  ["/pdf our pricing", 0, 0, "pdf"],
+  ["/xlsx", 0, 0, "xlsx"],
+  ["/image a cat", 0, 0, "image"],
+  ["/docx the plan", 0, 0, "docx"],
+  ["/chat what is this", 0, 1, "chat"],
+  ["/image a cat", 1, 1, "image"],          // forced even with a picture attached
+  // Hindi and Hinglish: the verb comes last
+  ["एक पीडीएफ बनाओ", 0, 0, "pdf"],
+  ["pdf bana do", 0, 0, "pdf"],
+  ["iska excel banao", 0, 0, "xlsx"],
+  ["ek image banao", 0, 0, "image"],
+  ["मुझे एक pdf चाहिए", 0, 0, "pdf"],
+  // a picture word inside web-page talk is CSS, not a photograph
+  ["add a background colour to the header", 1, 1, "chat"],
+  ["change the background color of this button", 1, 1, "chat"],
+  ["make the background red in my css", 1, 1, "chat"],
+  // asking for something new is not an edit of what is attached
+  ["design a logo for my cafe", 0, 1, "image"],
 ];
 for (const [text, imageNow, hasImage, want] of CASES) {
   const got = T.intent(text, { imageNow: !!imageNow, hasImage: !!hasImage }).tool;

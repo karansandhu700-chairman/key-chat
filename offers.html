@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AI work, fixed price — Key Chat</title>
+<meta name="description" content="Fixed-price AI audits, agent builds and ongoing care. One price, in writing, before any work starts.">
+<link rel="icon" href="monogram.png">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --ink:#16161a; --mut:#6b6b76; --line:#e4e4e9; --bg:#fbfbfc; --card:#fff;
+    --accent:#1a1a1f; --ok:#0a7d4b;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{--ink:#ececf0;--mut:#9a9aa6;--line:#2a2a31;--bg:#121216;--card:#191920;--accent:#ececf0;--ok:#4ade80}
+  }
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    color:var(--ink);background:var(--bg);
+    padding:0 20px env(safe-area-inset-bottom);
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:56px 0 80px}
+  h1{font-size:clamp(28px,6vw,40px);line-height:1.15;letter-spacing:-.022em;font-weight:680}
+  h2{font-size:clamp(19px,4vw,23px);letter-spacing:-.012em;margin:48px 0 14px;font-weight:650}
+  h3{font-size:18px;letter-spacing:-.008em;font-weight:640}
+  p{margin:0 0 14px;color:var(--ink)}
+  .lede{font-size:clamp(17px,3.4vw,19px);color:var(--mut);margin:16px 0 0;max-width:34em}
+  .eyebrow{font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:var(--mut);font-weight:600}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:24px;margin:18px 0;
+  }
+  .price{font-size:30px;font-weight:680;letter-spacing:-.02em;display:block;margin:2px 0 2px}
+  .meta{font-size:14px;color:var(--mut);margin-bottom:16px}
+  ul{margin:0 0 14px;padding-left:20px}
+  li{margin:6px 0}
+  .not{color:var(--mut);font-size:14.5px;border-top:1px solid var(--line);padding-top:14px;margin-top:4px}
+  .not b{color:var(--ink);font-weight:620}
+  table{border-collapse:collapse;width:100%;margin:10px 0 20px;font-size:15px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-weight:620;font-size:13px;letter-spacing:.03em;text-transform:uppercase;color:var(--mut)}
+  .foot{margin-top:56px;padding-top:24px;border-top:1px solid var(--line);font-size:14.5px;color:var(--mut)}
+  a{color:inherit;text-underline-offset:3px}
+  .tag{display:inline-block;font-size:12.5px;font-weight:620;color:var(--ok);
+       border:1px solid currentColor;border-radius:999px;padding:2px 9px;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">Fixed price AI work</p>
+  <h1>One price, in writing, before any work starts.</h1>
+  <p class="lede">No hourly billing, no surprise invoices, no scope-creep charges.
+     Every engagement below has a stated price, a stated timeline and a stated
+     boundary. If it falls outside the boundary, you get a separate quote before
+     anything is built.</p>
+
+  <h2>What I sell</h2>
+
+  <div class="card">
+    <span class="tag">Start here</span>
+    <h3>Workflow &amp; Visibility Audit</h3>
+    <span class="price">$750</span>
+    <p class="meta">5 business days · delivered as a PDF · paid up front</p>
+    <p>One workflow or one website, scored against seven checks, with a ranked
+       list of what to fix and in what order.</p>
+    <ul>
+      <li>Seven scored checks across the site or the workflow</li>
+      <li>A ranked 30 / 60 / 90 day fix list, with the reasoning for the order</li>
+      <li>A 45-minute recorded walkthrough, so the thinking is not lost</li>
+      <li>The written report is yours to keep and use with anyone</li>
+    </ul>
+    <p class="not"><b>Not included:</b> implementing the fixes, ongoing tracking,
+       or auditing more than one site or workflow. <b>Refunded in full</b> within
+       24 hours if I open it and find there is no meaningful audit to run.
+       <b>The $750 comes off the build</b> if you hire me within 30 days.</p>
+  </div>
+
+  <div class="card">
+    <h3>AI Assistant Pilot</h3>
+    <span class="price">$2,500</span>
+    <p class="meta">2 weeks · 50% on signing, 50% on delivery</p>
+    <p>One working agent for one workflow, tested against your own real examples
+       rather than a demo script.</p>
+    <ul>
+      <li>One trigger, one knowledge source, one output — scoped in writing first</li>
+      <li>Built on n8n or similar low-code, so you can maintain it without me</li>
+      <li>Tested against examples you supply, not ones I invent</li>
+      <li>Human approval on anything consequential before it acts</li>
+      <li>Handover documentation and a live training session</li>
+    </ul>
+    <p class="not"><b>Not included:</b> a custom dashboard, several integrations,
+       unattended operation across your business, or ongoing hosting and model
+       usage. Those are quoted separately. <b>Model and hosting costs are yours,
+       paid directly to the provider</b> — I add no margin on them.</p>
+  </div>
+
+  <div class="card">
+    <h3>Care Plan</h3>
+    <span class="price">$1,200<span style="font-size:17px;font-weight:500;color:var(--mut)"> / month</span></span>
+    <p class="meta">3-month minimum, then 30 days' notice · optional</p>
+    <p>One shipped system kept alive. Optional by design: everything I build is
+       documented so you can run it yourself.</p>
+    <ul>
+      <li>Monitoring and incident response on one system</li>
+      <li>Prompt and workflow tuning as the models underneath change</li>
+      <li>One small improvement each month</li>
+      <li>A monthly one-page report on usage and cost</li>
+    </ul>
+    <p class="not"><b>Not included:</b> new features beyond the monthly
+       improvement, or a second system. <b>Cancel after the third month</b> with
+       30 days' notice, no exit fee.</p>
+  </div>
+
+  <h2>How it works</h2>
+  <table>
+    <tr><th>Step</th><th>What happens</th></tr>
+    <tr><td>1</td><td>A 15-minute call to check it is a fit. No charge, no pitch.</td></tr>
+    <tr><td>2</td><td>You get one fixed price in writing, with the boundary stated.</td></tr>
+    <tr><td>3</td><td>Work starts when the invoice is paid, or on the 50% deposit.</td></tr>
+    <tr><td>4</td><td>Delivered on the stated date, with a walkthrough.</td></tr>
+  </table>
+
+  <h2>Terms, in plain words</h2>
+  <ul>
+    <li><b>Scope is fixed before work begins.</b> Small adjustments inside the
+        original scope are absorbed. Material new work gets a separate written
+        quote first. You never see an invoice you did not approve.</li>
+    <li><b>Third-party costs are yours and are paid directly.</b> Model usage,
+        hosting, subscriptions. I pass through nothing and mark up nothing.</li>
+    <li><b>A 30-day fix window</b> after delivery, for anything that does not
+        work as specified.</li>
+    <li><b>Timezone.</b> I work India hours, which is a full working-day overlap
+        with the Gulf, Singapore and Europe.</li>
+  </ul>
+
+  <h2>Why me</h2>
+  <p>I built <a href="./">Key Chat</a> — a browser app that runs AI models from a
+     phone using your own API keys, with no markup and nothing to install. I run
+     my own client work through it, from a phone. It generates PDFs,
+     spreadsheets and Word documents in the browser with no server and no
+     libraries downloaded.</p>
+  <p>That is the whole portfolio, and you can open it right now and judge the
+     work yourself.</p>
+
+  <div class="foot">
+    <p><b>To start:</b> send a short note saying which of the three you want and
+       what it is for. I reply within one working day.</p>
+    <p id="contact">Contact: <!-- TODO: put the preferred contact address or form link here --></p>
+    <p style="margin-top:18px">Prices in USD. Indian clients can pay the
+       equivalent in INR by UPI.</p>
+  </div>
+
+</div>
+</body>
+</html>
