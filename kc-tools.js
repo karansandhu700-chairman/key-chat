@@ -249,11 +249,26 @@
     if (o.hasImage && new RegExp(`\\b${EDIT_VERB}\\b`).test(low)) {
       return { tool: "edit-image", reason: "editing an attached picture" };
     }
+    // A question *about* a format is not a request to produce one: "how do I use
+    // excel formulas" must stay chat. Checked after edit-image, so "how do I change
+    // the background of this photo" still gets the honest answer rather than a tutorial.
+    if (/^\s*(?:how|what|why|when|where|which|who|explain|describe|tell me about|is|are|does|do|should|can you tell)\b/.test(low) &&
+        !new RegExp(`\\b${MAKE}\\b`).test(low))
+      return { tool: "chat" };
+
     // Explicit file asks.
     // "zip" is both the thing and the verb: "make a zip", and "zip these up".
     if (/^\s*zip\b/.test(low) || /\b(?:\.zip|zip file|zip archive)\b/.test(low) ||
         (/\b(?:zip|archive|bundle)\b/.test(low) && new RegExp(`\\b${MAKE}\\b`).test(low)))
       return { tool: "zip", prompt: t };
+    if (/\b(?:\.xlsx|xlsx|excel|spreadsheet|spread sheet)\b/.test(low) ||
+        (/\bsheet\b/.test(low) && new RegExp(`\\b${MAKE}\\b`).test(low)))
+      return { tool: "xlsx", prompt: t };
+    if (/\b(?:\.csv|csv)\b/.test(low))
+      return { tool: "csv", prompt: t };
+    if (/\b(?:\.docx|docx|word document|word doc)\b/.test(low) ||
+        (/\bdocument\b/.test(low) && /\bword\b/.test(low)))
+      return { tool: "docx", prompt: t };
     if (/\b(pdf|\.pdf)\b/.test(low))
       return { tool: "pdf", prompt: t };
     // Image creation, with no picture attached to act on.
@@ -266,15 +281,166 @@
 
   // Strip the instruction wrapper so "make me a pdf about X" prompts the model for X.
   function topicOf(text) {
-    return String(text || "")
-      .replace(new RegExp(`^\\s*${MAKE}\\s+`, "i"), "")
-      .replace(/^\s*(?:me\s+)?(?:a|an|the)\s+/i, "")
-      .replace(/^\s*(pdf|zip|archive|document|file|report)\s*/i, "")
-      .replace(/^\s*(?:of|on|about|for|with|containing)\s+/i, "")
-      .trim() || String(text || "").trim();
+    const orig = String(text || "").trim();
+    let t = orig;
+    // Peel the instruction wrapper off the front until only the subject is left,
+    // so "create a word document about our Q3 pricing" names the file q3-pricing.
+    const peels = [
+      new RegExp(`^\\s*${MAKE}\\b\\s*`, "i"),
+      /^\s*(?:me|us)\b\s*/i,
+      /^\s*(?:a|an|the|some)\b\s*/i,
+      /^\s*(?:new|simple|quick|short|small|basic)\b\s*/i,
+      /^\s*(?:pdf|zip|archive|xlsx|excel|spread ?sheet|sheet|csv|docx|word|document|doc|file|report|table|list)\b\s*/i,
+      /^\s*(?:of|on|about|for|with|containing|listing|showing)\b\s*/i,
+      /^\s*(?:my|our|their|its|his|her)\b\s*/i
+    ];
+    for (let pass = 0; pass < 8; pass++) {
+      const before = t;
+      for (const re of peels) t = t.replace(re, "");
+      if (t === before) break;
+    }
+    t = t.replace(/[\s.,:;!?]+$/, "").trim();
+    return t || orig;
   }
 
-  const api = { pdf, zip, intent, blocks, wrap, widthOf, crc32, topicOf };
+  /* ---------- CSV ---------- */
+  // RFC 4180. The BOM is deliberate: without it Excel mangles non-ASCII.
+  function csv(rows, opts) {
+    const o = opts || {};
+    const cell = v => {
+      const s = v === null || v === undefined ? "" : String(v);
+      return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    };
+    const body = (rows || []).map(r => (Array.isArray(r) ? r : [r]).map(cell).join(",")).join("\r\n");
+    return (o.bom === false ? "" : "﻿") + body + "\r\n";
+  }
+
+  /* ---------- Office Open XML ----------
+     .xlsx and .docx are both a ZIP of XML parts, and we already write ZIP, so
+     these cost no new dependency at all — only the part templates below. */
+  const xmlEsc = s => String(s === null || s === undefined ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&apos;")
+    // XML 1.0 forbids most control characters outright; strip rather than emit a corrupt file
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "");
+  const colName = n => { let s = ""; n += 1; while (n > 0) { const r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = (n - r - 1) / 26; } return s; };
+  const isNum = v => typeof v === "number" ? Number.isFinite(v)
+    : typeof v === "string" && v.trim() !== "" && /^-?\d+(\.\d+)?$/.test(v.trim());
+
+  function xlsx(opts) {
+    const o = opts || {};
+    const sheets = (o.sheets && o.sheets.length ? o.sheets : [{ name: "Sheet1", rows: o.rows || [] }])
+      .map((s, i) => ({
+        // Excel rejects these characters in a sheet name, and caps it at 31
+        name: String(s.name || `Sheet${i + 1}`).replace(/[\\\/\?\*\[\]:]/g, " ").slice(0, 31) || `Sheet${i + 1}`,
+        rows: s.rows || []
+      }));
+
+    const sheetXml = sh => {
+      let rowsXml = "";
+      sh.rows.forEach((row, r) => {
+        const cells = (Array.isArray(row) ? row : [row]).map((v, c) => {
+          const ref = colName(c) + (r + 1);
+          if (v === null || v === undefined || v === "") return "";
+          return isNum(v)
+            ? `<c r="${ref}"><v>${xmlEsc(String(v).trim())}</v></c>`
+            : `<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${xmlEsc(v)}</t></is></c>`;
+        }).join("");
+        rowsXml += `<row r="${r + 1}">${cells}</row>`;
+      });
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
+        `<sheetData>${rowsXml}</sheetData></worksheet>`;
+    };
+
+    const files = [
+      { name: "[Content_Types].xml", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+        `<Default Extension="xml" ContentType="application/xml"/>` +
+        `<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>` +
+        sheets.map((_, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("") +
+        `</Types>` },
+      { name: "_rels/.rels", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>` +
+        `</Relationships>` },
+      { name: "xl/workbook.xml", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ` +
+        `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>` +
+        sheets.map((s, i) => `<sheet name="${xmlEsc(s.name)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join("") +
+        `</sheets></workbook>` },
+      { name: "xl/_rels/workbook.xml.rels", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+        sheets.map((_, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join("") +
+        `</Relationships>` }
+    ];
+    sheets.forEach((s, i) => files.push({ name: `xl/worksheets/sheet${i + 1}.xml`, data: sheetXml(s) }));
+    return zip(files);
+  }
+
+  function docx(opts) {
+    const o = opts || {};
+    // Direct formatting rather than named styles, so no styles.xml part is needed.
+    const run = (t, sz, bold, mono) =>
+      `<w:r><w:rPr>${bold ? "<w:b/>" : ""}<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/>` +
+      (mono ? `<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas"/>` : "") +
+      `</w:rPr><w:t xml:space="preserve">${xmlEsc(t)}</w:t></w:r>`;
+    const para = (t, sz, bold, mono, indent) =>
+      `<w:p><w:pPr>${indent ? `<w:ind w:left="${indent}"/>` : ""}<w:spacing w:after="120"/></w:pPr>${t ? run(t, sz, bold, mono) : ""}</w:p>`;
+
+    let body = "";
+    if (o.title) body += para(o.title, 40, true);
+    if (o.subtitle) body += para(o.subtitle, 18, false);
+    for (const b of blocks(o.text || "")) {
+      if (b.t === "gap") continue;
+      else if (b.t === "h1") body += para(b.s, 34, true);
+      else if (b.t === "h2") body += para(b.s, 28, true);
+      else if (b.t === "h3") body += para(b.s, 25, true);
+      else if (b.t === "h4") body += para(b.s, 23, true);
+      else if (b.t === "li") body += para((b.n ? b.n + ". " : "• ") + b.s, 22, false, false, 360);
+      else if (b.t === "code") for (const ln of String(b.s).split("\n")) body += para(ln, 18, false, true, 360);
+      else body += para(b.s, 22, false);
+    }
+    if (!body) body = para("", 22, false);
+
+    return zip([
+      { name: "[Content_Types].xml", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+        `<Default Extension="xml" ContentType="application/xml"/>` +
+        `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>` +
+        `</Types>` },
+      { name: "_rels/.rels", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>` +
+        `</Relationships>` },
+      { name: "word/document.xml", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+        `<w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/>` +
+        `<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134"/></w:sectPr></w:body></w:document>` }
+    ]);
+  }
+
+  /* Pull a markdown table, or fenced csv, out of model prose into rows. */
+  function rowsFrom(text) {
+    const t = String(text || "");
+    const fence = /```(?:csv|tsv)?\n([\s\S]*?)```/i.exec(t);
+    const src = fence ? fence[1] : t;
+    const pipes = src.split("\n").filter(l => /^\s*\|.*\|\s*$/.test(l));
+    if (pipes.length >= 2) {
+      return pipes
+        .filter(l => !/^\s*\|[\s:|-]+\|\s*$/.test(l))           // drop the --- separator row
+        .map(l => l.trim().replace(/^\||\|$/g, "").split("|").map(c => strip(c.trim())));
+    }
+    const lines = src.split("\n").map(l => l.trim()).filter(Boolean);
+    const sep = lines.some(l => l.includes("\t")) ? "\t" : ",";
+    if (lines.length && lines.some(l => l.includes(sep)))
+      return lines.map(l => l.split(sep).map(c => c.trim().replace(/^"|"$/g, "")));
+    return lines.map(l => [l]);
+  }
+
+  const api = { pdf, zip, csv, xlsx, docx, rowsFrom, intent, blocks, wrap, widthOf, crc32, topicOf };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   root.KCTools = api;
 })(typeof window !== "undefined" ? window : globalThis);
