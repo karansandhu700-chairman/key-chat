@@ -9,9 +9,9 @@ const KEY="kc-earn-v1";
 const STAGES=["pitched","replied","call","won","paid","lost"];
 const CURS=["USD","EUR","GBP","AED","SGD","INR"];
 const STARTERS=[
-  {name:"Launch check",price:150,cur:"USD",desc:"Review of your public site or AI setup, with ranked fixes"},
-  {name:"AI assistant setup",price:500,cur:"USD",desc:"Chatbot or agent built, tested and handed over"},
-  {name:"Monthly retainer",price:300,cur:"USD",desc:"Maintenance and updates each month"}
+  {name:"Workflow & Visibility Audit",price:750,cur:"USD",desc:"One workflow or site, seven scored checks, ranked 30/60/90 fix list. 5 days. Credited into the build."},
+  {name:"AI Assistant Pilot",price:2500,cur:"USD",desc:"One agent for one workflow, tested on your own examples, documented and handed over. 2 weeks, 50/50."},
+  {name:"Care Plan",price:1200,cur:"USD",desc:"One system kept alive: monitoring, tuning, one improvement a month. Per month, 3-month minimum."}
 ];
 
 function blank(){ return {offers:[],leads:[],invoices:[],profile:{},seqs:{}}; }

@@ -1182,7 +1182,7 @@ html[data-light] #kcCreateHub .kc-create-shell {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
-<script src="kc-tools.js?v=3"></script>
+<script src="kc-tools.js?v=4"></script>
 <script>
 "use strict";
 /* ============ Provider catalogue ============
@@ -1655,6 +1655,7 @@ async function saveBlob(bytes, name, mime){
 }
 async function makeFile(kind, userText, c, signal, onStage){
   const topic = KCTools.topicOf(userText);
+  const fromChat = !String(userText || "").trim();   /* bare "/pdf": no subject given */
   const ASKS = {
     pdf:  `Write the full contents of a document about: ${topic}\n\nUse markdown: one # title, ## sections, short paragraphs, - bullets where they fit. Write the document itself and nothing else: no preamble, no "here is", no closing remark.`,
     docx: `Write the full contents of a document about: ${topic}\n\nUse markdown: one # title, ## sections, short paragraphs, - bullets where they fit. Write the document itself and nothing else: no preamble, no "here is", no closing remark.`,
@@ -1662,7 +1663,13 @@ async function makeFile(kind, userText, c, signal, onStage){
     csv:  `Produce a table of: ${topic}\n\nReply with one markdown table and nothing else. First row is the header. Keep numbers as bare numbers with no symbols or thousands separators.`,
     zip:  `Produce the files for: ${topic}\n\nGive every file as a fenced code block. On the line directly above each block write only the file name, like path/name.ext. No preamble and no explanation between blocks.`
   };
-  const ask = ASKS[kind] || ASKS.pdf;
+  const ask = (fromChat
+    ? (kind === "xlsx" || kind === "csv"
+        ? "Turn the conversation so far into one markdown table and nothing else. First row is the header. Keep numbers bare."
+        : kind === "zip"
+        ? "Turn the conversation so far into files. Give every file as a fenced code block with its file name on the line directly above. No preamble."
+        : "Turn the conversation so far into a document. Use markdown: one # title, ## sections, short paragraphs. Write the document itself and nothing else.")
+    : (ASKS[kind] || ASKS.pdf));
   const STAGE = {pdf:"Writing the document…", docx:"Writing the document…", xlsx:"Working out the rows…", csv:"Working out the rows…", zip:"Writing the files…"};
   const BUILD = {pdf:"Building the PDF…", docx:"Building the document…", xlsx:"Building the spreadsheet…", csv:"Building the CSV…", zip:"Building the zip…"};
   const msgs = toApi(c.msgs.slice(0,-1)).concat([{role:"user",content:ask}]);
@@ -1672,10 +1679,10 @@ async function makeFile(kind, userText, c, signal, onStage){
   const text = (r.text||"").trim();
   if(!text) throw new Error("The model returned nothing to put in the file.");
   onStage(BUILD[kind] || BUILD.pdf);
-  const safe = (topic||"document").replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase().slice(0,50) || "document";
+  const safe = ((fromChat ? "chat" : topic) || "document").replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase().slice(0,50) || "document";
   let bytes, name, mime;
   const today = new Date().toISOString().slice(0,10);
-  const titleOf = () => (/^#\s+(.+)$/m.exec(text)||[])[1] || topic.slice(0,80) || "Document";
+  const titleOf = () => (/^#\s+(.+)$/m.exec(text)||[])[1] || (topic||"").slice(0,80) || "Document";
   let swapped = "";
   if(kind === "pdf" && KCTools.pdfWouldLose(text)){
     /* the PDF fonts are WinAnsi only; Hindi and other scripts would come out as "?" */
@@ -2548,7 +2555,7 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
 
 <script>
 /* ===== v25 settings navigation and header model button ===== */
-(function(){ const KC_V="38", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Skills",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
+(function(){ const KC_V="39", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Skills",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
   const back={background:"general"};
   function go(p){ sh.dataset.page=p; sh.querySelectorAll(".spage").forEach(x=>x.classList.toggle("on",x.dataset.page===p)); $("#setTitle").textContent=T[p]||"Settings"; sh.querySelector(".bd").scrollTop=0; if(p==="home") sums(); }
   window.kcSettingsGo=go;
