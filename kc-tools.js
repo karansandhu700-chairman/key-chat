@@ -235,46 +235,56 @@
   /* ---------- intent ---------- */
   // Decides which tool a message wants. Conservative on purpose: when in doubt it
   // returns "chat", because a wrong route is worse than no route.
-  const MAKE = "(?:make|create|generate|draw|design|produce|build|give me|send me|i want|i need|can you make|please make)";
+  const MAKE = "(?:make|create|generate|produce|build|write|draw|design|give me|send me|export|save|turn this into|turn it into|convert this to|convert it to|i want|i need)";
   const IMAGE_NOUN = "(?:image|picture|photo|illustration|logo|icon|artwork|drawing|poster|wallpaper|avatar|banner|graphic|render)";
-  const EDIT_VERB = "(?:change|replace|remove|edit|swap|erase|cut out|blur|retouch|fix|clean up|improve|enhance|crop|resize|recolou?r|add)";
+  const EDIT_VERB = "(?:change|replace|remove|edit|swap|erase|cut out|blur|retouch|fix|clean up|improve|enhance|crop|resize|recolou?r|add|design|redesign)";
+  // Things an edit verb must actually be acting on. Without this, "fix this error"
+  // beside a screenshot was read as an image edit and got a canned refusal.
+  const PIC_OBJ = "(?:background|backdrop|image|picture|photo|photograph|pic|shot|portrait|selfie|headshot|logo)(?!\\s*(?:path|url|src|link|tag|name|field|column|size|format|picker|gallery|upload))";
+  // A format word introduced by this is an EXISTING file the user is talking about,
+  // not one to produce: "summarise this pdf" must stay chat.
+  const REF = /\b(?:this|that|these|those|my|your|our|the|an?)\s+(?:\w+\s+){0,2}?(?:pdf|csv|xlsx|excel|spread ?sheet|docx|word|document|file|attachment)\b\s*(?:has|have|is|are|says|contains|shows|looks|seems|won'?t|does)?/;
+  const USES_EXISTING = /\b(?:summari[sz]e|summary of|translate|read|open|parse|extract|explain|review|check|analy[sz]e|fix|correct|debug|edit|update|convert)\b/;
+
+  // The format noun must be the direct object of a make verb, and either end the
+  // clause or be followed by a connector. "build an image gallery in html" fails
+  // this, because "gallery" follows the noun — and it should, it wants code.
+  const TAIL = "(?:\\s+(?:file|files|sheet|doc|document|version|copy|format))?";
+  const AFTER = "(?=\\s*(?:$|[.,;:!?]|of\\b|about\\b|for\\b|with\\b|from\\b|on\\b|containing\\b|listing\\b|showing\\b|summari[sz]ing\\b|that\\b|which\\b|please\\b|using\\b|based\\b))";
+  const LEAD = "(?:me\\s+|us\\s+)?(?:a|an|the|one|some)?\\s*(?:\\w+\\s+){0,2}?";
+  const objectOf = (low, noun) =>
+    new RegExp(`\\b${MAKE}\\s+${LEAD}${noun}\\b${TAIL}${AFTER}`).test(low) ||
+    new RegExp(`\\b(?:export|save|download|output)\\s+(?:this|it|that)?\\s*(?:as|to|in)\\s+${LEAD}${noun}\\b${TAIL}`).test(low) ||
+    new RegExp(`\\bconvert\\s+(?:this|it|that)\\s+(?:in)?to\\s+${LEAD}${noun}\\b`).test(low);
 
   function intent(text, opts) {
     const t = String(text || "").trim();
     const o = opts || {};
-    const low = t.toLowerCase();
+    const low = t.toLowerCase().replace(/^\s*(?:please|pls|hey|hi|ok|okay|now)[,\s]+/, "").replace(/^\s*(?:can|could|would)\s+you\s+(?:please\s+)?/, "");
     if (!t) return { tool: "chat" };
 
-    // An attached picture plus an editing verb is an edit request, whatever else is said.
-    if (o.hasImage && new RegExp(`\\b${EDIT_VERB}\\b`).test(low)) {
+    // An edit verb counts only when it acts on a picture.
+    if (o.hasImage && new RegExp(`\\b${EDIT_VERB}\\b(?:\\s+\\w+){0,3}\\s+(?:\\w+\\s+){0,2}?${PIC_OBJ}\\b`).test(low))
       return { tool: "edit-image", reason: "editing an attached picture" };
-    }
-    // A question *about* a format is not a request to produce one: "how do I use
-    // excel formulas" must stay chat. Checked after edit-image, so "how do I change
-    // the background of this photo" still gets the honest answer rather than a tutorial.
+    if (o.hasImage && new RegExp(`^\\s*${EDIT_VERB}\\s+${PIC_OBJ}\\b`).test(low))
+      return { tool: "edit-image", reason: "editing an attached picture" };
+
+    // A question about a format, or an instruction to act on a file that already
+    // exists, is never a request to build a new one.
     if (/^\s*(?:how|what|why|when|where|which|who|explain|describe|tell me about|is|are|does|do|should|can you tell)\b/.test(low) &&
         !new RegExp(`\\b${MAKE}\\b`).test(low))
       return { tool: "chat" };
+    if (REF.test(low) && USES_EXISTING.test(low) && !objectOf(low, "(?:pdf|xlsx|csv|docx)"))
+      return { tool: "chat" };
 
-    // Explicit file asks.
-    // "zip" is both the thing and the verb: "make a zip", and "zip these up".
-    if (/^\s*zip\b/.test(low) || /\b(?:\.zip|zip file|zip archive)\b/.test(low) ||
-        (/\b(?:zip|archive|bundle)\b/.test(low) && new RegExp(`\\b${MAKE}\\b`).test(low)))
+    if (objectOf(low, "(?:\\.?xlsx|excel|spread ?sheet|workbook)")) return { tool: "xlsx", prompt: t };
+    if (objectOf(low, "(?:\\.?csv)")) return { tool: "csv", prompt: t };
+    if (objectOf(low, "(?:\\.?docx|word\\s+(?:document|doc|file))")) return { tool: "docx", prompt: t };
+    if (objectOf(low, "(?:\\.?pdf)")) return { tool: "pdf", prompt: t };
+    if (objectOf(low, "(?:\\.?zip|zip file|zip archive|archive)") || (/^\s*zip\b/.test(low) && !/\bzip\s*code/.test(low)))
       return { tool: "zip", prompt: t };
-    if (/\b(?:\.xlsx|xlsx|excel|spreadsheet|spread sheet)\b/.test(low) ||
-        (/\bsheet\b/.test(low) && new RegExp(`\\b${MAKE}\\b`).test(low)))
-      return { tool: "xlsx", prompt: t };
-    if (/\b(?:\.csv|csv)\b/.test(low))
-      return { tool: "csv", prompt: t };
-    if (/\b(?:\.docx|docx|word document|word doc)\b/.test(low) ||
-        (/\bdocument\b/.test(low) && /\bword\b/.test(low)))
-      return { tool: "docx", prompt: t };
-    if (/\b(pdf|\.pdf)\b/.test(low))
-      return { tool: "pdf", prompt: t };
-    // Image creation, with no picture attached to act on.
-    if (!o.hasImage && new RegExp(`\\b${MAKE}\\b[^.?!]{0,40}\\b${IMAGE_NOUN}\\b`).test(low))
-      return { tool: "image", prompt: t };
-    if (!o.hasImage && /^(?:draw|illustrate|sketch)\b/.test(low))
+    if (!o.imageNow && objectOf(low, IMAGE_NOUN)) return { tool: "image", prompt: t };
+    if (!o.imageNow && /^(?:draw|illustrate|sketch)\s+(?:me\s+)?(?:a|an|the)?\s*\w/.test(low) && !/\b(?:in|using|with)\s+(?:html|css|js|javascript|react|svg|code)\b/.test(low))
       return { tool: "image", prompt: t };
     return { tool: "chat" };
   }
@@ -440,7 +450,18 @@
     return lines.map(l => [l]);
   }
 
-  const api = { pdf, zip, csv, xlsx, docx, rowsFrom, intent, blocks, wrap, widthOf, crc32, topicOf };
+  // The PDF uses Type1 WinAnsi fonts, so anything above U+00FF becomes "?".
+  // Devanagari, CJK and most non-Latin scripts cannot be rendered without an
+  // embedded font, which this file deliberately does not carry.
+  function pdfWouldLose(text) {
+    for (const ch of String(text || "")) {
+      const c = ch.codePointAt(0);
+      if (c > 0xff && WINANSI[ch] === undefined) return true;
+    }
+    return false;
+  }
+
+  const api = { pdf, zip, csv, xlsx, docx, rowsFrom, intent, blocks, wrap, widthOf, crc32, topicOf, pdfWouldLose };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   root.KCTools = api;
 })(typeof window !== "undefined" ? window : globalThis);
