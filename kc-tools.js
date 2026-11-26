@@ -279,7 +279,7 @@
     const sl = /^\s*\/([a-z]+)\b\s*([\s\S]*)$/i.exec(t);
     if (sl && SLASH[sl[1].toLowerCase()]) {
       const tool = SLASH[sl[1].toLowerCase()];
-      return tool === "chat" ? { tool: "chat" } : { tool, prompt: sl[2].trim() || t, forced: true };
+      return tool === "chat" ? { tool: "chat" } : { tool, prompt: sl[2].trim(), forced: true };
     }
 
     const hiLow = t.toLowerCase();
