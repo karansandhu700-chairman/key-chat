@@ -1182,7 +1182,7 @@ html[data-light] #kcCreateHub .kc-create-shell {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
-<script src="kc-tools.js?v=1"></script>
+<script src="kc-tools.js?v=2"></script>
 <script>
 "use strict";
 /* ============ Provider catalogue ============
@@ -1587,7 +1587,7 @@ function msgHtml(m,i,last){
   let body;
   if(m.error) body=`<div class="err">${esc(m.error)}</div>${m.fix==="key"?`<div class="fixit"><p>A free key of your own fixes this for good: it is yours alone, so nobody else can use it up. Key Chat never adds a charge on top of it &mdash; you pay the provider directly, or nothing at all on their free tier.</p><p class="fixit-h">Free, no card needed: <b>Groq</b>, <b>Google Gemini</b>, <b>Cerebras</b>.</p><button class="btn" data-settings type="button">Add a free key</button> <button class="btn ghost" data-regen type="button">Try again</button></div>`:""}${m.trail&&m.trail.length?`<details class="trail" open><summary>What was tried</summary>${m.trail.map(t=>`<div>✗ ${esc(PROVIDERS[t.p]?.name||t.p)} · ${esc(t.m)} · ${esc(t.why||"")}</div>`).join("")}</details>`:""}`;
   else if(m.image) body=`<img class="genimg" src="${m.image}" alt="${esc(m.prompt||"Generated image")}">${metaHtml(m)}`;
-  else if(m.file) body=`<div class="b">${md(m.content)}</div><a class="btn filedl" href="${esc(m.file.url)}" download="${esc(m.file.name)}">Download ${esc(m.file.name)}</a>${metaHtml(m)}`;
+  else if(m.file) body=`<div class="b">${md(m.content)}</div>${m.file.b64?`<button class="btn filedl" data-dl="${i}" type="button">Download ${esc(m.file.name)}</button>`:`<div class="muted">${esc(m.file.name)} was saved to your downloads.</div>`}${metaHtml(m)}`;
   else body=`<div class="b">${md(m.content)}</div>${metaHtml(m)}`;
   const acts=`<div class="acts"><button data-copy="${i}" aria-label="Copy">${I.copy}</button>${m.content?`<button data-speak="${i}" aria-label="Read aloud">${I.speak}</button>`:""}<button data-share="${i}" aria-label="Share">${I.share}</button>${last?`<button data-regen aria-label="Try again">${I.regen}</button>`:""}</div>`;
   return `<div class="msg ai" data-i="${i}">${body}${m.error?"":artCards(m,i)}${acts}</div>`;
@@ -1630,30 +1630,66 @@ async function send(override){
   c.msgs.push({role:"user",content:text,att:pendingAtt}); pendingAtt=[]; renderPending();
   $("#input").value=""; autosize();
   const last=c.msgs[c.msgs.length-1];
-  const hasImage=(last.att||[]).some(a=>a.kind==="img"&&a.data);
+  const imageNow=(last.att||[]).some(a=>a.kind==="img"&&a.data);
+  /* a picture from the last couple of turns can still be the subject of "change the
+     background"; one from long ago must not block image generation for the whole chat */
+  const recent=c.msgs.filter(m=>m.role==="user").slice(-2);
+  const hasImage=recent.some(m=>(m.att||[]).some(a=>a.kind==="img"&&a.data));
   const want = (imageOn && text) ? {tool:"image",prompt:text}
-             : (window.KCTools ? KCTools.intent(text,{hasImage}) : {tool:"chat"});
+             : (window.KCTools ? KCTools.intent(text,{hasImage,imageNow}) : {tool:"chat"});
   await answer(c, want);
 }
 /* Build a file in the browser and hand it back as a download. Models cannot emit
    bytes, so the model writes the content and Key Chat makes the actual file. */
+function saveBlob(bytes, name, mime){
+  const u=URL.createObjectURL(new Blob([bytes],{type:mime}));
+  const a=document.createElement("a"); a.href=u; a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(u), 10000);
+}
 async function makeFile(kind, userText, c, signal, onStage){
   const topic = KCTools.topicOf(userText);
-  const ask = kind === "pdf"
-    ? `Write the full contents of a document about: ${topic}\n\nUse markdown: one # title, ## sections, short paragraphs, - bullets where they fit. Write the document itself and nothing else: no preamble, no "here is", no closing remark.`
-    : `Produce the files for: ${topic}\n\nGive every file as a fenced code block. On the line directly above each block write only the file name, like path/name.ext. No preamble and no explanation between blocks.`;
+  const ASKS = {
+    pdf:  `Write the full contents of a document about: ${topic}\n\nUse markdown: one # title, ## sections, short paragraphs, - bullets where they fit. Write the document itself and nothing else: no preamble, no "here is", no closing remark.`,
+    docx: `Write the full contents of a document about: ${topic}\n\nUse markdown: one # title, ## sections, short paragraphs, - bullets where they fit. Write the document itself and nothing else: no preamble, no "here is", no closing remark.`,
+    xlsx: `Produce a table of: ${topic}\n\nReply with one markdown table and nothing else. First row is the header. Keep numbers as bare numbers with no currency symbols, commas or units, so they stay numeric in a spreadsheet; put the unit in the column header instead.`,
+    csv:  `Produce a table of: ${topic}\n\nReply with one markdown table and nothing else. First row is the header. Keep numbers as bare numbers with no symbols or thousands separators.`,
+    zip:  `Produce the files for: ${topic}\n\nGive every file as a fenced code block. On the line directly above each block write only the file name, like path/name.ext. No preamble and no explanation between blocks.`
+  };
+  const ask = ASKS[kind] || ASKS.pdf;
+  const STAGE = {pdf:"Writing the document…", docx:"Writing the document…", xlsx:"Working out the rows…", csv:"Working out the rows…", zip:"Writing the files…"};
+  const BUILD = {pdf:"Building the PDF…", docx:"Building the document…", xlsx:"Building the spreadsheet…", csv:"Building the CSV…", zip:"Building the zip…"};
   const msgs = toApi(c.msgs.slice(0,-1)).concat([{role:"user",content:ask}]);
-  onStage(kind === "pdf" ? "Writing the document…" : "Writing the files…");
-  const r = await routeChat(msgs, {vision:false, search:false}, ()=>{}, signal);
+  onStage(STAGE[kind] || STAGE.pdf);
+  const vision = c.msgs.some(m=>(m.att||[]).some(a=>a.kind==="img"&&a.data));
+  const r = await routeChat(msgs, {vision, search:false}, ()=>{}, signal);
   const text = (r.text||"").trim();
   if(!text) throw new Error("The model returned nothing to put in the file.");
-  onStage(kind === "pdf" ? "Building the PDF…" : "Building the zip…");
+  onStage(BUILD[kind] || BUILD.pdf);
   const safe = (topic||"document").replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase().slice(0,50) || "document";
   let bytes, name, mime;
+  const today = new Date().toISOString().slice(0,10);
+  const titleOf = () => (/^#\s+(.+)$/m.exec(text)||[])[1] || topic.slice(0,80) || "Document";
+  let swapped = "";
+  if(kind === "pdf" && KCTools.pdfWouldLose(text)){
+    /* the PDF fonts are WinAnsi only; Hindi and other scripts would come out as "?" */
+    kind = "docx"; swapped = "pdf";
+  }
   if(kind === "pdf"){
-    const title = (/^#\s+(.+)$/m.exec(text)||[])[1] || topic.slice(0,80) || "Document";
-    bytes = KCTools.pdf({title, subtitle:new Date().toISOString().slice(0,10), text});
+    bytes = KCTools.pdf({title:titleOf(), subtitle:today, text});
     name = safe + ".pdf"; mime = "application/pdf";
+  } else if(kind === "docx"){
+    bytes = KCTools.docx({title:titleOf(), subtitle:today, text});
+    name = safe + ".docx"; mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  } else if(kind === "xlsx"){
+    const rows = KCTools.rowsFrom(text);
+    if(!rows.length) throw new Error("The model did not return a table to put in the spreadsheet.");
+    bytes = KCTools.xlsx({sheets:[{name:(topic||"Sheet1").slice(0,31), rows}]});
+    name = safe + ".xlsx"; mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  } else if(kind === "csv"){
+    const rows = KCTools.rowsFrom(text);
+    if(!rows.length) throw new Error("The model did not return a table to put in the CSV.");
+    bytes = new TextEncoder().encode(KCTools.csv(rows));
+    name = safe + ".csv"; mime = "text/csv";
   } else {
     const files = [];
     const re = /(?:^|\n)[ \t]*(?:[#/*\-\s]*)([\w./-]+\.[A-Za-z0-9]{1,8})[ \t]*\n+```[\w.+-]*\n([\s\S]*?)```/g;
@@ -1665,16 +1701,18 @@ async function makeFile(kind, userText, c, signal, onStage){
     if(!files.length) files.push({name:"notes.md", data:text});
     bytes = KCTools.zip(files); name = safe + ".zip"; mime = "application/zip";
   }
-  const blob = new Blob([bytes], {type:mime});
-  return {name, mime, size:blob.size, url:URL.createObjectURL(blob), meta:r.meta};
+  let bin=""; for(let i=0;i<bytes.length;i+=0x8000) bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));
+  const b64 = bytes.length <= 1_500_000 ? btoa(bin) : null;   /* bigger than this is not worth persisting */
+  return {name, mime, size:bytes.length, b64, bytes, meta:r.meta, swapped};
 }
 
 async function answer(c, want){
   const W = (want && typeof want === "object") ? want
           : (want ? {tool:"image", prompt:want} : {tool:"chat"});
   const imagePrompt = W.tool === "image" ? (W.prompt || "") : "";
-  const LABELS = {image:"Creating image…", pdf:"Writing the document…", zip:"Writing the files…"};
-  const ai={role:"assistant",content:""}; c.msgs.push(ai); c.updated=Date.now(); renderAll();
+  const LABELS = {image:"Creating image…", pdf:"Writing the document…", docx:"Writing the document…",
+                  xlsx:"Working out the rows…", csv:"Working out the rows…", zip:"Writing the files…"};
+  const ai={role:"assistant",content:"",tool:W.tool,toolPrompt:W.prompt||""}; c.msgs.push(ai); c.updated=Date.now(); renderAll();
   const node=thread.querySelector(".msg.ai:last-child"); const THINK='<span class="thinking" role="status">Thinking</span>';
   const stage = t => { const e=node.querySelector(".b"); if(e) e.innerHTML=`<span style="color:var(--muted)">${esc(t)}</span>`; };
   node.innerHTML=`<div class="b">${LABELS[W.tool]?`<span style="color:var(--muted)">${LABELS[W.tool]}</span>`:THINK}</div>`;
@@ -1686,10 +1724,12 @@ async function answer(c, want){
       ai.content = "I can't edit a picture you send me yet \u2014 Key Chat can only create new images from a description. Nothing here can change the background of that photo.\n\nWhat I can do: describe the picture you want and I'll make a new one. Image editing needs a provider that offers it, which isn't set up on this app.";
       ai.noEdit = true;
     }
-    else if(W.tool === "pdf" || W.tool === "zip"){
+    else if(W.tool === "pdf" || W.tool === "zip" || W.tool === "xlsx" || W.tool === "docx" || W.tool === "csv"){
       const f = await makeFile(W.tool, W.prompt || "", c, ctl.signal, stage);
-      ai.file = {name:f.name, url:f.url, size:f.size, mime:f.mime};
-      ai.content = `Made **${f.name}** (${Math.max(1,Math.round(f.size/1024))} KB).`;
+      ai.file = {name:f.name, size:f.size, mime:f.mime, b64:f.b64};
+      if(!f.b64) saveBlob(f.bytes, f.name, f.mime);   /* too large to keep: hand it over now */
+      ai.content = `Made **${f.name}** (${Math.max(1,Math.round(f.size/1024))} KB).`
+        + (f.swapped === "pdf" ? "\n\nI made a Word file rather than a PDF: the PDF fonts here cover Latin text only, so this writing would have come out as question marks." : "");
       ai.meta = f.meta;
     }
     else if(imagePrompt){ const r=await generateImage(imagePrompt, ctl.signal); ai.image=r.data; ai.prompt=imagePrompt; ai.meta=r.meta; }
@@ -2079,8 +2119,18 @@ document.addEventListener("click",async e=>{
     editIdx=i; input.value=m.content||""; $("#editing").classList.remove("hidden"); autosize(); updateSend(); input.focus(); return; }
   const cb=t.closest(".cp"); if(cb){ try{ await navigator.clipboard.writeText(cb.closest("pre").querySelector("code").innerText); cb.textContent="Copied"; setTimeout(()=>cb.textContent="Copy",1500);}catch{ toast("Couldn't copy"); } return; }
   const pv=t.closest(".pv"); if(pv){ $("#previewFrame").srcdoc=pv.closest("pre").querySelector("code").innerText; openSheet("#preview"); return; }
+  const dlBtn=t.closest("[data-dl]");
+  if(dlBtn){ const m=curChat()?.msgs[+dlBtn.dataset.dl]; if(!m?.file?.b64) return;
+    const bin=atob(m.file.b64), u8=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
+    saveBlob(u8, m.file.name, m.file.mime); return; }
   if(t.closest("[data-regen]")){ if(busy) return; const c=curChat(); if(!c) return; const last=c.msgs.at(-1); if(last?.role==="assistant") c.msgs.pop();
-    const lastUser=[...c.msgs].reverse().find(m=>m.role==="user"); answer(c, last?.image ? (last.prompt||lastUser?.content) : false); }
+    const lastUser=[...c.msgs].reverse().find(m=>m.role==="user");
+    /* regenerate with the tool that produced it, or the essay comes back */
+    const again = last?.tool && last.tool!=="chat" ? {tool:last.tool, prompt:last.toolPrompt||lastUser?.content||""}
+                : last?.image ? {tool:"image", prompt:(last.prompt||lastUser?.content||"")}
+                : {tool:"chat"};
+    answer(c, again); }
 });
 document.addEventListener("dragover",e=>e.preventDefault());
 document.addEventListener("drop",e=>{ e.preventDefault(); if(e.dataTransfer.files.length) addFiles([...e.dataTransfer.files]); });
@@ -2488,7 +2538,7 @@ function chiefSystem(msgs){ const parts=[], off=curChat()?.plugOff||[];
 
 <script>
 /* ===== v25 settings navigation and header model button ===== */
-(function(){ const KC_V="35", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Skills",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
+(function(){ const KC_V="37", sh=$("#settings"), T={home:"Settings",general:"General",background:"Background",plugins:"Skills",memory:"Memory",personality:"Personality",voice:"Voice",security:"Security and login",storage:"Storage",providers:"AI providers"};
   const back={background:"general"};
   function go(p){ sh.dataset.page=p; sh.querySelectorAll(".spage").forEach(x=>x.classList.toggle("on",x.dataset.page===p)); $("#setTitle").textContent=T[p]||"Settings"; sh.querySelector(".bd").scrollTop=0; if(p==="home") sums(); }
   window.kcSettingsGo=go;

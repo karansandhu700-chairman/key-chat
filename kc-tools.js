@@ -235,46 +235,233 @@
   /* ---------- intent ---------- */
   // Decides which tool a message wants. Conservative on purpose: when in doubt it
   // returns "chat", because a wrong route is worse than no route.
-  const MAKE = "(?:make|create|generate|draw|design|produce|build|give me|send me|i want|i need|can you make|please make)";
+  const MAKE = "(?:make|create|generate|produce|build|write|draw|design|give me|send me|export|save|turn this into|turn it into|convert this to|convert it to|i want|i need)";
   const IMAGE_NOUN = "(?:image|picture|photo|illustration|logo|icon|artwork|drawing|poster|wallpaper|avatar|banner|graphic|render)";
-  const EDIT_VERB = "(?:change|replace|remove|edit|swap|erase|cut out|blur|retouch|fix|clean up|improve|enhance|crop|resize|recolou?r|add)";
+  const EDIT_VERB = "(?:change|replace|remove|edit|swap|erase|cut out|blur|retouch|fix|clean up|improve|enhance|crop|resize|recolou?r|add|design|redesign)";
+  // Things an edit verb must actually be acting on. Without this, "fix this error"
+  // beside a screenshot was read as an image edit and got a canned refusal.
+  const PIC_OBJ = "(?:background|backdrop|image|picture|photo|photograph|pic|shot|portrait|selfie|headshot|logo)(?!\\s*(?:path|url|src|link|tag|name|field|column|size|format|picker|gallery|upload))";
+  // A format word introduced by this is an EXISTING file the user is talking about,
+  // not one to produce: "summarise this pdf" must stay chat.
+  const REF = /\b(?:this|that|these|those|my|your|our|the|an?)\s+(?:\w+\s+){0,2}?(?:pdf|csv|xlsx|excel|spread ?sheet|docx|word|document|file|attachment)\b\s*(?:has|have|is|are|says|contains|shows|looks|seems|won'?t|does)?/;
+  const USES_EXISTING = /\b(?:summari[sz]e|summary of|translate|read|open|parse|extract|explain|review|check|analy[sz]e|fix|correct|debug|edit|update|convert)\b/;
+
+  // The format noun must be the direct object of a make verb, and either end the
+  // clause or be followed by a connector. "build an image gallery in html" fails
+  // this, because "gallery" follows the noun — and it should, it wants code.
+  const TAIL = "(?:\\s+(?:file|files|sheet|doc|document|version|copy|format))?";
+  const AFTER = "(?=\\s*(?:$|[.,;:!?]|of\\b|about\\b|for\\b|with\\b|from\\b|on\\b|containing\\b|listing\\b|showing\\b|summari[sz]ing\\b|that\\b|which\\b|please\\b|using\\b|based\\b))";
+  const LEAD = "(?:me\\s+|us\\s+)?(?:a|an|the|one|some)?\\s*(?:\\w+\\s+){0,2}?";
+  const objectOf = (low, noun) =>
+    new RegExp(`\\b${MAKE}\\s+${LEAD}${noun}\\b${TAIL}${AFTER}`).test(low) ||
+    new RegExp(`\\b(?:export|save|download|output)\\s+(?:this|it|that)?\\s*(?:as|to|in)\\s+${LEAD}${noun}\\b${TAIL}`).test(low) ||
+    new RegExp(`\\bconvert\\s+(?:this|it|that)\\s+(?:in)?to\\s+${LEAD}${noun}\\b`).test(low);
 
   function intent(text, opts) {
     const t = String(text || "").trim();
     const o = opts || {};
-    const low = t.toLowerCase();
+    const low = t.toLowerCase().replace(/^\s*(?:please|pls|hey|hi|ok|okay|now)[,\s]+/, "").replace(/^\s*(?:can|could|would)\s+you\s+(?:please\s+)?/, "");
     if (!t) return { tool: "chat" };
 
-    // An attached picture plus an editing verb is an edit request, whatever else is said.
-    if (o.hasImage && new RegExp(`\\b${EDIT_VERB}\\b`).test(low)) {
+    // An edit verb counts only when it acts on a picture.
+    if (o.hasImage && new RegExp(`\\b${EDIT_VERB}\\b(?:\\s+\\w+){0,3}\\s+(?:\\w+\\s+){0,2}?${PIC_OBJ}\\b`).test(low))
       return { tool: "edit-image", reason: "editing an attached picture" };
-    }
-    // Explicit file asks.
-    // "zip" is both the thing and the verb: "make a zip", and "zip these up".
-    if (/^\s*zip\b/.test(low) || /\b(?:\.zip|zip file|zip archive)\b/.test(low) ||
-        (/\b(?:zip|archive|bundle)\b/.test(low) && new RegExp(`\\b${MAKE}\\b`).test(low)))
+    if (o.hasImage && new RegExp(`^\\s*${EDIT_VERB}\\s+${PIC_OBJ}\\b`).test(low))
+      return { tool: "edit-image", reason: "editing an attached picture" };
+
+    // A question about a format, or an instruction to act on a file that already
+    // exists, is never a request to build a new one.
+    if (/^\s*(?:how|what|why|when|where|which|who|explain|describe|tell me about|is|are|does|do|should|can you tell)\b/.test(low) &&
+        !new RegExp(`\\b${MAKE}\\b`).test(low))
+      return { tool: "chat" };
+    if (REF.test(low) && USES_EXISTING.test(low) && !objectOf(low, "(?:pdf|xlsx|csv|docx)"))
+      return { tool: "chat" };
+
+    if (objectOf(low, "(?:\\.?xlsx|excel|spread ?sheet|workbook)")) return { tool: "xlsx", prompt: t };
+    if (objectOf(low, "(?:\\.?csv)")) return { tool: "csv", prompt: t };
+    if (objectOf(low, "(?:\\.?docx|word\\s+(?:document|doc|file))")) return { tool: "docx", prompt: t };
+    if (objectOf(low, "(?:\\.?pdf)")) return { tool: "pdf", prompt: t };
+    if (objectOf(low, "(?:\\.?zip|zip file|zip archive|archive)") || (/^\s*zip\b/.test(low) && !/\bzip\s*code/.test(low)))
       return { tool: "zip", prompt: t };
-    if (/\b(pdf|\.pdf)\b/.test(low))
-      return { tool: "pdf", prompt: t };
-    // Image creation, with no picture attached to act on.
-    if (!o.hasImage && new RegExp(`\\b${MAKE}\\b[^.?!]{0,40}\\b${IMAGE_NOUN}\\b`).test(low))
-      return { tool: "image", prompt: t };
-    if (!o.hasImage && /^(?:draw|illustrate|sketch)\b/.test(low))
+    if (!o.imageNow && objectOf(low, IMAGE_NOUN)) return { tool: "image", prompt: t };
+    if (!o.imageNow && /^(?:draw|illustrate|sketch)\s+(?:me\s+)?(?:a|an|the)?\s*\w/.test(low) && !/\b(?:in|using|with)\s+(?:html|css|js|javascript|react|svg|code)\b/.test(low))
       return { tool: "image", prompt: t };
     return { tool: "chat" };
   }
 
   // Strip the instruction wrapper so "make me a pdf about X" prompts the model for X.
   function topicOf(text) {
-    return String(text || "")
-      .replace(new RegExp(`^\\s*${MAKE}\\s+`, "i"), "")
-      .replace(/^\s*(?:me\s+)?(?:a|an|the)\s+/i, "")
-      .replace(/^\s*(pdf|zip|archive|document|file|report)\s*/i, "")
-      .replace(/^\s*(?:of|on|about|for|with|containing)\s+/i, "")
-      .trim() || String(text || "").trim();
+    const orig = String(text || "").trim();
+    let t = orig;
+    // Peel the instruction wrapper off the front until only the subject is left,
+    // so "create a word document about our Q3 pricing" names the file q3-pricing.
+    const peels = [
+      new RegExp(`^\\s*${MAKE}\\b\\s*`, "i"),
+      /^\s*(?:me|us)\b\s*/i,
+      /^\s*(?:a|an|the|some)\b\s*/i,
+      /^\s*(?:new|simple|quick|short|small|basic)\b\s*/i,
+      /^\s*(?:pdf|zip|archive|xlsx|excel|spread ?sheet|sheet|csv|docx|word|document|doc|file|report|table|list)\b\s*/i,
+      /^\s*(?:of|on|about|for|with|containing|listing|showing)\b\s*/i,
+      /^\s*(?:my|our|their|its|his|her)\b\s*/i
+    ];
+    for (let pass = 0; pass < 8; pass++) {
+      const before = t;
+      for (const re of peels) t = t.replace(re, "");
+      if (t === before) break;
+    }
+    t = t.replace(/[\s.,:;!?]+$/, "").trim();
+    return t || orig;
   }
 
-  const api = { pdf, zip, intent, blocks, wrap, widthOf, crc32, topicOf };
+  /* ---------- CSV ---------- */
+  // RFC 4180. The BOM is deliberate: without it Excel mangles non-ASCII.
+  function csv(rows, opts) {
+    const o = opts || {};
+    const cell = v => {
+      const s = v === null || v === undefined ? "" : String(v);
+      return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    };
+    const body = (rows || []).map(r => (Array.isArray(r) ? r : [r]).map(cell).join(",")).join("\r\n");
+    return (o.bom === false ? "" : "﻿") + body + "\r\n";
+  }
+
+  /* ---------- Office Open XML ----------
+     .xlsx and .docx are both a ZIP of XML parts, and we already write ZIP, so
+     these cost no new dependency at all — only the part templates below. */
+  const xmlEsc = s => String(s === null || s === undefined ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&apos;")
+    // XML 1.0 forbids most control characters outright; strip rather than emit a corrupt file
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "");
+  const colName = n => { let s = ""; n += 1; while (n > 0) { const r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = (n - r - 1) / 26; } return s; };
+  const isNum = v => typeof v === "number" ? Number.isFinite(v)
+    : typeof v === "string" && v.trim() !== "" && /^-?\d+(\.\d+)?$/.test(v.trim());
+
+  function xlsx(opts) {
+    const o = opts || {};
+    const sheets = (o.sheets && o.sheets.length ? o.sheets : [{ name: "Sheet1", rows: o.rows || [] }])
+      .map((s, i) => ({
+        // Excel rejects these characters in a sheet name, and caps it at 31
+        name: String(s.name || `Sheet${i + 1}`).replace(/[\\\/\?\*\[\]:]/g, " ").slice(0, 31) || `Sheet${i + 1}`,
+        rows: s.rows || []
+      }));
+
+    const sheetXml = sh => {
+      let rowsXml = "";
+      sh.rows.forEach((row, r) => {
+        const cells = (Array.isArray(row) ? row : [row]).map((v, c) => {
+          const ref = colName(c) + (r + 1);
+          if (v === null || v === undefined || v === "") return "";
+          return isNum(v)
+            ? `<c r="${ref}"><v>${xmlEsc(String(v).trim())}</v></c>`
+            : `<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${xmlEsc(v)}</t></is></c>`;
+        }).join("");
+        rowsXml += `<row r="${r + 1}">${cells}</row>`;
+      });
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
+        `<sheetData>${rowsXml}</sheetData></worksheet>`;
+    };
+
+    const files = [
+      { name: "[Content_Types].xml", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+        `<Default Extension="xml" ContentType="application/xml"/>` +
+        `<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>` +
+        sheets.map((_, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("") +
+        `</Types>` },
+      { name: "_rels/.rels", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>` +
+        `</Relationships>` },
+      { name: "xl/workbook.xml", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ` +
+        `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>` +
+        sheets.map((s, i) => `<sheet name="${xmlEsc(s.name)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join("") +
+        `</sheets></workbook>` },
+      { name: "xl/_rels/workbook.xml.rels", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+        sheets.map((_, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join("") +
+        `</Relationships>` }
+    ];
+    sheets.forEach((s, i) => files.push({ name: `xl/worksheets/sheet${i + 1}.xml`, data: sheetXml(s) }));
+    return zip(files);
+  }
+
+  function docx(opts) {
+    const o = opts || {};
+    // Direct formatting rather than named styles, so no styles.xml part is needed.
+    const run = (t, sz, bold, mono) =>
+      `<w:r><w:rPr>${bold ? "<w:b/>" : ""}<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/>` +
+      (mono ? `<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas"/>` : "") +
+      `</w:rPr><w:t xml:space="preserve">${xmlEsc(t)}</w:t></w:r>`;
+    const para = (t, sz, bold, mono, indent) =>
+      `<w:p><w:pPr>${indent ? `<w:ind w:left="${indent}"/>` : ""}<w:spacing w:after="120"/></w:pPr>${t ? run(t, sz, bold, mono) : ""}</w:p>`;
+
+    let body = "";
+    if (o.title) body += para(o.title, 40, true);
+    if (o.subtitle) body += para(o.subtitle, 18, false);
+    for (const b of blocks(o.text || "")) {
+      if (b.t === "gap") continue;
+      else if (b.t === "h1") body += para(b.s, 34, true);
+      else if (b.t === "h2") body += para(b.s, 28, true);
+      else if (b.t === "h3") body += para(b.s, 25, true);
+      else if (b.t === "h4") body += para(b.s, 23, true);
+      else if (b.t === "li") body += para((b.n ? b.n + ". " : "• ") + b.s, 22, false, false, 360);
+      else if (b.t === "code") for (const ln of String(b.s).split("\n")) body += para(ln, 18, false, true, 360);
+      else body += para(b.s, 22, false);
+    }
+    if (!body) body = para("", 22, false);
+
+    return zip([
+      { name: "[Content_Types].xml", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+        `<Default Extension="xml" ContentType="application/xml"/>` +
+        `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>` +
+        `</Types>` },
+      { name: "_rels/.rels", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>` +
+        `</Relationships>` },
+      { name: "word/document.xml", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+        `<w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/>` +
+        `<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134"/></w:sectPr></w:body></w:document>` }
+    ]);
+  }
+
+  /* Pull a markdown table, or fenced csv, out of model prose into rows. */
+  function rowsFrom(text) {
+    const t = String(text || "");
+    const fence = /```(?:csv|tsv)?\n([\s\S]*?)```/i.exec(t);
+    const src = fence ? fence[1] : t;
+    const pipes = src.split("\n").filter(l => /^\s*\|.*\|\s*$/.test(l));
+    if (pipes.length >= 2) {
+      return pipes
+        .filter(l => !/^\s*\|[\s:|-]+\|\s*$/.test(l))           // drop the --- separator row
+        .map(l => l.trim().replace(/^\||\|$/g, "").split("|").map(c => strip(c.trim())));
+    }
+    const lines = src.split("\n").map(l => l.trim()).filter(Boolean);
+    const sep = lines.some(l => l.includes("\t")) ? "\t" : ",";
+    if (lines.length && lines.some(l => l.includes(sep)))
+      return lines.map(l => l.split(sep).map(c => c.trim().replace(/^"|"$/g, "")));
+    return lines.map(l => [l]);
+  }
+
+  // The PDF uses Type1 WinAnsi fonts, so anything above U+00FF becomes "?".
+  // Devanagari, CJK and most non-Latin scripts cannot be rendered without an
+  // embedded font, which this file deliberately does not carry.
+  function pdfWouldLose(text) {
+    for (const ch of String(text || "")) {
+      const c = ch.codePointAt(0);
+      if (c > 0xff && WINANSI[ch] === undefined) return true;
+    }
+    return false;
+  }
+
+  const api = { pdf, zip, csv, xlsx, docx, rowsFrom, intent, blocks, wrap, widthOf, crc32, topicOf, pdfWouldLose };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   root.KCTools = api;
 })(typeof window !== "undefined" ? window : globalThis);
